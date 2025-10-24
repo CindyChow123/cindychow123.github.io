@@ -99,9 +99,9 @@ export const publications = [
 export const projects = [
     {
         tag: 'Accessibility',
-        title: 'Want to experience color blindness?',
+        title: 'Color Vision Simulator',
         description:
-            'Built a playful simulator that lets people experience color blindness, helps those with color vision deficiency distinguish hues, and invites empathy through tangible comparisons.',
+            'Built a simulator that lets people experience color blindness, helps those with color vision deficiency distinguish hues, and invites empathy through tangible comparisons.',
         linkText: 'View in Github',
         href: 'https://github.com/CindyChow123/Multimedia_project_2021_spring',
         preview: '/videos/colorblind.gif',
