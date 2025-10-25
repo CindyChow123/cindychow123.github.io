@@ -122,5 +122,5 @@ export const blogPosts = [
 
 export const site = {
     brand: 'Enchanté',
-    footerNote: 'All rights reserved. 💜',
+    footerNote: 'All rights reserved. 💙',
 };
