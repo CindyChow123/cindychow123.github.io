@@ -83,7 +83,7 @@ export const industry = [
 export const publications = [
     {
         title: 'Cognitive Biases in LLM-Assisted Software Development',
-        venue: 'ICSE 2026 (Accepted)',
+        venue: 'ICSE 2026 (Accepted!)',
         venueLink: 'https://conf.researchr.org/home/icse-2026',
         role: 'First Co-Author',
         authors: ['Xinyi Zhou', 'Zeinabsadat Saghi', 'Sadra Sabouri', 'Rahul Pandita', 'Mollie McGuire', 'Souti Chattopadhyay'],
