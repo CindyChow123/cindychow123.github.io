@@ -2,6 +2,7 @@ export const navLinks = [
     { label: 'Publications', href: '#publications' },
     { label: 'Industry', href: '#industry' },
     { label: 'Projects', href: '#projects' },
+    { label: 'Photography', href: '#photography' },
 ];
 
 export const hero = {
@@ -80,6 +81,14 @@ export const industry = [
 
 
 export const publications = [
+    {
+        title: 'Cognitive Biases in LLM-Assisted Software Development',
+        venue: 'ICSE 2026 (Accepted)',
+        venueLink: 'https://conf.researchr.org/home/icse-2026',
+        role: 'First Co-Author',
+        authors: ['Xinyi Zhou', 'Zeinabsadat Saghi', 'Sadra Sabouri', 'Rahul Pandita', 'Mollie McGuire', 'Souti Chattopadhyay'],
+        href: 'https://conf.researchr.org/details/icse-2026/icse-2026-research-track/63/Cognitive-Biases-in-LLM-Assisted-Software-Development',
+    },
     {
         title: 'Trust dynamics in AI-assisted development: Definitions, factors, and implications',
         venue: 'ICSE 2025 (Presentation)',

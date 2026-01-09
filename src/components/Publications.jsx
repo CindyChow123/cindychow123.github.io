@@ -8,11 +8,17 @@ function Publications() {
                     <h2>Publications</h2>
                 </div>
                 <ul className="publications">
-                    {publications.map((item) => (
-                        <li key={item.title} className="publications__entry">
+                    {publications.map((item, index) => (
+                        <li key={item.title} className={`publications__entry ${index === 0 ? 'publications__entry--featured' : ''}`}>
                             <header className="publications__header">
                                 <h3>{item.title}</h3>
-                                <span>{item.venue}</span>
+                                <span>
+                                    {item.venueLink ? (
+                                        <a href={item.venueLink} target="_blank" rel="noopener noreferrer">{item.venue}</a>
+                                    ) : (
+                                        item.venue
+                                    )}
+                                </span>
                             </header>
                             {item.authors && item.authors.length > 0 && (
                                 <p className="publications__authors">

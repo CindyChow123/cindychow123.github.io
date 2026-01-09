@@ -4,6 +4,7 @@ import Footer from './components/Footer.jsx';
 import Header from './components/Header.jsx';
 import Hero from './components/Hero.jsx';
 import Projects from './components/Projects.jsx';
+import Photography from './components/Photography.jsx';
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Publications />
                 <Industry />
                 <Projects />
+                <Photography />
             </main>
             <Footer />
         </>
