@@ -54,7 +54,7 @@ function Header() {
                     <ul id="nav-list" data-open={isNavOpen ? '' : undefined} onClick={handleNavClick}>
                         {navLinks.map((link) => (
                             <li key={link.href}>
-                                <a href={link.href}>{link.label}</a>
+                                <a href={link.href} target={link.target} rel={link.rel}>{link.label}</a>
                             </li>
                         ))}
                     </ul>

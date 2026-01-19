@@ -3,6 +3,7 @@ export const navLinks = [
     { label: 'Industry', href: '#industry' },
     { label: 'Projects', href: '#projects' },
     { label: 'Photography', href: '#photography' },
+    { label: 'Resume', href: '/resume.pdf', target: '_blank', rel: 'noopener' },
 ];
 
 export const hero = {
@@ -39,7 +40,7 @@ export const industry = [
             href: 'https://channel.bot/',
             icon: 'channel.ico',
         },
-        location: 'San Francisco, CA',
+        location: 'Menlo Park, CA',
     },
     {
         period: 'May 2024 – Aug 2024',
