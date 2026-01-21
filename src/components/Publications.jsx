@@ -12,11 +12,16 @@ function Publications() {
                         <li key={item.title} className={`publications__entry ${index === 0 ? 'publications__entry--featured' : ''}`}>
                             <header className="publications__header">
                                 <h3>{item.title}</h3>
-                                <span>
+                                <span className="publications__venue-row">
                                     {item.venueLink ? (
                                         <a href={item.venueLink} target="_blank" rel="noopener noreferrer">{item.venue}</a>
                                     ) : (
                                         item.venue
+                                    )}
+                                    {item.badge && (
+                                        <a href={item.badge.href} target="_blank" rel="noopener noreferrer" className="publications__badge">
+                                            {item.badge.label}
+                                        </a>
                                     )}
                                 </span>
                             </header>

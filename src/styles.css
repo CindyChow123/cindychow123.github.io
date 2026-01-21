@@ -533,6 +533,29 @@ img {
     text-decoration: underline;
 }
 
+.publications__venue-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.publications__badge {
+    background-color: rgba(251, 191, 36, 0.25);
+    color: #b45309;
+    padding: 0.1rem 0.4rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    font-style: italic;
+    text-decoration: underline wavy #f97316;
+    text-underline-offset: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.publications__badge:hover {
+    background-color: rgba(251, 191, 36, 0.4);
+}
+
 .timeline__item {
     display: grid;
     gap: 0.6rem;

@@ -88,7 +88,11 @@ export const publications = [
         venueLink: 'https://conf.researchr.org/home/icse-2026',
         role: 'First Co-Author',
         authors: ['Xinyi Zhou', 'Zeinabsadat Saghi', 'Sadra Sabouri', 'Rahul Pandita', 'Mollie McGuire', 'Souti Chattopadhyay'],
-        href: 'https://conf.researchr.org/details/icse-2026/icse-2026-research-track/63/Cognitive-Biases-in-LLM-Assisted-Software-Development',
+        href: 'https://arxiv.org/abs/2601.08045',
+        badge: {
+            label: 'Head Student Volunteer',
+            href: 'https://conf.researchr.org/track/icse-2026/icse-2026-student-volunteers#:~:text=Xinyi%20Zhou,United%20States',
+        },
     },
     {
         title: 'Trust dynamics in AI-assisted development: Definitions, factors, and implications',
