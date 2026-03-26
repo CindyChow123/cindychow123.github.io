@@ -3,13 +3,13 @@ export const navLinks = [
     { label: 'Industry', href: '#industry' },
     { label: 'Projects', href: '#projects' },
     { label: 'Photography', href: '#photography' },
-    { label: 'Resume', href: '/resume.pdf', target: '_blank', rel: 'noopener' },
+    { label: 'Resume', href: '/Resume_Job_Xinyi_2026_03_26.pdf', target: '_blank', rel: 'noopener' },
 ];
 
 export const hero = {
     eyebrow: 'Software Engineer - LLM Researcher',
     title: 'Xinyi (Cindy) Zhou',
-    summary: `A software engineer based in the Bay Area. \nBetween 2023-2024, I pursued the MSCS (General) degree at the [University of Southern California](https://www.usc.edu/) and worked as a student researcher for [USC ACE Lab](https://aceatusc.github.io/), supervised by [Souti Rini Chattopadhyay](https://viterbi.usc.edu/directory/faculty/Chattopadhyay/Souti).\nBefore USC, I earned my Bachelor of Engineering in CSE at [Southern University of Science and Technology (SUSTECH)](https://www.sustech.edu.cn/en/) with Dr. Jiang Liu, where I contributed to his iMED lab.`,
+    summary: `A software engineer based in the Bay Area. \nBetween 2023-2024, I pursued the MSCS (General) degree at the [University of Southern California](https://www.usc.edu/) and worked as a student researcher for [USC ACE Lab](https://aceatusc.github.io/), supervised by [Souti Rini Chattopadhyay](https://viterbi.usc.edu/directory/faculty/Chattopadhyay/Souti).\nBefore USC, I earned my Bachelor of Engineering in CSE at [Southern University of Science and Technology (SUSTECH)](https://www.sustech.edu.cn/en/) with [Dr. Jiang Liu](https://faculty.sustech.edu.cn/?tagid=liuj&iscss=1&snapid=1&orderby=date&go=2), where I contributed to his [iMED lab](https://www.imed-lab.com/).`,
     actions: [
         {
             label: 'LinkedIn',
