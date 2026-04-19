@@ -1,5 +1,23 @@
 import { industry } from '../content.js';
 
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function renderDescription(description, skills) {
+    if (!skills?.length) return description;
+    const pattern = new RegExp(`(${skills.map(escapeRegex).join('|')})`, 'gi');
+    const parts = description.split(pattern);
+    const lowerSkills = new Set(skills.map((s) => s.toLowerCase()));
+    return parts.map((part, i) =>
+        lowerSkills.has(part.toLowerCase()) ? (
+            <span key={i} className="skill-tag">{part}</span>
+        ) : (
+            part
+        )
+    );
+}
+
 function Industry() {
     return (
         <section id="industry" className="section section--tinted">
@@ -34,7 +52,7 @@ function Industry() {
                                     <h3>{item.title}</h3>
                                 </div>
                             </div>
-                            <p>{item.description}</p>
+                            <p>{renderDescription(item.description, item.skills)}</p>
                         </li>
                     ))}
                 </ul>

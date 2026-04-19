@@ -35,6 +35,7 @@ export const industry = [
         title: 'Software Engineer · Channel AI',
         description:
             'Designing backend infrastructure for conversational AI characters, owning prompt pipelines and scalable services.',
+        skills: [],
         company: {
             name: 'Channel AI',
             href: 'https://channel.bot/',
@@ -47,6 +48,7 @@ export const industry = [
         title: 'Software Engineer Intern · Veeva Systems',
         description:
             'Maintained the Vault Platform Reporting stack (Spring Boot + React), closed 11 critical defects, shipped a “Last Updated” indicator for 1,000+ customers, and expanded JUnit/Jest coverage.',
+        skills: ['Spring Boot', 'React', 'JUnit', 'Jest'],
         company: {
             name: 'Veeva Systems',
             href: 'https://www.veeva.com/',
@@ -59,6 +61,7 @@ export const industry = [
         title: 'Machine Learning (NLP) Engineer Intern · UBT Robotics',
         description:
             'Fine-tuned Vicuna 7B/13B/33B chatbots on 50K+ scripted dialogues, delivering a 29.7% user-preference lift over baseline models.',
+        skills: ['Vicuna'],
         company: {
             name: 'UBTECH Robotics',
             href: 'https://www.ubtrobot.com/en/',
@@ -71,6 +74,7 @@ export const industry = [
         title: 'Research Assistant · SUSTech School of Design',
         description:
             'Built Unity mixed-reality prototypes, led IxDL user surveys, and co-designed HCI experiments for the SUSTECH School of Design.',
+        skills: ['Unity', 'mixed-reality'],
         company: {
             name: 'SUSTech School of Design',
             href: 'https://designschool.sustech.edu.cn/',
@@ -116,10 +120,21 @@ export const projects = [
         title: 'Color Vision Simulator',
         description:
             'Built a simulator that lets people experience color blindness, helps those with color vision deficiency distinguish hues, and invites empathy through tangible comparisons.',
-        linkText: 'View in Github',
-        href: 'https://github.com/CindyChow123/Multimedia_project_2021_spring',
+        links: [
+            { label: 'View in Github', href: 'https://github.com/CindyChow123/Multimedia_project_2021_spring' },
+        ],
         preview: '/videos/colorblind.gif',
-    }
+    },
+    {
+        tag: 'Gaming',
+        title: 'USC CSCI526 - Color Spash',
+        description: 'A 2D platformer featuring color-switching mechanics that alter the player\'s interaction with obstacles of corresponding colors.',
+        links: [
+            { label: 'Course project repo', href: 'https://github.com/CSCI-526/spring-2024-project-tuesday-color-splash' },
+            { label: 'Unity demo', href: 'https://hsoron.github.io/Gold-Demo/' },
+        ],
+        preview: '/videos/colorsplash.mp4',
+    },
 ];
 
 export const blogPosts = [

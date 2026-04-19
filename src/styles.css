@@ -800,9 +800,30 @@ img {
     color: rgba(16, 18, 33, 0.68);
 }
 
+.skill-tag {
+    text-decoration: underline;
+    text-decoration-color: rgba(44, 123, 229, 0.45);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    color: rgba(16, 18, 33, 0.92);
+}
+
+.projects__cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.6rem;
+}
+
 .projects__cta {
     font-weight: 600;
     color: var(--primary);
+    text-decoration: none;
+}
+
+.projects__cta:hover,
+.projects__cta:focus-visible {
+    text-decoration: underline;
 }
 
 .projects__item-media {
@@ -820,7 +841,8 @@ img {
     opacity: 1;
 }
 
-.projects__item-media img {
+.projects__item-media img,
+.projects__item-media video {
     width: auto;
     height: 220px;
     display: block;
