@@ -10,42 +10,73 @@ function Publications() {
                 <ul className="publications">
                     {publications.map((item, index) => (
                         <li key={item.title} className={`publications__entry ${index === 0 ? 'publications__entry--featured' : ''}`}>
-                            <header className="publications__header">
-                                <h3>{item.title}</h3>
-                                <span className="publications__venue-row">
-                                    {item.venueLink ? (
-                                        <a href={item.venueLink} target="_blank" rel="noopener noreferrer">{item.venue}</a>
-                                    ) : (
-                                        item.venue
-                                    )}
-                                    {item.badge && (
-                                        <a href={item.badge.href} target="_blank" rel="noopener noreferrer" className="publications__badge">
-                                            {item.badge.label}
+                            <div className="publications__main">
+                                <header className="publications__header">
+                                    <h3>{item.title}</h3>
+                                    <span className="publications__venue-row">
+                                        {item.venueLink ? (
+                                            <a href={item.venueLink} target="_blank" rel="noopener noreferrer">{item.venue}</a>
+                                        ) : (
+                                            item.venue
+                                        )}
+                                        {item.badge && (
+                                            <a href={item.badge.href} target="_blank" rel="noopener noreferrer" className="publications__badge">
+                                                {item.badge.label}
+                                            </a>
+                                        )}
+                                    </span>
+                                </header>
+                                {item.authors && item.authors.length > 0 && (
+                                    <p className="publications__authors">
+                                        {item.authors.map((author, index) => {
+                                            const isSelf = author === 'Xinyi Zhou';
+                                            return (
+                                                <span key={author} className="publications__author-wrapper">
+                                                    <span className={isSelf ? 'publications__author publications__author--self' : 'publications__author'}>{author}</span>
+                                                    {index < item.authors.length - 1 && (
+                                                        <span className="publications__author-separator">, </span>
+                                                    )}
+                                                </span>
+                                            );
+                                        })}
+                                    </p>
+                                )}
+                                <div className="publications__meta">
+                                    <span>{item.role}</span>
+                                    <a href={item.href} target="_blank" rel="noopener noreferrer">
+                                        Full paper
+                                    </a>
+                                    {item.details?.resources?.map((resource) => (
+                                        <a
+                                            key={resource.href}
+                                            href={resource.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {resource.label}
                                         </a>
-                                    )}
-                                </span>
-                            </header>
-                            {item.authors && item.authors.length > 0 && (
-                                <p className="publications__authors">
-                                    {item.authors.map((author, index) => {
-                                        const isSelf = author === 'Xinyi Zhou';
-                                        return (
-                                            <span key={author} className="publications__author-wrapper">
-                                                <span className={isSelf ? 'publications__author publications__author--self' : 'publications__author'}>{author}</span>
-                                                {index < item.authors.length - 1 && (
-                                                    <span className="publications__author-separator">, </span>
-                                                )}
-                                            </span>
-                                        );
-                                    })}
-                                </p>
-                            )}
-                            <div className="publications__meta">
-                                <span>{item.role}</span>
-                                <a href={item.href} target="_blank" rel="noopener noreferrer">
-                                    Full paper
-                                </a>
+                                    ))}
+                                </div>
+                                {item.details?.bullets?.length > 0 && (
+                                    <details className="publications__details">
+                                        <summary>Highlights</summary>
+                                        <ul className="publications__details-bullets">
+                                            {item.details.bullets.map((bullet) => (
+                                                <li key={bullet}>{bullet}</li>
+                                            ))}
+                                        </ul>
+                                    </details>
+                                )}
                             </div>
+                            {item.details?.video && (
+                                <div className="publications__media">
+                                    <video
+                                        src={item.details.video}
+                                        controls
+                                        preload="metadata"
+                                    />
+                                </div>
+                            )}
                         </li>
                     ))}
                 </ul>

@@ -111,6 +111,18 @@ export const publications = [
         role: 'First Author',
         authors: ['Xinyi Zhou', 'Louying Hao', 'Qiushi Nie', 'Yingquan Zhou', 'Lihui Wang', 'Yan Hu', 'Jiang Liu'],
         href: 'https://ieeexplore.ieee.org/abstract/document/9761531',
+        details: {
+            bullets: [
+                'PyTorch CNN for defocus blur in ophthalmic surgical microscopy via image fusion; +36.10% SSIM and +28.19% PSNR over SOTA.',
+                'Curated a 3,718-image multi-focus fundus dataset with all-in-focus ground truth derived from a traditional fusion algorithm.',
+                'Principal investigator on funded undergraduate research (NCSITP grant 202114325010, team of 4).',
+            ],
+            resources: [
+                { label: 'Slides', href: '/isbi/ISBI_ppt.pdf' },
+                { label: 'Poster', href: '/isbi/ISBI_poster.pdf' },
+            ],
+            video: '/isbi/ISBI_video.mp4',
+        },
     },
 ];
 
