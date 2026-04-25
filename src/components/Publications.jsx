@@ -19,6 +19,9 @@ function Publications() {
                                         ) : (
                                             item.venue
                                         )}
+                                        {index === 0 && (
+                                            <span className="publications__latest" aria-label="Latest publication">🎉 Latest</span>
+                                        )}
                                         {item.badge && (
                                             <a href={item.badge.href} target="_blank" rel="noopener noreferrer" className="publications__badge">
                                                 {item.badge.label}
@@ -68,7 +71,7 @@ function Publications() {
                                     </details>
                                 )}
                             </div>
-                            {item.details?.video && (
+                            {item.details?.video ? (
                                 <div className="publications__media">
                                     <video
                                         src={item.details.video}
@@ -76,7 +79,19 @@ function Publications() {
                                         preload="metadata"
                                     />
                                 </div>
-                            )}
+                            ) : item.details?.image ? (
+                                <a
+                                    href={item.details.image.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="publications__media publications__media--link"
+                                >
+                                    <img
+                                        src={item.details.image.src}
+                                        alt={item.details.image.alt}
+                                    />
+                                </a>
+                            ) : null}
                         </li>
                     ))}
                 </ul>

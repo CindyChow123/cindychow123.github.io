@@ -97,6 +97,16 @@ export const publications = [
             label: 'Head Student Volunteer',
             href: 'https://conf.researchr.org/track/icse-2026/icse-2026-student-volunteers#:~:text=Xinyi%20Zhou,United%20States',
         },
+        details: {
+            image: {
+                src: '/icse2026/first-frame.jpg',
+                href: '/icse2026/slides.pdf',
+                alt: 'ICSE 2026 Cognitive Bias slide deck — first slide',
+            },
+            resources: [
+                { label: 'Slides', href: '/icse2026/slides.pdf' },
+            ],
+        },
     },
     {
         title: 'Trust dynamics in AI-assisted development: Definitions, factors, and implications',
