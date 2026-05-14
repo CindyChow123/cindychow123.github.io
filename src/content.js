@@ -33,12 +33,16 @@ export const industry = [
     {
         period: 'Feb 2024 – Present',
         title: 'Software Engineer · Channel AI',
-        description:
-            'Designing backend infrastructure for conversational AI characters, owning prompt pipelines and scalable services.',
-        skills: [],
+        bullets: [
+            'Spearheaded an LLM-powered personalization feature in TypeScript, extending the PostgreSQL schema to dynamically inject targeted user context into model prompts — delivering +45% revenue and +4% daily messaging for mature cohorts within 4 days.',
+            'Built an autonomous Slack bot with Claude that surfaces daily Sentry and Better Stack errors, assigns owners, and auto-generates remediation PRs — cutting manual log investigation ~80% per issue.',
+            'Engineered an automated Trust & Safety pipeline integrating external ML classifiers with a rules-based evaluation engine that auto-handles definitive cases and routes edge cases to human review — reducing manual review by 78%.',
+            'Maintained scalable AWS ECS microservices for mobile and web clients (XMPP for real-time messaging, Redis sessions, Amazon Aurora PostgreSQL) and shipped zero-downtime Prisma schema migrations via parallel-writes and batched backfills.',
+        ],
+        skills: ['TypeScript', 'Claude', 'PostgreSQL', 'AWS ECS', 'Prisma'],
         company: {
             name: 'Channel AI',
-            href: 'https://channel.bot/',
+            href: 'https://channelai.ai/',
             icon: 'channel.ico',
         },
         location: 'Menlo Park, CA',
@@ -46,9 +50,12 @@ export const industry = [
     {
         period: 'May 2024 – Aug 2024',
         title: 'Software Engineer Intern · Veeva Systems',
-        description:
-            'Maintained the Vault Platform Reporting stack (Spring Boot + React), closed 11 critical defects, shipped a “Last Updated” indicator for 1,000+ customers, and expanded JUnit/Jest coverage.',
-        skills: ['Spring Boot', 'React', 'JUnit', 'Jest'],
+        bullets: [
+            'Maintained Spring Boot microservices and React UIs in a high-scale cloud reporting platform, resolving 11 defects and expanding JUnit and Jest unit + integration coverage through Jenkins CI/CD pipelines.',
+            'Built a real-time data freshness indicator by integrating the React front-end with downstream microservice APIs, giving users accurate visibility into asynchronous data processing states.',
+            'Resolved race conditions and key collisions in a distributed multi-tier caching architecture, ensuring data consistency across service instances for 1,000+ customers.',
+        ],
+        skills: ['Spring Boot', 'React', 'JUnit', 'Jest', 'Jenkins'],
         company: {
             name: 'Veeva Systems',
             href: 'https://www.veeva.com/',
@@ -59,9 +66,12 @@ export const industry = [
     {
         period: 'May 2023 – Aug 2023',
         title: 'Machine Learning (NLP) Engineer Intern · UBT Robotics',
-        description:
-            'Fine-tuned Vicuna 7B/13B/33B chatbots on 50K+ scripted dialogues, delivering a 29.7% user-preference lift over baseline models.',
-        skills: ['Vicuna'],
+        bullets: [
+            'Fine-tuned Vicuna 7B/13B/33B chatbots with LoRA and DeepSpeed ZeRO on a V100 cluster for reception and tour-guiding dialogue, lifting user preference 29.7% and Elo rating by 22 over baselines.',
+            'Built a Python data pipeline using prompt engineering and the ChatGPT API that 20× accelerated fine-tuning data collection across 3 NLP projects.',
+            'Deployed an evaluation chatbot on cloud via FastAPI and Gradio for human preference testing.',
+        ],
+        skills: ['Vicuna', 'LoRA', 'DeepSpeed', 'FastAPI'],
         company: {
             name: 'UBTECH Robotics',
             href: 'https://www.ubtrobot.com/en/',
@@ -72,9 +82,12 @@ export const industry = [
     {
         period: 'Aug 2022 – Dec 2022',
         title: 'Research Assistant · SUSTech School of Design',
-        description:
-            'Built Unity mixed-reality prototypes, led IxDL user surveys, and co-designed HCI experiments for the SUSTECH School of Design.',
-        skills: ['Unity', 'mixed-reality'],
+        bullets: [
+            'Prototyped Unity mixed-reality experiences on Oculus and HoloLens with a team of 8 UX designers.',
+            'Wrote Python scripts to collect interaction data for UX optimization.',
+            'Led qualitative thematic analysis of IxDL design-language interviews.',
+        ],
+        skills: ['Unity', 'Python', 'qualitative thematic'],
         company: {
             name: 'SUSTech School of Design',
             href: 'https://designschool.sustech.edu.cn/',

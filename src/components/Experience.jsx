@@ -4,10 +4,10 @@ function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function renderDescription(description, skills) {
-    if (!skills?.length) return description;
+function renderWithSkills(text, skills) {
+    if (!skills?.length) return text;
     const pattern = new RegExp(`(${skills.map(escapeRegex).join('|')})`, 'gi');
-    const parts = description.split(pattern);
+    const parts = text.split(pattern);
     const lowerSkills = new Set(skills.map((s) => s.toLowerCase()));
     return parts.map((part, i) =>
         lowerSkills.has(part.toLowerCase()) ? (
@@ -52,7 +52,11 @@ function Industry() {
                                     <h3>{item.title}</h3>
                                 </div>
                             </div>
-                            <p>{renderDescription(item.description, item.skills)}</p>
+                            <ul className="timeline__bullets">
+                                {item.bullets.map((bullet, idx) => (
+                                    <li key={idx}>{renderWithSkills(bullet, item.skills)}</li>
+                                ))}
+                            </ul>
                         </li>
                     ))}
                 </ul>
