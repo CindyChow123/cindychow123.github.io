@@ -3,7 +3,7 @@ export const navLinks = [
     { label: 'Industry', href: '#industry' },
     { label: 'Projects', href: '#projects' },
     { label: 'Photography', href: '#photography' },
-    { label: 'Resume', href: '/Xinyi_Zhou_Resume.pdf', target: '_blank', rel: 'noopener' },
+    { label: 'Curriculum Vitae', href: '/Xinyi_Zhou_Resume.pdf', target: '_blank', rel: 'noopener' },
 ];
 
 export const hero = {
