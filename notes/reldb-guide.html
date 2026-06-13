@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relational Databases (MySQL &amp; PostgreSQL) — Visual Engineering &amp; Interview Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#1f7a70; --red2:#155f57;
+    --accent:#3a6ea8; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --hand:"Shantell Sans","Bradley Hand",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#eae6d6;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#155f57}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#d9ebe7;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(31,122,112,.14), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#eef1e9);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 Interview angle";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* db badges */
+  .db{display:inline-block;font-family:var(--sans);font-weight:800;font-size:.7rem;padding:2px 8px;border-radius:6px;margin-right:6px;vertical-align:middle}
+  .pg{background:#e7f0f8;color:#27598a;border:1px solid #bcd6ea}
+  .my{background:#fdeede;color:#9a5a16;border:1px solid #ecccA0}
+  .both{background:#eef0e6;color:#5a6a3a;border:1px solid #cdd6b8}
+
+  /* ---- analogy ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 Real-world analogy";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--accent),var(--purple));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(31,122,112,.4)}
+
+  /* ---- flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:168px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.88rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#d9ebe7}
+
+  /* ---- reveal Q&A ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ tap to reveal";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ answer"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#dcefeb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>Foundations</h2>
+  <a href="#intro">Relational model</a>
+  <a href="#schema">Keys &amp; constraints</a>
+  <h2>SQL</h2>
+  <a href="#sql">SQL anatomy &amp; order</a>
+  <a href="#joins">Joins</a>
+  <a href="#aggregation">Aggregation &amp; grouping</a>
+  <a href="#advanced">Subqueries · CTE · windows</a>
+  <a href="#types">Data types</a>
+  <h2>Design</h2>
+  <a href="#normalization">Normalization</a>
+  <h2>Performance</h2>
+  <a href="#indexes">Indexes</a>
+  <a href="#explain">Query planner &amp; EXPLAIN</a>
+  <a href="#pitfalls">Query pitfalls</a>
+  <h2>Transactions</h2>
+  <a href="#acid">ACID</a>
+  <a href="#isolation">Isolation &amp; anomalies</a>
+  <a href="#mvcc">Locking &amp; MVCC</a>
+  <a href="#deadlock">Deadlocks</a>
+  <h2>Internals</h2>
+  <a href="#wal">WAL, recovery &amp; storage</a>
+  <h2>Scaling &amp; HA</h2>
+  <a href="#replication">Replication</a>
+  <a href="#ha">Failover (HA)</a>
+  <a href="#sharding">Partitioning &amp; sharding</a>
+  <a href="#pooling">Connection pooling</a>
+  <h2>Ops</h2>
+  <a href="#backup">Backup &amp; recovery</a>
+  <a href="#security">Security</a>
+  <h2>Compare</h2>
+  <a href="#sqlnosql">SQL vs NoSQL</a>
+  <a href="#vs">MySQL vs PostgreSQL</a>
+  <h2>Practice 🎮</h2>
+  <a href="#quiz">Self-test flashcards</a>
+  <a href="#boss">Boss-level questions</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">⛁ Relational Databases</span><br>MySQL &amp; PostgreSQL — Visual Guide</h1>
+    <p>Everything you need in your head for engineering and interviews: the relational model, SQL, indexing, transactions &amp; isolation, MVCC, the write-ahead log, replication, sharding, and ops — with diagrams and "MySQL vs Postgres" notes wherever the two diverge.</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (progress bar up top), hit the 🎭 analogies to make it stick, flip the 🃏 cards in <a href="#quiz">Self-test</a>, then unlock the 🎯 <a href="#boss">boss questions</a>. The <span class="db pg">PG</span><span class="db my">MySQL</span><span class="db both">BOTH</span> badges flag engine-specific behavior.</p>
+    <div class="pills">
+      <span class="pill">ACID transactions</span>
+      <span class="pill">SQL — declarative</span>
+      <span class="pill">B-tree indexes</span>
+      <span class="pill">MVCC concurrency</span>
+      <span class="pill">Write-ahead log</span>
+      <span class="pill">Replication &amp; HA</span>
+    </div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>The relational model</h2>
+    <p>A relational database stores data as <b>tables</b> (relations): rows (tuples/records) and columns (attributes), each column with a fixed <b>type</b>. Tables are linked by <b>keys</b>. You describe <i>what</i> you want with declarative <b>SQL</b>; the database's <b>query planner</b> figures out <i>how</i> to fetch it efficiently. This separation — plus strong consistency guarantees (ACID) — is why relational DBs remain the default for systems that need correctness.</p>
+
+    <div class="mermaid">
+erDiagram
+    CUSTOMER ||--o{ "ORDER" : places
+    "ORDER" ||--|{ LINE_ITEM : contains
+    PRODUCT ||--o{ LINE_ITEM : "appears in"
+    CUSTOMER {
+      bigint id PK
+      string email UK
+      string name
+    }
+    "ORDER" {
+      bigint id PK
+      bigint customer_id FK
+      timestamp created_at
+      numeric total
+    }
+    LINE_ITEM {
+      bigint order_id FK
+      bigint product_id FK
+      int qty
+    }
+    PRODUCT {
+      bigint id PK
+      string sku UK
+      numeric price
+    }
+    </div>
+
+    <div class="grid3">
+      <div class="card"><div class="big">ACID</div><div class="kv">atomic, consistent, isolated, durable — the correctness contract</div></div>
+      <div class="card"><div class="big">Declarative</div><div class="kv">you state the result; the planner picks the algorithm &amp; indexes</div></div>
+      <div class="card"><div class="big">Schema-on-write</div><div class="kv">structure &amp; types enforced at insert time, not read time</div></div>
+    </div>
+    <div class="analogy">A table is a <b>spreadsheet with rules</b>: every column has a type, every row is unique by its key, and you can't put text where a number belongs. Foreign keys are like cells that <i>must</i> point to a real row in another sheet — the database refuses to let the link dangle.</div>
+    <div class="iq">"<i>SQL vs NoSQL?</i>" — reach for relational when you need <b>multi-row transactions, joins, and strong consistency</b> over structured data with relationships (orders, payments, inventory). Reach for NoSQL when you need massive horizontal scale, flexible/sparse schema, or a specific access pattern (KV, document, wide-column) and can relax consistency.</div>
+  </section>
+
+  <!-- ============ SCHEMA / KEYS ============ -->
+  <section id="schema">
+    <h2><span class="num">02</span>Keys &amp; constraints</h2>
+    <p>Constraints are how the database <i>guarantees</i> data integrity for you, instead of trusting application code to never make a mistake.</p>
+    <table>
+      <tr><th>Constraint</th><th>Guarantees</th></tr>
+      <tr><td><b>PRIMARY KEY</b></td><td>Unique + NOT NULL row identifier. One per table. Usually the clustering key.</td></tr>
+      <tr><td><b>FOREIGN KEY</b></td><td>A column's values must exist in the referenced table — referential integrity. Supports <code>ON DELETE CASCADE/RESTRICT/SET NULL</code>.</td></tr>
+      <tr><td><b>UNIQUE</b></td><td>No duplicate values (allows one+ NULLs depending on engine). Backed by a unique index.</td></tr>
+      <tr><td><b>NOT NULL</b></td><td>Value is required.</td></tr>
+      <tr><td><b>CHECK</b></td><td>Arbitrary boolean rule, e.g. <code>CHECK (price &gt;= 0)</code>. <span class="db my">MySQL</span> enforced only since 8.0.16.</td></tr>
+      <tr><td><b>DEFAULT</b></td><td>Value used when none supplied.</td></tr>
+    </table>
+    <h4>Natural vs surrogate keys</h4>
+    <p>A <b>natural key</b> comes from the data (email, SSN). A <b>surrogate key</b> is a synthetic id (<code>BIGINT</code> auto-increment / <code>SERIAL</code> / <code>IDENTITY</code>, or UUID). Surrogates are usually preferred for stable PKs because natural values change and can be large.</p>
+    <div class="warn"><b>UUID as PK caution:</b> random UUID v4 PKs hurt write locality in a clustered index (random insert points → page splits, fragmentation). Prefer auto-increment <code>BIGINT</code>, or time-ordered IDs (UUID v7 / ULID / Snowflake) if you need globally-unique keys.</div>
+  </section>
+
+  <!-- ============ SQL ANATOMY ============ -->
+  <section id="sql">
+    <h2><span class="num">03</span>SQL anatomy &amp; logical execution order</h2>
+    <p>SQL has sub-languages: <b>DDL</b> (define: <code>CREATE/ALTER/DROP</code>), <b>DML</b> (manipulate: <code>SELECT/INSERT/UPDATE/DELETE</code>), <b>DCL</b> (control: <code>GRANT/REVOKE</code>), <b>TCL</b> (transactions: <code>BEGIN/COMMIT/ROLLBACK</code>).</p>
+    <p>The single most useful thing to internalize: a <code>SELECT</code> is <b>written</b> in one order but <b>logically executed</b> in another. This explains why you can't use a <code>SELECT</code> alias in <code>WHERE</code>, but can in <code>ORDER BY</code>.</p>
+    <div class="mermaid">
+flowchart LR
+    F["① FROM / JOIN<br/>assemble rows"]:::s --> W["② WHERE<br/>filter rows"]:::s --> G["③ GROUP BY<br/>make groups"]:::s --> H["④ HAVING<br/>filter groups"]:::s --> S["⑤ SELECT<br/>pick columns / aliases"]:::s --> D["⑥ DISTINCT"]:::s --> O["⑦ ORDER BY<br/>sort"]:::s --> L["⑧ LIMIT / OFFSET"]:::s
+    classDef s fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    </div>
+    <div class="tip"><b>Why it matters:</b> <code>WHERE</code> runs before <code>SELECT</code>, so column aliases defined in <code>SELECT</code> don't exist yet → can't filter on them. <code>ORDER BY</code> runs after <code>SELECT</code>, so aliases <i>are</i> available there. <code>HAVING</code> filters <i>after</i> grouping (use it for aggregate conditions); <code>WHERE</code> filters <i>before</i> (cheaper — filter early).</p>
+    <pre><code>SELECT customer_id, COUNT(*) AS orders, SUM(total) AS revenue
+FROM   "order"
+WHERE  created_at &gt;= '2026-01-01'      -- filter rows first (uses index)
+GROUP  BY customer_id                  -- then group
+HAVING SUM(total) &gt; 1000               -- then filter groups
+ORDER  BY revenue DESC                  -- alias OK here
+LIMIT  10;</code></pre>
+  </section>
+
+  <!-- ============ JOINS ============ -->
+  <section id="joins">
+    <h2><span class="num">04</span>Joins</h2>
+    <p>Joins combine rows from multiple tables on a matching condition. Master the four shapes and you can read almost any query.</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph T["Join types — A joined to B on a key"]
+      direction LR
+      I["INNER<br/>only matching rows<br/>in BOTH"]:::g
+      L["LEFT<br/>all of A +<br/>matches from B<br/>(NULLs if none)"]:::b
+      R["RIGHT<br/>all of B +<br/>matches from A"]:::b
+      Fj["FULL OUTER<br/>all of A and B<br/>(NULLs where no match)"]:::a
+    end
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef b fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef a fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    </div>
+    <table>
+      <tr><th>Type</th><th>Returns</th><th>Common use</th></tr>
+      <tr><td><code>INNER JOIN</code></td><td>Rows with a match in both tables</td><td>Orders that have a customer</td></tr>
+      <tr><td><code>LEFT JOIN</code></td><td>All left rows; right cols NULL if no match</td><td>All customers + their orders (incl. those with none)</td></tr>
+      <tr><td><code>RIGHT JOIN</code></td><td>All right rows; left NULL if no match</td><td>Rare — usually rewrite as LEFT</td></tr>
+      <tr><td><code>FULL OUTER</code></td><td>All rows from both sides</td><td>Reconciling two datasets. <span class="db my">MySQL</span> lacks it — emulate with <code>UNION</code></td></tr>
+      <tr><td><code>CROSS JOIN</code></td><td>Cartesian product (every combo)</td><td>Generating grids/series; dangerous by accident</td></tr>
+      <tr><td><code>SELF JOIN</code></td><td>Table joined to itself</td><td>Employee → manager hierarchy</td></tr>
+    </table>
+    <h4>How the engine actually joins (algorithms)</h4>
+    <table>
+      <tr><th>Algorithm</th><th>How</th><th>Good when</th></tr>
+      <tr><td><b>Nested loop</b></td><td>For each outer row, look up matches (ideally via index)</td><td>Small outer set + indexed inner</td></tr>
+      <tr><td><b>Hash join</b></td><td>Build hash table on smaller side, probe with the other</td><td>Large, unsorted, equality joins. <span class="db my">MySQL</span> since 8.0</td></tr>
+      <tr><td><b>Merge join</b></td><td>Sort both by key, walk in lockstep</td><td>Both already sorted / indexed on the key</td></tr>
+    </table>
+    <div class="iq">A classic trap: filtering the right table of a <code>LEFT JOIN</code> in <code>WHERE</code> (<code>WHERE b.x = 5</code>) silently turns it into an inner join (NULLs fail the test). Put the condition in the <code>ON</code> clause instead to preserve unmatched left rows.</div>
+  </section>
+
+  <!-- ============ AGGREGATION ============ -->
+  <section id="aggregation">
+    <h2><span class="num">05</span>Aggregation &amp; grouping</h2>
+    <p>Aggregate functions collapse many rows into one value. <code>GROUP BY</code> creates one output row per group.</p>
+    <table>
+      <tr><th>Function</th><th>Note</th></tr>
+      <tr><td><code>COUNT(*)</code> vs <code>COUNT(col)</code></td><td><code>*</code> counts rows; <code>col</code> skips NULLs. <code>COUNT(DISTINCT col)</code> for uniques.</td></tr>
+      <tr><td><code>SUM / AVG / MIN / MAX</code></td><td>Ignore NULLs. <code>AVG</code> = SUM/COUNT of non-NULLs.</td></tr>
+      <tr><td><code>STRING_AGG</code> <span class="db pg">PG</span> / <code>GROUP_CONCAT</code> <span class="db my">MySQL</span></td><td>Concatenate group values into one string.</td></tr>
+      <tr><td><code>FILTER (WHERE ...)</code> <span class="db pg">PG</span></td><td>Conditional aggregate, e.g. <code>COUNT(*) FILTER (WHERE status='paid')</code>.</td></tr>
+    </table>
+    <div class="warn"><b>NULL is not zero and not equal to anything.</b> <code>NULL = NULL</code> is <i>unknown</i>, not true. Use <code>IS NULL</code>, and <code>COALESCE(x, 0)</code> to substitute. <code>COUNT(*)</code> includes NULL rows; <code>SUM</code> over all-NULL returns NULL (not 0).</div>
+    <div class="note"><b>GROUP BY strictness:</b> in standard SQL / <span class="db pg">PG</span>, every non-aggregated <code>SELECT</code> column must appear in <code>GROUP BY</code>. <span class="db my">MySQL</span> historically allowed sloppy grouping (picks an arbitrary value) unless <code>ONLY_FULL_GROUP_BY</code> is on (default in 5.7+).</div>
+  </section>
+
+  <!-- ============ ADVANCED ============ -->
+  <section id="advanced">
+    <h2><span class="num">06</span>Subqueries, CTEs &amp; window functions</h2>
+    <h3>Subqueries</h3>
+    <p>A query nested in another. <b>Scalar</b> (returns one value), <b>IN / EXISTS</b> (membership), or <b>correlated</b> (references the outer row — runs per outer row, can be slow).</p>
+    <div class="tip"><code>EXISTS</code> is often faster than <code>IN</code> for large/correlated checks because it short-circuits on the first match. Beware <code>NOT IN</code> with NULLs — a single NULL makes the whole thing return no rows.</div>
+    <h3>CTEs (<code>WITH</code>)</h3>
+    <p>Common Table Expressions name a subquery up front for readability, and enable <b>recursion</b> (hierarchies, graphs).</p>
+    <pre><code>WITH RECURSIVE subordinates AS (
+  SELECT id, manager_id, name FROM employee WHERE id = 1   -- anchor
+  UNION ALL
+  SELECT e.id, e.manager_id, e.name                          -- recurse
+  FROM employee e JOIN subordinates s ON e.manager_id = s.id
+)
+SELECT * FROM subordinates;</code></pre>
+    <div class="note"><span class="db pg">PG</span> historically <i>materialized</i> CTEs (an optimization fence); since PG12 they can be inlined unless you write <code>WITH ... AS MATERIALIZED</code>. Good to know when a CTE unexpectedly blocks index use.</div>
+    <h3>Window functions</h3>
+    <p>Compute across a set of rows <b>related to the current row</b> — without collapsing them like <code>GROUP BY</code> does. The superpower for analytics, rankings, running totals, and dedup.</p>
+    <pre><code>SELECT name, dept, salary,
+  RANK()       OVER (PARTITION BY dept ORDER BY salary DESC) AS rnk,
+  AVG(salary)  OVER (PARTITION BY dept)                       AS dept_avg,
+  SUM(salary)  OVER (ORDER BY hired_at)                       AS running_total
+FROM employee;</code></pre>
+    <table>
+      <tr><th>Window fn</th><th>Use</th></tr>
+      <tr><td><code>ROW_NUMBER()</code></td><td>Unique sequential # — great for "keep latest per group" dedup</td></tr>
+      <tr><td><code>RANK / DENSE_RANK</code></td><td>Ranking with / without gaps on ties</td></tr>
+      <tr><td><code>LAG / LEAD</code></td><td>Previous / next row's value (deltas, trends)</td></tr>
+      <tr><td><code>NTILE(n)</code></td><td>Bucket rows into n groups (percentiles)</td></tr>
+    </table>
+    <div class="iq"><b>"Top-N per group"</b> is a top SQL interview question. Answer: <code>ROW_NUMBER() OVER (PARTITION BY group ORDER BY metric DESC)</code> in a subquery/CTE, then filter <code>WHERE rn &lt;= N</code>.</div>
+  </section>
+
+  <!-- ============ TYPES ============ -->
+  <section id="types">
+    <h2><span class="num">07</span>Data types (MySQL vs PostgreSQL)</h2>
+    <table>
+      <tr><th>Category</th><th>Use</th><th>Notes / engine diffs</th></tr>
+      <tr><td>Integer</td><td><code>INT</code>, <code>BIGINT</code>, <code>SMALLINT</code></td><td>Pick width for range; <code>BIGINT</code> for ids that will grow</td></tr>
+      <tr><td>Exact decimal</td><td><code>DECIMAL/NUMERIC(p,s)</code></td><td><b>Always</b> for money — never <code>FLOAT</code> (rounding errors)</td></tr>
+      <tr><td>Text</td><td><code>VARCHAR(n)</code>, <code>TEXT</code></td><td><span class="db pg">PG</span> <code>TEXT</code> = <code>VARCHAR</code> in perf; <span class="db my">MySQL</span> <code>VARCHAR</code> in-row, <code>TEXT</code> off-row</td></tr>
+      <tr><td>Date/time</td><td><code>DATE</code>, <code>TIMESTAMP</code>, <code>TIMESTAMPTZ</code></td><td>Prefer <span class="db pg">PG</span> <code>TIMESTAMPTZ</code> / <span class="db my">MySQL</span> <code>TIMESTAMP</code>(UTC). Store UTC, format on display</td></tr>
+      <tr><td>Boolean</td><td><code>BOOLEAN</code></td><td><span class="db my">MySQL</span> = <code>TINYINT(1)</code> alias</td></tr>
+      <tr><td>JSON</td><td><code>JSONB</code> <span class="db pg">PG</span> / <code>JSON</code> <span class="db my">MySQL</span></td><td><span class="db pg">PG</span> <code>JSONB</code> is binary + indexable (GIN); great for semi-structured fields</td></tr>
+      <tr><td>UUID</td><td><code>UUID</code> <span class="db pg">PG native</span></td><td><span class="db my">MySQL</span>: store as <code>BINARY(16)</code> for space/index efficiency</td></tr>
+      <tr><td>Enum / Array</td><td><code>ENUM</code>; <code>ARRAY</code> <span class="db pg">PG only</span></td><td><span class="db pg">PG</span> arrays &amp; rich types; <span class="db my">MySQL</span> lacks arrays</td></tr>
+    </table>
+    <div class="warn"><b>Charset gotcha</b> <span class="db my">MySQL</span>: use <code>utf8mb4</code>, not <code>utf8</code> — the old <code>utf8</code> is only 3 bytes and can't store emoji/some CJK. <code>utf8mb4</code> is true 4-byte UTF-8.</div>
+  </section>
+
+  <!-- ============ NORMALIZATION ============ -->
+  <section id="normalization">
+    <h2><span class="num">08</span>Normalization (and when to denormalize)</h2>
+    <p>Normalization organizes columns to eliminate redundancy and update anomalies. Each "normal form" is a stricter rule built on the previous.</p>
+    <table>
+      <tr><th>Form</th><th>Rule (informal)</th><th>Fixes</th></tr>
+      <tr><td><b>1NF</b></td><td>Atomic values; no repeating groups/arrays in a column</td><td>"tags: a,b,c" crammed in one cell</td></tr>
+      <tr><td><b>2NF</b></td><td>1NF + no partial dependency on part of a composite key</td><td>Column depending on only half the PK</td></tr>
+      <tr><td><b>3NF</b></td><td>2NF + no transitive dependency (non-key → non-key)</td><td><code>zip</code> determining <code>city</code> in an orders table</td></tr>
+      <tr><td><b>BCNF</b></td><td>Stricter 3NF: every determinant is a candidate key</td><td>Rare overlapping-candidate-key edge cases</td></tr>
+    </table>
+    <div class="analogy">Normalization is "<b>don't write the same fact twice.</b>" Store a customer's address once in <code>customer</code>, and <i>point</i> to it from every order — so changing the address is one edit, not a hunt across thousands of rows (that hunt is an "update anomaly").</div>
+    <div class="tip"><b>Denormalization</b> is the deliberate reverse: duplicate data (e.g. cache an <code>order_count</code> on <code>customer</code>, or store a <code>JSONB</code> blob) to avoid expensive joins on hot read paths. Trade write complexity + consistency risk for read speed. Normalize first; denormalize only where measurements demand it.</div>
+    <div class="iq">Default target is <b>3NF</b> for OLTP (transactional) systems — clean writes, integrity. Analytical/OLAP systems often denormalize into <b>star schemas</b> (facts + dimensions) for fast aggregation. Know which workload you're designing for.</div>
+  </section>
+
+  <!-- ============ INDEXES ============ -->
+  <section id="indexes">
+    <h2><span class="num">09</span>Indexes — the #1 performance lever</h2>
+    <p>An index is a separate, sorted data structure that lets the DB find rows without scanning the whole table. Almost always a <b>B+tree</b>: balanced, O(log n) lookups, and great for range scans because leaves are linked in order.</p>
+    <div class="mermaid">
+flowchart TB
+    R["Root: [50]"]:::n --> A["[20 | 35]"]:::n
+    R --> B["[70 | 85]"]:::n
+    A --> L1["leaf 10,15,18 →"]:::l
+    A --> L2["leaf 22,30 →"]:::l
+    A --> L3["leaf 36,40,45 →"]:::l
+    B --> L4["leaf 55,60 →"]:::l
+    B --> L5["leaf 72,80 →"]:::l
+    B --> L6["leaf 90,95 →"]:::l
+    L1 -.linked list.-> L2 -.-> L3 -.-> L4 -.-> L5 -.-> L6
+    classDef n fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef l fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="analogy">An index is the <b>index at the back of a textbook</b>. Without it, finding "MVCC" means reading every page (a full table scan). With it, you jump to the sorted entry and flip straight to the right pages. And just like a book, indexing <i>everything</i> wastes space and slows down edits (every new page must update the index).</div>
+
+    <h3>Clustered vs secondary <span class="db my">InnoDB</span> <span class="db pg">PG heap</span></h3>
+    <div class="grid2">
+      <div class="card"><h4>Clustered index <span class="db my">MySQL/InnoDB</span></h4><p>The table rows <i>are</i> stored <b>inside</b> the primary-key B+tree (leaves hold full rows). One per table. PK lookups are very fast. <b>Secondary indexes store the PK</b>, not a row pointer — so a secondary lookup does two hops: secondary → PK → row.</p></div>
+      <div class="card"><h4>Heap + secondary <span class="db pg">PostgreSQL</span></h4><p>Rows live in an unordered <b>heap</b>; every index (including PK) points to a physical row location (<code>ctid</code>). No "clustered" table by default. <b>Covering / index-only scans</b> avoid the heap when all needed columns are in the index (and the visibility map allows).</p></div>
+    </div>
+
+    <h3>Index types &amp; flavors</h3>
+    <table>
+      <tr><th>Index</th><th>What / when</th></tr>
+      <tr><td><b>Composite</b> <code>(a,b,c)</code></td><td>Multi-column. <b>Leftmost-prefix rule</b>: usable for <code>a</code>, <code>a,b</code>, <code>a,b,c</code> — <i>not</i> for <code>b</code> alone. Column order matters!</td></tr>
+      <tr><td><b>Covering</b></td><td>Index contains all columns the query needs → answer from index alone, skip the table. <span class="db pg">PG</span> <code>INCLUDE</code> columns.</td></tr>
+      <tr><td><b>Unique</b></td><td>Enforces uniqueness + speeds lookups.</td></tr>
+      <tr><td><b>Partial / filtered</b> <span class="db pg">PG</span></td><td>Index only rows matching a predicate, e.g. <code>WHERE active</code> — smaller, faster.</td></tr>
+      <tr><td><b>Hash</b></td><td>O(1) equality only (no ranges). Niche.</td></tr>
+      <tr><td><b>GIN / GiST</b> <span class="db pg">PG</span></td><td>Full-text, <code>JSONB</code>, arrays, geometric/range data. <span class="db my">MySQL</span>: <code>FULLTEXT</code>, <code>SPATIAL</code>.</td></tr>
+    </table>
+
+    <h3>Why an index doesn't get used</h3>
+    <ul>
+      <li><b>Function on the column:</b> <code>WHERE YEAR(created_at)=2026</code> can't use an index on <code>created_at</code> — rewrite as a range, or add an expression index.</li>
+      <li><b>Leading wildcard:</b> <code>LIKE '%foo'</code> can't seek; <code>'foo%'</code> can.</li>
+      <li><b>Implicit type cast:</b> comparing a string column to a number forces a scan.</li>
+      <li><b>Low selectivity:</b> if a value matches most rows, the planner correctly prefers a full scan.</li>
+    </ul>
+    <div class="warn"><b>Indexes aren't free.</b> Each one must be updated on every <code>INSERT/UPDATE/DELETE</code> and consumes space. Over-indexing slows writes. Index for your actual query patterns; drop unused ones.</div>
+  </section>
+
+  <!-- ============ EXPLAIN ============ -->
+  <section id="explain">
+    <h2><span class="num">10</span>Query planner &amp; EXPLAIN</h2>
+    <p>SQL is declarative, so a <b>cost-based optimizer</b> chooses the execution plan: which indexes, join order, and join algorithms. It estimates cost from <b>table statistics</b> (row counts, value distribution / histograms). <code>EXPLAIN</code> shows the plan; <code>EXPLAIN ANALYZE</code> actually runs it and shows real timings &amp; row counts.</p>
+    <div class="mermaid">
+flowchart LR
+    Q["SQL text"]:::a --> P["Parser"]:::n --> RW["Rewriter"]:::n --> OPT{"Optimizer<br/>cost-based"}:::h
+    STAT[("Statistics<br/>histograms,<br/>row counts")]:::d -.feeds.-> OPT
+    OPT --> PL["Chosen plan<br/>(scan + join algos)"]:::g --> EX["Executor"]:::n --> RES["Rows"]:::a
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef d fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>Reading a plan — what to look for</h4>
+    <table>
+      <tr><th>See this</th><th>Meaning</th></tr>
+      <tr><td><b>Seq Scan</b> <span class="db pg">PG</span> / <b>ALL</b> <span class="db my">MySQL</span></td><td>Full table scan — fine for small tables, a red flag on big ones with a selective filter</td></tr>
+      <tr><td><b>Index Scan / ref / range</b></td><td>Using an index — good</td></tr>
+      <tr><td><b>Index Only Scan</b> / <b>Using index</b></td><td>Covering index — didn't touch the table — best</td></tr>
+      <tr><td><b>rows</b> (estimated)</td><td>Way off from actual? → stale stats; run <code>ANALYZE</code> <span class="db pg">PG</span> / <code>ANALYZE TABLE</code> <span class="db my">MySQL</span></td></tr>
+      <tr><td><b>Nested Loop with high rows</b></td><td>Often a missing index on the inner side</td></tr>
+    </table>
+    <div class="tip">Workflow: find the slow query (slow-query log / <code>pg_stat_statements</code>) → <code>EXPLAIN ANALYZE</code> → spot the full scan or bad row estimate → add/fix an index or rewrite → re-check. Update statistics if estimates are wildly off.</div>
+  </section>
+
+  <!-- ============ PITFALLS ============ -->
+  <section id="pitfalls">
+    <h2><span class="num">11</span>Query pitfalls &amp; patterns</h2>
+    <table>
+      <tr><th>Pitfall</th><th>Problem</th><th>Fix</th></tr>
+      <tr><td><b>N+1 queries</b></td><td>1 query for a list + 1 per item (often via ORM lazy loading) → hundreds of round trips</td><td>Eager-load with a <code>JOIN</code> or <code>WHERE id IN (...)</code> batch</td></tr>
+      <tr><td><b><code>SELECT *</code></b></td><td>Fetches unused columns, defeats covering indexes, breaks on schema change</td><td>Select only needed columns</td></tr>
+      <tr><td><b><code>OFFSET</code> pagination</b></td><td><code>LIMIT 20 OFFSET 100000</code> scans &amp; throws away 100k rows — slower per page</td><td><b>Keyset/seek</b>: <code>WHERE id &gt; :last ORDER BY id LIMIT 20</code></td></tr>
+      <tr><td><b>Functions in WHERE</b></td><td>Disables index (non-sargable)</td><td>Rewrite to a range; or expression index</td></tr>
+      <tr><td><b>Implicit conversion</b></td><td>String/number mismatch forces scan</td><td>Match types; bind params correctly</td></tr>
+      <tr><td><b>Over-wide transactions</b></td><td>Long-running txn holds locks / old snapshots → bloat &amp; contention</td><td>Keep transactions short; batch large updates</td></tr>
+    </table>
+    <div class="iq"><b>Keyset pagination</b> is a favorite "scale this" question. <code>OFFSET</code> is O(offset); keyset (remember the last seen sort key and seek past it) is O(page size) and index-friendly — but can't jump to an arbitrary page number. Perfect for infinite scroll.</div>
+  </section>
+
+  <!-- ============ ACID ============ -->
+  <section id="acid">
+    <h2><span class="num">12</span>ACID — the transaction contract</h2>
+    <p>A <b>transaction</b> groups statements into an all-or-nothing unit (<code>BEGIN ... COMMIT/ROLLBACK</code>). ACID is what it guarantees:</p>
+    <div class="grid2">
+      <div class="card"><h4>A — Atomicity</h4><p>All statements commit, or none do. A failure mid-way rolls everything back. (Implemented via the undo log / rollback segment.)</p></div>
+      <div class="card"><h4>C — Consistency</h4><p>A transaction moves the DB from one valid state to another — constraints, FKs, triggers all hold. (Your invariants + the DB's rules.)</p></div>
+      <div class="card"><h4>I — Isolation</h4><p>Concurrent transactions don't step on each other; results look as if they ran in some serial order. <i>How much</i> is the isolation level (next section).</p></div>
+      <div class="card"><h4>D — Durability</h4><p>Once committed, it survives crashes/power loss. (Implemented via the write-ahead log fsync'd before commit returns.)</p></div>
+    </div>
+    <div class="analogy">A transaction is a <b>bank transfer</b>: debit one account, credit another. Atomicity means you never debit without crediting (no money vanishes). Durability means once the receipt prints, a power cut can't undo it. Isolation means two simultaneous transfers don't read each other's half-finished state.</div>
+  </section>
+
+  <!-- ============ ISOLATION ============ -->
+  <section id="isolation">
+    <h2><span class="num">13</span>Isolation levels &amp; anomalies</h2>
+    <p>Stronger isolation = fewer anomalies but more locking/contention. The SQL standard defines four levels by which anomalies they permit.</p>
+    <table>
+      <tr><th>Level</th><th>Dirty read</th><th>Non-repeatable read</th><th>Phantom</th></tr>
+      <tr><td>Read Uncommitted</td><td class="">😱 yes</td><td>😱 yes</td><td>😱 yes</td></tr>
+      <tr><td>Read Committed <span class="db pg">PG default</span></td><td>✅ no</td><td>😱 yes</td><td>😱 yes</td></tr>
+      <tr><td>Repeatable Read <span class="db my">MySQL default</span></td><td>✅ no</td><td>✅ no</td><td>⚠️ standard: yes</td></tr>
+      <tr><td>Serializable</td><td>✅ no</td><td>✅ no</td><td>✅ no</td></tr>
+    </table>
+    <h4>The anomalies, plainly</h4>
+    <ul>
+      <li><b>Dirty read</b> — you read another transaction's <i>uncommitted</i> change that may roll back.</li>
+      <li><b>Non-repeatable read</b> — you read a row twice and get different values (someone committed an update between).</li>
+      <li><b>Phantom read</b> — you re-run a range query and new rows <i>appear</i> (someone inserted matching rows).</li>
+      <li><b>Write skew</b> — two transactions each read a shared state, then write based on it, producing a result impossible under any serial order (only Serializable prevents it).</li>
+    </ul>
+    <div class="note"><b>Engine specifics worth saying out loud:</b>
+      <span class="db my">MySQL/InnoDB</span> default is <b>Repeatable Read</b>, and it largely prevents phantoms via <b>next-key locks</b> (gap + row locks). <span class="db pg">PostgreSQL</span> default is <b>Read Committed</b>; its <b>Repeatable Read</b> is snapshot isolation (prevents non-repeatable reads &amp; most phantoms but allows write skew); <b>Serializable</b> uses SSI (Serializable Snapshot Isolation) and may abort transactions with a serialization error you must retry.</div>
+    <div class="iq">Be ready to give a concrete write-skew example: two on-call doctors each check "≥1 other doctor is on duty" and both go off-call simultaneously → zero coverage. Both reads were valid; the combination isn't. Only <code>SERIALIZABLE</code> (or explicit locking) prevents it.</div>
+  </section>
+
+  <!-- ============ MVCC ============ -->
+  <section id="mvcc">
+    <h2><span class="num">14</span>Concurrency control: locking &amp; MVCC</h2>
+    <p>How do many transactions run at once without corrupting data? Two mechanisms, used together.</p>
+    <h3>Locking</h3>
+    <table>
+      <tr><th>Lock</th><th>Meaning</th></tr>
+      <tr><td><b>Shared (S)</b></td><td>Read lock — many readers can hold it together</td></tr>
+      <tr><td><b>Exclusive (X)</b></td><td>Write lock — one holder, blocks all others</td></tr>
+      <tr><td><b>Row vs table</b></td><td>Row locks = high concurrency (InnoDB/PG default); table locks = coarse</td></tr>
+      <tr><td><code>SELECT ... FOR UPDATE</code></td><td>Explicit pessimistic row lock — "I'm about to modify this"</td></tr>
+      <tr><td><b>Next-key / gap</b> <span class="db my">InnoDB</span></td><td>Locks a range to stop phantom inserts under Repeatable Read</td></tr>
+    </table>
+    <h3>MVCC — Multi-Version Concurrency Control</h3>
+    <p>The big idea: <b>readers don't block writers and writers don't block readers.</b> Instead of overwriting in place, the DB keeps <b>multiple versions</b> of a row. Each transaction sees a consistent <b>snapshot</b> as of its start (or statement). A reader sees the old version while a writer creates a new one.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant T1 as Txn 1 (reader)
+    participant Row as Row "balance"
+    participant T2 as Txn 2 (writer)
+    Note over Row: version A = 500 (visible)
+    T1->>Row: read → sees 500 (its snapshot)
+    T2->>Row: UPDATE → creates version B = 400
+    Note over Row: A still kept for T1
+    T1->>Row: read again → STILL 500 (no block, repeatable)
+    T2->>T2: COMMIT
+    Note over Row: new txns see 400; A reclaimable later
+    </div>
+    <div class="grid2">
+      <div class="card"><h4><span class="db pg">PostgreSQL</span> MVCC</h4><p>New row versions written <b>into the heap</b>; old versions stay until <b>VACUUM</b> reclaims them. Visibility via transaction-id (xmin/xmax). Trade-off: <b>table bloat</b> &amp; the need for (auto)vacuum.</p></div>
+      <div class="card"><h4><span class="db my">MySQL/InnoDB</span> MVCC</h4><p>Current row lives in the table; <b>old versions reconstructed from undo logs</b> (rollback segment). Cleaned by the <b>purge</b> thread. Long transactions bloat the undo history.</p></div>
+    </div>
+    <div class="warn"><b>Long-running transactions are the enemy of MVCC.</b> An open transaction holds an old snapshot, so the DB can't reclaim row versions newer than it — causing bloat (<span class="db pg">PG</span>) or huge undo (<span class="db my">MySQL</span>) and degraded performance. Keep transactions short; don't <code>BEGIN</code> then wait on a slow external call.</div>
+  </section>
+
+  <!-- ============ DEADLOCK ============ -->
+  <section id="deadlock">
+    <h2><span class="num">15</span>Deadlocks</h2>
+    <p>Two transactions each hold a lock the other needs → neither can proceed. The DB <b>detects the cycle</b> and kills one (the "victim") with a deadlock error; you retry it.</p>
+    <div class="mermaid">
+flowchart LR
+    T1(("Txn 1")):::t -->|holds| A[(Row A)]:::r
+    T1 -->|wants| B[(Row B)]:::r
+    T2(("Txn 2")):::t -->|holds| B
+    T2 -->|wants| A
+    classDef t fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <div class="tip"><b>How to avoid them:</b> (1) acquire locks in a <b>consistent order</b> everywhere (e.g. always lock the lower id first); (2) keep transactions short &amp; touch fewer rows; (3) use appropriate indexes so locks are precise (a missing index can lock extra rows/gaps); (4) always wrap writes in <b>retry logic</b> — deadlocks are normal under load, not a bug to eliminate entirely.</div>
+    <div class="iq">Distinguish <b>deadlock</b> (cycle, auto-resolved by killing a victim) from <b>lock wait timeout</b> (one txn waits too long for a lock that isn't a cycle) from <b>livelock</b> (txns keep retrying and colliding). Interviewers probe whether you know the DB resolves deadlocks automatically.</div>
+  </section>
+
+  <!-- ============ WAL ============ -->
+  <section id="wal">
+    <h2><span class="num">16</span>Write-ahead log, recovery &amp; storage</h2>
+    <p>How is durability fast? You can't fsync random table pages on every commit. The trick: <b>write-ahead logging (WAL)</b> — append the <i>change</i> to a sequential log and fsync <i>that</i> before returning commit. Data pages are flushed later, in the background.</p>
+    <div class="mermaid">
+flowchart LR
+    C["COMMIT"]:::a --> WAL["① Append change to WAL<br/>(sequential, fast)"]:::g
+    WAL --> FS["② fsync WAL → durable"]:::g
+    FS --> OK["③ return success ✅"]:::a
+    OK -.async.-> CKPT["④ Checkpoint:<br/>flush dirty pages<br/>to data files"]:::n
+    BP[("Buffer pool /<br/>shared buffers (RAM)")]:::d -.dirty pages.-> CKPT
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef d fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p>On <b>crash recovery</b>, the DB replays the WAL from the last checkpoint to redo committed changes that hadn't hit data files, and rolls back uncommitted ones. The WAL is also the foundation of <b>replication</b> and <b>point-in-time recovery</b>.</p>
+    <table>
+      <tr><th>Concept</th><th><span class="db pg">PostgreSQL</span></th><th><span class="db my">MySQL/InnoDB</span></th></tr>
+      <tr><td>The log</td><td>WAL</td><td>Redo log (+ undo log for MVCC/rollback)</td></tr>
+      <tr><td>Cache in RAM</td><td>shared_buffers</td><td>buffer pool</td></tr>
+      <tr><td>Flush point</td><td>Checkpoint</td><td>Checkpoint / flush</td></tr>
+      <tr><td>Table storage</td><td>Heap (unordered) + <b>TOAST</b> for big values</td><td>Clustered B+tree on PK</td></tr>
+      <tr><td>Cleanup</td><td>VACUUM (reclaim dead tuples)</td><td>Purge thread (undo)</td></tr>
+    </table>
+    <div class="analogy">WAL is a <b>waiter's notepad</b>. Instead of running to the kitchen for every item (random disk writes), they jot the order on the pad in one quick line (sequential append). Even if they faint, the kitchen can read the pad and reconstruct every order. The actual cooking (flushing pages) happens in batches later.</div>
+  </section>
+
+  <!-- ============ REPLICATION ============ -->
+  <section id="replication">
+    <h2><span class="num">17</span>Replication &amp; read scaling</h2>
+    <p>Replication copies data from a <b>primary</b> (writes) to one or more <b>replicas</b> (reads / standby) by shipping the log. It gives read-scaling, a hot standby for HA, and analytics offload.</p>
+    <div class="mermaid">
+flowchart TB
+    APPw["App writes"]:::a --> P[(PRIMARY)]:::m
+    P -->|ship WAL / binlog| R1[(Replica 1<br/>read-only)]:::r
+    P -->|ship WAL / binlog| R2[(Replica 2<br/>read-only)]:::r
+    APPr["App reads"]:::a -.load balance.-> R1
+    APPr -.-> R2
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>Sync vs async (the durability/latency knob)</h4>
+    <table>
+      <tr><th>Mode</th><th>Behavior</th><th>Trade-off</th></tr>
+      <tr><td><b>Asynchronous</b> (default)</td><td>Primary commits without waiting for replicas</td><td>Fast, but failover can lose the last few committed txns; replicas lag</td></tr>
+      <tr><td><b>Synchronous</b></td><td>Commit waits until a replica confirms it has the log</td><td>No data loss on failover, higher write latency</td></tr>
+      <tr><td><b>Semi-sync</b> <span class="db my">MySQL</span></td><td>Wait for ≥1 replica to <i>receive</i> (not apply)</td><td>Middle ground</td></tr>
+    </table>
+    <table>
+      <tr><th></th><th><span class="db pg">PostgreSQL</span></th><th><span class="db my">MySQL</span></th></tr>
+      <tr><td>Physical</td><td>Streaming replication (ships WAL, byte-for-byte standby)</td><td>Binlog-based (statement / row / mixed)</td></tr>
+      <tr><td>Logical</td><td>Logical replication (publish/subscribe, selective tables, cross-version)</td><td>Row-based binlog ≈ logical; GTIDs for tracking</td></tr>
+    </table>
+    <div class="warn"><b>Replication lag = stale reads.</b> Reading your own write from a lagging replica may not show it. Fixes: route read-after-write to the primary, wait for the replica to catch up to a known log position, or accept eventual consistency. Always name this trade-off.</div>
+  </section>
+
+  <!-- ============ HA ============ -->
+  <section id="ha">
+    <h2><span class="num">18</span>High availability &amp; failover</h2>
+    <p>Replication alone gives a standby, but something must <b>detect</b> a dead primary and <b>promote</b> a replica, then redirect traffic. That orchestration is HA.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant M as Manager (Patroni/Orchestrator)
+    participant P as Primary
+    participant R as Replica
+    participant App
+    M->>P: health check
+    P--xM: no response (down)
+    Note over M: confirm via consensus/quorum
+    M->>R: promote to primary
+    M->>App: update routing (VIP / DNS / proxy)
+    App->>R: writes now go here ✅
+    </div>
+    <div class="note"><b>Tooling:</b> <span class="db pg">PG</span> commonly uses <b>Patroni</b> (+ etcd/Consul/ZooKeeper for leader election) or <b>repmgr</b>. <span class="db my">MySQL</span> uses <b>Orchestrator</b>, <b>InnoDB Cluster</b> (Group Replication + MySQL Router), or managed services (RDS/Aurora). A <b>proxy</b> (ProxySQL, HAProxy, PgBouncer + a VIP) hides the topology from apps.</div>
+    <div class="warn"><b>Split-brain</b> is the nightmare: a network partition makes two nodes both think they're primary, accepting divergent writes. Prevented with <b>quorum/consensus</b> (an odd number of voters) and <b>fencing</b> (forcibly isolate the old primary). This is why you need an external arbiter, not just two database nodes.</div>
+    <div class="iq">Know your objectives: <b>RPO</b> (Recovery Point Objective — how much data you can lose) and <b>RTO</b> (Recovery Time Objective — how long to recover). Async replication → RPO &gt; 0; synchronous → RPO ≈ 0 at latency cost. These frame every HA design discussion.</div>
+  </section>
+
+  <!-- ============ SHARDING ============ -->
+  <section id="sharding">
+    <h2><span class="num">19</span>Partitioning &amp; sharding</h2>
+    <p>Two different "split the data" ideas people conflate:</p>
+    <div class="grid2">
+      <div class="card"><h4>Partitioning (one server)</h4><p>Split one big table into pieces <b>within the same database</b> by a key. Queries hitting one partition skip the rest (<b>partition pruning</b>); old partitions drop instantly. By <b>range</b> (dates), <b>list</b> (region), or <b>hash</b>.</p></div>
+      <div class="card"><h4>Sharding (many servers)</h4><p>Split data <b>across independent database servers</b> to scale writes/storage beyond one machine. Each shard is a full DB holding a subset of rows by a <b>shard key</b>.</p></div>
+    </div>
+    <div class="mermaid">
+flowchart TB
+    K["row: user_id = 8124"]:::a --> H{"shard key →<br/>hash(user_id) % N"}:::h
+    H -->|0| S0[(Shard 0)]:::m
+    H -->|1| S1[(Shard 1 ✓)]:::mh
+    H -->|2| S2[(Shard 2)]:::m
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef mh fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <div class="warn"><b>Sharding is a last resort — it's expensive.</b> You lose easy cross-shard joins, cross-shard transactions, and <code>AUTO_INCREMENT</code> uniqueness; rebalancing is hard. Exhaust the cheaper levers first: indexing, read replicas, caching, partitioning, a bigger box. Choose the shard key to <b>avoid hot shards</b> and to keep related rows together.</div>
+    <div class="iq"><b>Vertical vs horizontal:</b> vertical = move different <i>tables/columns</i> to different servers (split by feature); horizontal = split the <i>rows</i> of one table across servers (split by key). Managed options: <b>Vitess</b> (MySQL), <b>Citus</b> (PG), <b>CockroachDB</b>/<b>Spanner</b> (distributed SQL that shards transparently).</div>
+  </section>
+
+  <!-- ============ POOLING ============ -->
+  <section id="pooling">
+    <h2><span class="num">20</span>Connection pooling</h2>
+    <p>Each DB connection costs memory and (in <span class="db pg">PG</span>) a backend <b>process</b>. Opening one per request is slow and exhausts the server's <code>max_connections</code> fast. A <b>pool</b> keeps a set of warm connections and hands them out.</p>
+    <div class="mermaid">
+flowchart LR
+    A1["App worker"]:::a --> POOL
+    A2["App worker"]:::a --> POOL
+    A3["App worker"]:::a --> POOL
+    subgraph POOL["Connection pool (e.g. PgBouncer / ProxySQL / HikariCP)"]
+      C1["conn 1"]:::g
+      C2["conn 2"]:::g
+      C3["conn 3"]:::g
+    end
+    POOL --> DB[(Database<br/>limited max_connections)]:::m
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <div class="note"><span class="db pg">PostgreSQL</span> is especially sensitive (process-per-connection) — <b>PgBouncer</b> is near-mandatory at scale. <span class="db my">MySQL</span> uses threads (lighter) but still benefits from app-side pools (HikariCP) or <b>ProxySQL</b>. Pool modes: <i>session</i> (conn held for the client session) vs <i>transaction</i> (released after each txn — far higher concurrency, but breaks session-level features like prepared statements / <code>SET</code>).</div>
+    <div class="tip"><b>Rule of thumb:</b> a right-sized pool is often <i>smaller</i> than people expect. Beyond ~(cores × 2–4) active connections, you add context-switching contention, not throughput. Queue at the pool, don't pile connections on the DB.</div>
+  </section>
+
+  <!-- ============ BACKUP ============ -->
+  <section id="backup">
+    <h2><span class="num">21</span>Backup &amp; recovery</h2>
+    <table>
+      <tr><th>Type</th><th>What</th><th>Pros / cons</th></tr>
+      <tr><td><b>Logical</b></td><td><code>pg_dump</code> / <code>mysqldump</code> — SQL statements to recreate data</td><td>Portable, selective, cross-version; slow to restore, not point-in-time</td></tr>
+      <tr><td><b>Physical</b></td><td>Copy the data files (<code>pg_basebackup</code>, Percona XtraBackup, snapshots)</td><td>Fast restore of whole cluster; version/platform-specific</td></tr>
+      <tr><td><b>PITR</b> (point-in-time)</td><td>Base backup + archived WAL/binlog replayed to an exact moment</td><td>Recover to "just before the bad <code>DELETE</code>"; the gold standard</td></tr>
+    </table>
+    <div class="warn"><b>A backup you haven't restored is a rumor.</b> Test restores regularly, measure restore time (that's your real RTO), and keep copies <b>off-box</b> and ideally off-site. Replication is <i>not</i> a backup — it faithfully replicates your <code>DROP TABLE</code> too.</div>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section id="security">
+    <h2><span class="num">22</span>Security essentials</h2>
+    <h4>SQL injection — the #1 risk</h4>
+    <p>Concatenating user input into SQL lets an attacker rewrite your query (<code>'; DROP TABLE users;--</code>). The fix is non-negotiable: <b>parameterized queries / prepared statements</b> — the driver sends SQL and data separately so input is never parsed as code. Never string-build SQL from user input; an ORM helps but you must still avoid raw interpolation.</p>
+    <pre><code>-- ❌ injectable
+"SELECT * FROM users WHERE email = '" + input + "'"
+-- ✅ parameterized
+"SELECT * FROM users WHERE email = $1"   // bind input separately</code></pre>
+    <h4>Access control</h4>
+    <ul>
+      <li><b>Least privilege:</b> app role gets only the grants it needs (no <code>SUPERUSER</code>/<code>GRANT ALL</code>). Separate read-only roles.</li>
+      <li><b>Row-Level Security (RLS)</b> <span class="db pg">PG</span>: policies restrict which rows a role can see — great for multi-tenant isolation in the DB itself.</li>
+      <li><b>Encryption:</b> TLS in transit; at-rest encryption (TDE / disk); hash passwords (bcrypt/argon2), never store plaintext secrets.</li>
+    </ul>
+    <div class="iq">If asked "how do you stop SQL injection," the one-word answer is <b>parameterization</b> (prepared statements / bind variables), <i>not</i> "escaping" or "validation" — those are defense-in-depth, but binding is the actual fix.</div>
+  </section>
+
+  <!-- ============ SQL vs NOSQL ============ -->
+  <section id="sqlnosql">
+    <h2><span class="num">23</span>SQL vs NoSQL</h2>
+    <p>"NoSQL" isn't one thing — it's a family of databases that drop some relational guarantees (rigid schema, joins, sometimes strong consistency) to gain something else (horizontal scale, flexible shape, or a specialized access pattern). The honest framing: <b>it's about trade-offs and workload fit, not "old vs new."</b></p>
+    <div class="mermaid">
+flowchart TB
+    ROOT["Data store"]:::a --> SQL["Relational / SQL<br/>tables · joins · ACID"]:::m
+    ROOT --> NO["NoSQL family"]:::h
+    NO --> KV["Key–Value<br/>Redis, DynamoDB"]:::n
+    NO --> DOC["Document<br/>MongoDB, Couchbase"]:::n
+    NO --> WC["Wide-column<br/>Cassandra, HBase"]:::n
+    NO --> GR["Graph<br/>Neo4j"]:::n
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#dcefeb,stroke:#1f7a70,color:#154f48;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <table>
+      <tr><th>Dimension</th><th>Relational (SQL)</th><th>NoSQL (varies by type)</th></tr>
+      <tr><td>Schema</td><td>Fixed, enforced on write</td><td>Flexible / schema-on-read</td></tr>
+      <tr><td>Relationships</td><td>Joins + foreign keys</td><td>Usually denormalized / embedded; joins weak or absent</td></tr>
+      <tr><td>Transactions</td><td>Strong multi-row ACID</td><td>Often single-document/key atomicity; multi-doc ACID is newer/limited</td></tr>
+      <tr><td>Scaling</td><td>Scale up; sharding is bolt-on work</td><td>Designed to scale out horizontally</td></tr>
+      <tr><td>Consistency</td><td>Strong by default</td><td>Frequently tunable / eventual (AP-leaning)</td></tr>
+      <tr><td>Query</td><td>Rich, declarative SQL + ad-hoc</td><td>Access-pattern-specific; ad-hoc queries can be costly</td></tr>
+      <tr><td>Best at</td><td>Structured data with relationships &amp; integrity</td><td>Huge scale, flexible/sparse data, one known access pattern</td></tr>
+    </table>
+    <h4>The four NoSQL shapes</h4>
+    <table>
+      <tr><th>Type</th><th>Model</th><th>Sweet spot</th></tr>
+      <tr><td><b>Key–Value</b></td><td>Hash map: key → blob</td><td>Caching, sessions, rate limits (Redis, DynamoDB)</td></tr>
+      <tr><td><b>Document</b></td><td>JSON-like docs, nested</td><td>Catalogs, user profiles, content (MongoDB)</td></tr>
+      <tr><td><b>Wide-column</b></td><td>Rows with dynamic column families</td><td>Massive write-heavy time-series/events (Cassandra)</td></tr>
+      <tr><td><b>Graph</b></td><td>Nodes + edges</td><td>Social graphs, recommendations, fraud (Neo4j)</td></tr>
+    </table>
+    <div class="iq"><b>CAP theorem</b> often comes up here: under a network <b>P</b>artition you must choose <b>C</b>onsistency or <b>A</b>vailability. Traditional SQL leans CP (refuse stale/conflicting writes); many NoSQL stores lean AP (stay available, reconcile later). The pragmatic modern view (PACELC): also consider latency-vs-consistency <i>even when there's no partition</i>. Don't recite it dogmatically — use it to justify a trade-off.</div>
+    <div class="tip"><b>Don't think "either/or" — most real systems are polyglot.</b> Postgres as the source of truth, Redis for caching, Elasticsearch for search, a graph DB for recommendations. Also note the line is blurring: PG's <code>JSONB</code> gives document-style flexibility, and distributed SQL (CockroachDB, Spanner, Vitess) offers NoSQL-like scale with SQL + ACID.</div>
+    <div class="analogy">SQL is a <b>strict accountant</b>: every entry follows the rules, the books always balance, nothing's lost — but you work at the accountant's pace and structure. NoSQL is a <b>pile of labeled boxes in a huge warehouse</b>: incredibly fast to toss things in and scale across many warehouses, but <i>you're</i> responsible for keeping related things together and reconciling duplicates.</div>
+  </section>
+
+  <!-- ============ VS ============ -->
+  <section id="vs">
+    <h2><span class="num">24</span>MySQL vs PostgreSQL — quick compare</h2>
+    <table>
+      <tr><th>Dimension</th><th><span class="db my">MySQL</span></th><th><span class="db pg">PostgreSQL</span></th></tr>
+      <tr><td>Reputation</td><td>Fast, simple, ubiquitous in web stacks</td><td>Feature-rich, standards-compliant, extensible</td></tr>
+      <tr><td>Default isolation</td><td>Repeatable Read</td><td>Read Committed</td></tr>
+      <tr><td>MVCC cleanup</td><td>Undo logs + purge thread</td><td>In-heap versions + VACUUM (can bloat)</td></tr>
+      <tr><td>PK storage</td><td>Clustered (rows in PK B+tree)</td><td>Heap + separate indexes</td></tr>
+      <tr><td>Index extras</td><td>FULLTEXT, SPATIAL</td><td>Partial, expression, GIN/GiST/BRIN, covering INCLUDE</td></tr>
+      <tr><td>JSON</td><td><code>JSON</code> (functional)</td><td><code>JSONB</code> binary + indexable</td></tr>
+      <tr><td>Rich types</td><td>Limited</td><td>Arrays, ranges, custom types, extensions (PostGIS)</td></tr>
+      <tr><td>Window/CTE</td><td>Yes (8.0+)</td><td>Yes, long-mature, recursive</td></tr>
+      <tr><td>Replication</td><td>Binlog (statement/row/mixed), GTID, Group Replication</td><td>Streaming (physical) + logical pub/sub</td></tr>
+    </table>
+    <div class="tip"><b>Honest takeaway:</b> both are excellent and the gap keeps narrowing. Pick <span class="db pg">PostgreSQL</span> for complex queries, data integrity, JSON/geo/analytics, and extensibility. Pick <span class="db my">MySQL</span> for simple high-throughput read-heavy web workloads, huge ecosystem familiarity, or when your platform standardizes on it. The <i>concepts in this guide apply to both.</i></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">25</span>Self-test flashcards <span class="xp" id="score">🃏 0 / 0 flipped</span></h2>
+    <p>Cover the answer, say it out loud, then <b>click to flip</b> and check yourself.</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">What does ACID stand for, in one line each?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>A</b>tomicity (all-or-nothing) · <b>C</b>onsistency (invariants/constraints hold) · <b>I</b>solation (concurrent txns don't interfere) · <b>D</b>urability (survives crashes, via WAL fsync).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why can't you use a SELECT alias in WHERE but can in ORDER BY?</div><div class="hint">execution order →</div></div>
+        <div class="flip-face flip-back">Logical order: FROM→WHERE→GROUP→HAVING→<b>SELECT</b>→ORDER BY. <code>WHERE</code> runs before SELECT (alias doesn't exist yet); <code>ORDER BY</code> runs after (alias exists).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Default isolation: MySQL vs PostgreSQL?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><span class="db my">MySQL/InnoDB</span> = <b>Repeatable Read</b> (next-key locks block most phantoms). <span class="db pg">PG</span> = <b>Read Committed</b>. PG's Serializable uses SSI and may abort txns → retry.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">In one breath: what is MVCC and what does it buy you?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">Keep multiple row versions so each txn reads a consistent snapshot: <b>readers don't block writers, writers don't block readers</b>. Cost: old versions → VACUUM (PG) / undo purge (MySQL).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Clustered index — what's special, and the secondary-index cost?</div><div class="hint">InnoDB →</div></div>
+        <div class="flip-face flip-back">Rows are stored inside the PK B+tree (one per table) → fast PK lookups. Secondary indexes store the <b>PK value</b>, so a secondary lookup needs a 2nd hop: secondary → PK → row.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Composite index (a,b,c): which queries can use it?</div><div class="hint">leftmost rule →</div></div>
+        <div class="flip-face flip-back"><b>Leftmost prefix</b>: filters on <code>a</code>, <code>a,b</code>, or <code>a,b,c</code> — NOT <code>b</code> or <code>c</code> alone. Column order is a design decision.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why is the write-ahead log (WAL) fast AND durable?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">Commit appends the change to a <b>sequential</b> log and fsyncs only that (fast) before returning. Data pages flush later at checkpoints. Crash → replay WAL to redo committed work.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">What is an N+1 query and how do you fix it?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">1 query for a list + 1 per item (ORM lazy load) = hundreds of round trips. Fix: eager-load via <code>JOIN</code> or batch with <code>WHERE id IN (...)</code>.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">OFFSET pagination is slow at deep pages — better option?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>Keyset / seek</b>: <code>WHERE id &gt; :last ORDER BY id LIMIT n</code>. O(page) instead of O(offset), index-friendly. Downside: no jump to arbitrary page number.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">The one real fix for SQL injection?</div><div class="hint">not escaping →</div></div>
+        <div class="flip-face flip-back"><b>Parameterized queries / prepared statements</b> — SQL and data sent separately so input is never parsed as code. Validation/escaping are only defense-in-depth.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Sync vs async replication trade-off?</div><div class="hint">RPO →</div></div>
+        <div class="flip-face flip-back"><b>Async</b>: fast commits, but failover can lose recent txns (RPO &gt; 0) and replicas lag. <b>Sync</b>: commit waits for a replica → no loss (RPO≈0) at higher write latency.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Normalize to which form by default, and when denormalize?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">Default <b>3NF</b> for OLTP (clean writes, integrity). Denormalize selectively on hot read paths to skip joins — trading write complexity + consistency risk for read speed. OLAP → star schema.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">When SQL, when NoSQL? And what does CAP force?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>SQL</b>: structured data, relationships, multi-row ACID, strong consistency. <b>NoSQL</b>: huge horizontal scale, flexible shape, or one known access pattern. <b>CAP</b>: under a partition you must pick Consistency <i>or</i> Availability. Most real systems are polyglot.</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 Flip all</button>
+      <button class="btn" id="resetdeck">↺ Reset</button>
+      <span>Tip: hide the right column and quiz a friend.</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">26</span>Boss-level questions <span class="boss">EXPERT</span></h2>
+    <p>The ones that separate "wrote SQL" from "understands databases." Think first, then tap to reveal.</p>
+
+    <details class="qa"><summary>Walk me through exactly what happens, on disk and in memory, when I <code>COMMIT</code>. <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">Changes were made to pages in the <b>buffer pool / shared_buffers</b> (RAM) and recorded in the <b>WAL/redo log</b> buffer. On <code>COMMIT</code>: the WAL records up to this commit are <b>flushed and fsync'd</b> to durable storage — only then does COMMIT return success. The modified data pages are still dirty in memory; they're written to the actual data files <b>later</b>, asynchronously, at a <b>checkpoint</b>. If the server crashes before that, recovery <b>replays the WAL</b> from the last checkpoint to redo committed changes and rolls back uncommitted ones. That's how you get durability without a random-write per commit.</div>
+    </details>
+
+    <details class="qa"><summary>A query is slow. Give me your end-to-end diagnosis process. <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">(1) <b>Find it</b>: slow-query log / <code>pg_stat_statements</code> / APM. (2) <b>EXPLAIN ANALYZE</b>: look for full/seq scans on big tables, bad row estimates (estimated vs actual far apart → stale stats, run ANALYZE), expensive sorts, nested loops with high row counts (missing index on inner side). (3) <b>Fix</b>: add/adjust an index (mind selectivity &amp; the leftmost-prefix rule), make predicates sargable (no functions on the column), select fewer columns to enable a covering/index-only scan, or rewrite the query (EXISTS vs IN, keyset pagination). (4) <b>Re-measure</b>. (5) Zoom out: is it really N+1 from the app? Is connection pool saturated? Is the box I/O-bound? Don't index blindly — each index taxes writes.</div>
+    </details>
+
+    <details class="qa"><summary>Two transactions read a balance of 100 and each subtract 100. Both "succeed." How? How do you prevent it? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">This is a <b>lost update / write skew</b> under weak isolation. Under Read Committed, both read 100, both compute 0, both write 0 — one update is effectively lost, balance goes to 0 instead of -100 being rejected. Prevent it with: (a) <b>atomic write</b> — <code>UPDATE acct SET bal = bal - 100 WHERE id=? AND bal &gt;= 100</code> and check rows-affected; (b) <b>pessimistic lock</b> — <code>SELECT ... FOR UPDATE</code> to serialize; (c) <b>optimistic concurrency</b> — a <code>version</code> column, update <code>WHERE version = :read</code>, retry on mismatch; (d) <b>SERIALIZABLE</b> isolation (PG SSI will abort one txn → retry). The do-the-math-in-the-UPDATE option is simplest and avoids the read-then-write race entirely.</div>
+    </details>
+
+    <details class="qa"><summary>Why does PostgreSQL need VACUUM, and what is "bloat"? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">PG's MVCC writes a <b>new row version</b> on update/delete and leaves the old one in the heap, marked dead, so concurrent snapshots can still see it. <b>VACUUM</b> reclaims those dead tuples' space for reuse and updates the visibility map (enabling index-only scans); <b>autovacuum</b> does it automatically. If dead tuples accumulate faster than vacuum reclaims (high churn, or a <b>long-running transaction holding an old snapshot</b> that prevents cleanup), the table/index <b>bloats</b> — grows far beyond its live data, slowing scans and wasting disk. Also critical: VACUUM handles <b>transaction-id wraparound</b>; if it falls too far behind, PG will force-stop writes to protect data. Mitigations: tune autovacuum, avoid long idle-in-transaction sessions, and use <code>VACUUM FULL</code>/<code>pg_repack</code> to reclaim space (rewrites the table).</div>
+    </details>
+
+    <details class="qa"><summary>You've added read replicas, but users sometimes don't see their own just-saved change. Why, and what are the options? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans"><b>Replication lag</b>: the write committed on the primary but the replica hasn't applied it yet, and the read was routed to the replica. Options, by strength: (1) <b>route read-after-write to the primary</b> (e.g. "sticky to primary for N seconds after a write" or for that user); (2) <b>read-your-writes via log position</b> — remember the WAL/GTID position of the write and only read from a replica that has caught up to it; (3) <b>synchronous replication</b> for those writes (latency cost); (4) <b>accept eventual consistency</b> where the UX tolerates it. The right answer is usually per-operation: critical reads → primary, everything else → replicas.</div>
+    </details>
+
+    <details class="qa"><summary>When would you shard, and what breaks when you do? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans"><b>When</b>: only after exhausting indexing, query tuning, caching, read replicas, partitioning, and vertical scaling — i.e. when a single primary genuinely can't hold the write throughput or data volume. <b>What breaks</b>: cross-shard <b>joins</b> and <b>transactions</b> become application-level or impossible (or need 2PC, which is slow/fragile); global <b>uniqueness</b>/auto-increment needs a scheme (UUID/Snowflake/central allocator); <b>rebalancing</b> shards and avoiding <b>hot shards</b> is operationally hard; <b>aggregate queries</b> must scatter-gather. <b>Shard-key choice</b> is everything — pick one with even distribution that co-locates rows you query together (e.g. by tenant_id so a tenant's data lives on one shard). Consider distributed SQL (Vitess/Citus/CockroachDB/Spanner) to get sharding with less of the manual pain.</div>
+    </details>
+
+    <details class="qa"><summary>I run <code>SELECT * FROM t WHERE status = 'active'</code> and it ignores my index on status. Why might that be correct? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans"><b>Low selectivity.</b> If most rows are <code>active</code>, using the index means many random row fetches (index → heap hops), which is <i>slower</i> than a single sequential full scan. The cost-based optimizer estimates this from statistics and correctly chooses a seq scan. Other reasons an index is skipped: stale statistics (run ANALYZE), a function/implicit cast on the column making it non-sargable, the <code>SELECT *</code> needing columns not in the index (so no index-only scan benefit), or a small table where a scan is trivially cheap. The fix isn't "force the index" — it's a <b>partial index</b> on the rare value, or fetching fewer columns, or accepting the scan is genuinely optimal.</div>
+    </details>
+  </section>
+
+  <div class="footer">
+    Single self-contained file · diagrams via Mermaid.js · serif type via Google Fonts · open in any browser.<br>
+    Verify on a real DB: <span class="db pg">PG</span> <code>EXPLAIN ANALYZE</code>, <code>\d table</code>, <code>pg_stat_statements</code> · <span class="db my">MySQL</span> <code>EXPLAIN</code>, <code>SHOW INDEX</code>, <code>SHOW ENGINE INNODB STATUS</code>.
+  </div>
+</main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

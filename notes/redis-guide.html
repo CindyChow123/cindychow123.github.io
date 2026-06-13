@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redis — The Visual Engineering & Interview Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#c4452e; --red2:#a83a25;
+    --accent:#2f6f9f; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --hand:"Shantell Sans","Bradley Hand",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#f1e9da;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#a83a25}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#f6e4dd;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(196,69,46,.12), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#f3ecdf);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 Interview angle";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* ---- FUN: analogy callout ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 Real-world analogy";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- FUN: progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(220,56,45,.4)}
+
+  /* ---- FUN: flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:158px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.9rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#f6e4dd}
+
+  /* ---- FUN: reveal Q&A (boss level) ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ tap to reveal";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ answer"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#fdeceb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  /* ---- FUN: emoji bullets / sparkle ---- */
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>Foundations</h2>
+  <a href="#intro">Why Redis / model</a>
+  <a href="#single-thread">Single-thread & speed</a>
+  <h2>Data</h2>
+  <a href="#types">Data types & commands</a>
+  <a href="#encoding">Internal encodings</a>
+  <a href="#expire">Expiration & eviction</a>
+  <h2>Correctness</h2>
+  <a href="#atomic">Atomicity</a>
+  <a href="#tx">Transactions (MULTI)</a>
+  <a href="#lua">Lua & functions</a>
+  <a href="#patterns">Distributed locks</a>
+  <h2>Durability</h2>
+  <a href="#persist">Persistence: RDB / AOF</a>
+  <h2>Scaling & HA</h2>
+  <a href="#repl">Replication / R-W split</a>
+  <a href="#sentinel">Sentinel</a>
+  <a href="#cluster">Cluster</a>
+  <h2>Edges</h2>
+  <a href="#pitfalls">Pitfalls & cache patterns</a>
+  <a href="#cheatsheet">Cheat sheet</a>
+  <h2>Practice 🎮</h2>
+  <a href="#quiz">Self-test flashcards</a>
+  <a href="#boss">Boss-level questions</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">◆ Redis</span> — Visual Engineering &amp; Interview Guide</h1>
+    <p>An in-memory data-structure store used as a cache, database, message broker, and coordination layer. This page walks the whole mental model — data types, atomicity, persistence, replication, Sentinel, and Cluster — with diagrams you can scan before an interview or a design.</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (watch the progress bar fill up top), hit the 🎭 analogies to make it stick, flip the 🃏 flashcards in <a href="#quiz">§16 Self-test</a>, then unlock the 🎯 <a href="#boss">boss-level questions</a> before your interview. Let's go.</p>
+    <div class="pills">
+      <span class="pill">In-memory · μs latency</span>
+      <span class="pill">Single-threaded command exec</span>
+      <span class="pill">Rich data types</span>
+      <span class="pill">RDB + AOF durability</span>
+      <span class="pill">Async replication</span>
+      <span class="pill">16384 hash slots</span>
+    </div>
+  </div>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>The mental model</h2>
+    <p>At its core Redis is a giant <b>dictionary (key → value)</b> living in RAM, where the <i>value</i> can be one of several data structures, not just a blob. Operations are executed by a single thread, so every command is atomic on its own. Durability and scale are bolted on around that core: snapshots/logs to disk for persistence, replicas for read-scaling + HA, Sentinel for automatic failover, and Cluster for horizontal sharding.</p>
+
+    <div class="mermaid">
+flowchart LR
+    C1[Client]:::cli --> CORE
+    C2[Client]:::cli --> CORE
+    subgraph CORE["Redis server (single keyspace, single exec thread)"]
+      direction TB
+      KS["Keyspace dict: key → value"]:::ks
+      KS --> S["String"]:::dt
+      KS --> L["List"]:::dt
+      KS --> H["Hash"]:::dt
+      KS --> ST["Set"]:::dt
+      KS --> Z["Sorted Set"]:::dt
+      KS --> X["Stream / Bitmap / HLL / Geo"]:::dt
+    end
+    CORE -.snapshot/log.-> DISK[(RDB / AOF on disk)]:::disk
+    CORE -.async stream.-> REP[(Replicas)]:::rep
+    classDef cli fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef ks fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef dt fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef disk fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef rep fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+
+    <div class="grid3">
+      <div class="card"><div class="big">&lt;1ms</div><div class="kv">typical p99 latency for simple ops — everything is in RAM</div></div>
+      <div class="card"><div class="big">~100k+</div><div class="kv">ops/sec per single instance is routine; pipelining pushes far higher</div></div>
+      <div class="card"><div class="big">O(1)</div><div class="kv">most key-level ops; but some commands are O(N) — know which</div></div>
+    </div>
+    <div class="analogy">Think of Redis as a <b>whiteboard</b> right next to your desk vs. a database that's a <b>filing cabinet down the hall</b>. The whiteboard is tiny and wipes if the power cuts (volatile RAM) — but reading/writing it is instant. Persistence, replicas, and Cluster are all about <i>photographing the whiteboard</i> and <i>cloning it across rooms</i> so you don't lose it.</div>
+    <div class="iq">Be ready to answer "<i>why is Redis fast?</i>" with three reasons: (1) data is in memory, (2) a single thread avoids locks/context-switching and makes ops atomic, (3) an efficient event loop (epoll) with optimized data structures and a simple binary protocol (RESP).</div>
+  </section>
+
+  <!-- ============ SINGLE THREAD ============ -->
+  <section id="single-thread">
+    <h2><span class="num">02</span>The single-threaded event loop</h2>
+    <p>Redis processes commands on one thread using an <b>I/O multiplexing event loop</b> (epoll/kqueue). Commands are queued and run one at a time to completion — which is exactly why each individual command is atomic without you doing anything.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cs as Clients
+    participant EL as Event Loop (1 thread)
+    participant DS as Data structures (RAM)
+    Cs->>EL: many sockets ready (epoll)
+    loop process one command fully, then next
+        EL->>DS: execute cmd A (atomic)
+        DS-->>EL: reply A
+        EL->>DS: execute cmd B (atomic)
+        DS-->>EL: reply B
+    end
+    EL-->>Cs: replies (RESP)
+    </div>
+    <div class="analogy">It's a <b>single barista</b> making drinks one at a time. Orders never collide (atomic!) and there's no fighting over the espresso machine (no locks). But if one customer orders 500 lattes (<code>KEYS *</code>), <i>everyone</i> behind them waits. Keep orders small.</div>
+    <div class="warn"><b>The catch:</b> one slow O(N) command blocks <i>everyone</i>. A <code>KEYS *</code>, a huge <code>HGETALL</code>, or a <code>SMEMBERS</code> on a million-element set will freeze the whole server for the duration. Use <code>SCAN</code>/<code>HSCAN</code>/<code>SSCAN</code> cursors instead, and avoid big O(N) ops on hot paths.</div>
+    <div class="note"><b>Nuance for senior interviews:</b> "single-threaded" refers to <i>command execution</i>. Modern Redis (6+) has <b>threaded I/O</b> for reading/writing sockets, and background threads handle slow tasks like <code>UNLINK</code> (async delete), RDB <code>fork</code>, and AOF fsync. The keyspace mutation itself is still serial.</div>
+  </section>
+
+  <!-- ============ DATA TYPES ============ -->
+  <section id="types">
+    <h2><span class="num">03</span>Data types &amp; their commands</h2>
+    <p>Picking the right type <i>is</i> the design. Below: what each is, when to reach for it, and the commands that matter.</p>
+
+    <h3>String — bytes, counters, bitmaps</h3>
+    <p>The simplest value (max 512 MB). Holds text, serialized JSON, integers, or raw bits. Backbone of caching and atomic counters.</p>
+    <table>
+      <tr><th>Command</th><th>Does</th><th>Big-O</th></tr>
+      <tr><td><code>SET k v [EX s] [NX|XX]</code></td><td>Set value; <code>EX</code> ttl, <code>NX</code> only-if-absent</td><td>O(1)</td></tr>
+      <tr><td><code>GET k</code> / <code>GETSET</code> / <code>GETDEL</code></td><td>Read / read+set / read+delete</td><td>O(1)</td></tr>
+      <tr><td><code>INCR k</code> / <code>INCRBY</code> / <code>DECR</code></td><td><b>Atomic</b> counter math</td><td>O(1)</td></tr>
+      <tr><td><code>MSET / MGET</code></td><td>Multi-key set/get in one round trip</td><td>O(N)</td></tr>
+      <tr><td><code>SETNX</code> / <code>SET k v NX EX 30</code></td><td>Lock primitive (set-if-not-exists + ttl)</td><td>O(1)</td></tr>
+      <tr><td><code>SETBIT / GETBIT / BITCOUNT</code></td><td>Bitmap ops — e.g. daily active-user flags</td><td>O(1)/O(N)</td></tr>
+    </table>
+    <div class="tip"><b>Use for:</b> cache values, rate-limit counters (<code>INCR</code> + <code>EXPIRE</code>), distributed locks (<code>SET NX EX</code>), feature flags, atomic ID generation.</div>
+
+    <h3>Hash — object with fields</h3>
+    <p>A map of field → value under one key. Ideal for representing an object (a user, a session) without serializing the whole thing on every field update.</p>
+    <table>
+      <tr><th>Command</th><th>Does</th><th>Big-O</th></tr>
+      <tr><td><code>HSET k f v [f v ...]</code></td><td>Set one/many fields</td><td>O(1) per field</td></tr>
+      <tr><td><code>HGET k f</code> / <code>HMGET k f1 f2</code></td><td>Get one / several fields</td><td>O(1)/O(N)</td></tr>
+      <tr><td><code>HGETALL k</code></td><td>All fields+values <span class="tag t-warn">O(N) — careful</span></td><td>O(N)</td></tr>
+      <tr><td><code>HINCRBY k f n</code></td><td>Atomic increment on a field</td><td>O(1)</td></tr>
+      <tr><td><code>HDEL / HEXISTS / HKEYS / HVALS / HSCAN</code></td><td>Delete / check / enumerate (use HSCAN for big)</td><td>varies</td></tr>
+    </table>
+    <div class="tip"><b>Use for:</b> user profiles, shopping carts, config objects, anything where you mutate individual fields. Memory-efficient vs many separate string keys.</div>
+
+    <h3>List — ordered, deque, queue</h3>
+    <p>Linked list of strings; push/pop from both ends in O(1). The classic simple queue / stack.</p>
+    <table>
+      <tr><th>Command</th><th>Does</th><th>Big-O</th></tr>
+      <tr><td><code>LPUSH / RPUSH</code></td><td>Push to head / tail</td><td>O(1)</td></tr>
+      <tr><td><code>LPOP / RPOP</code></td><td>Pop from head / tail</td><td>O(1)</td></tr>
+      <tr><td><code>BLPOP / BRPOP k timeout</code></td><td><b>Blocking</b> pop — worker waits for a job</td><td>O(1)</td></tr>
+      <tr><td><code>LRANGE k 0 -1</code></td><td>Range read <span class="tag t-warn">O(N)</span></td><td>O(N)</td></tr>
+      <tr><td><code>LLEN / LREM / LINDEX / LTRIM</code></td><td>Length / remove / index / trim to window</td><td>varies</td></tr>
+    </table>
+    <div class="tip"><b>Use for:</b> simple job queues (LPUSH producer + BRPOP worker), recent-activity feeds (LPUSH + LTRIM to cap size), stacks. For real messaging prefer <b>Streams</b>.</div>
+
+    <h3>Set — unique, unordered membership</h3>
+    <p>Collection of unique strings with fast membership tests and set algebra.</p>
+    <table>
+      <tr><th>Command</th><th>Does</th><th>Big-O</th></tr>
+      <tr><td><code>SADD / SREM</code></td><td>Add / remove members</td><td>O(1)</td></tr>
+      <tr><td><code>SISMEMBER k m</code></td><td>Is member? (O(1) — great for "have I seen X")</td><td>O(1)</td></tr>
+      <tr><td><code>SCARD</code></td><td>Cardinality (count)</td><td>O(1)</td></tr>
+      <tr><td><code>SINTER / SUNION / SDIFF</code></td><td>Intersection / union / difference</td><td>O(N)</td></tr>
+      <tr><td><code>SPOP / SRANDMEMBER</code></td><td>Random pop / peek</td><td>O(1)</td></tr>
+    </table>
+    <div class="tip"><b>Use for:</b> tags, unique visitors, "users who liked X", friend lists, mutual-friends via <code>SINTER</code>, dedup.</div>
+
+    <h3>Sorted Set (ZSet) — ranked by score</h3>
+    <p>A set where each member has a floating-point <b>score</b>; members are kept sorted by score. The single most "interview-loved" type — it powers leaderboards, priority queues, rate limiters, and time-series indexes.</p>
+    <table>
+      <tr><th>Command</th><th>Does</th><th>Big-O</th></tr>
+      <tr><td><code>ZADD k score member</code></td><td>Add/update member with score</td><td>O(log N)</td></tr>
+      <tr><td><code>ZRANGE / ZREVRANGE k 0 9 [WITHSCORES]</code></td><td>Top-N by rank (leaderboard!)</td><td>O(log N + M)</td></tr>
+      <tr><td><code>ZRANGEBYSCORE k min max</code></td><td>Range by score (e.g. time window)</td><td>O(log N + M)</td></tr>
+      <tr><td><code>ZRANK / ZSCORE</code></td><td>A member's rank / score</td><td>O(log N)</td></tr>
+      <tr><td><code>ZINCRBY k n member</code></td><td>Bump a score atomically</td><td>O(log N)</td></tr>
+      <tr><td><code>ZPOPMIN / ZPOPMAX / BZPOPMIN</code></td><td>Pop lowest/highest (priority queue)</td><td>O(log N)</td></tr>
+      <tr><td><code>ZREMRANGEBYSCORE k -inf t</code></td><td>Evict old entries (sliding window)</td><td>O(log N + M)</td></tr>
+    </table>
+    <div class="iq"><b>Sliding-window rate limiter</b> is a top question. Use a ZSet per user: <code>ZADD</code> the request with <i>timestamp</i> as score, <code>ZREMRANGEBYSCORE</code> to drop entries older than the window, then <code>ZCARD</code> to count what's left — all inside one Lua script for atomicity.</div>
+
+    <h3>Specialized types</h3>
+    <div class="grid2">
+      <div class="card"><h4>Streams (XADD/XREAD)</h4><p>Append-only log with consumer groups, IDs, and acks — Redis's answer to Kafka-lite messaging. Use <code>XADD</code>, <code>XREADGROUP</code>, <code>XACK</code> for durable at-least-once delivery with multiple workers.</p></div>
+      <div class="card"><h4>HyperLogLog (PFADD/PFCOUNT)</h4><p>Probabilistic unique-count in ~12 KB with ~0.81% error — count millions of uniques (e.g. daily uniques) without storing them. Trades exactness for tiny memory.</p></div>
+      <div class="card"><h4>Bitmap (SETBIT/BITCOUNT)</h4><p>A string used as a bit array. 1 bit per user → daily active users, A/B flags, presence — extremely memory-cheap.</p></div>
+      <div class="card"><h4>Geospatial (GEOADD/GEOSEARCH)</h4><p>Store lon/lat (backed by a ZSet of geohashes); query "what's within N km of this point". Powers nearby-search.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ ENCODINGS ============ -->
+  <section id="encoding">
+    <h2><span class="num">04</span>Internal encodings (the memory trick)</h2>
+    <p>Each logical type has multiple <b>internal encodings</b>. Small collections use compact, cache-friendly representations; they "upgrade" to the general structure once they cross a configured threshold. This is why Redis is memory-efficient for small objects — and a favorite deep-dive question.</p>
+    <table>
+      <tr><th>Type</th><th>Small encoding</th><th>Promotes to</th><th>Threshold (configurable)</th></tr>
+      <tr><td>Hash</td><td><code>listpack</code> (flat array)</td><td><code>hashtable</code></td><td>hash-max-listpack-entries (128) / -value (64)</td></tr>
+      <tr><td>List</td><td><code>listpack</code></td><td><code>quicklist</code> (linked listpacks)</td><td>list-max-listpack-size</td></tr>
+      <tr><td>Set</td><td><code>intset</code> / <code>listpack</code></td><td><code>hashtable</code></td><td>set-max-intset/listpack-entries</td></tr>
+      <tr><td>Sorted Set</td><td><code>listpack</code></td><td><code>skiplist</code> + dict</td><td>zset-max-listpack-entries (128)</td></tr>
+      <tr><td>String</td><td><code>int</code> / <code>embstr</code> (&le;44B)</td><td><code>raw</code></td><td>—</td></tr>
+    </table>
+    <div class="note">Check it live with <code>OBJECT ENCODING mykey</code>. A ZSet uses a <b>skip list + hash table</b> together once large: the skip list gives O(log N) ordered ops, the hash gives O(1) score lookups.</div>
+  </section>
+
+  <!-- ============ EXPIRE ============ -->
+  <section id="expire">
+    <h2><span class="num">05</span>Expiration &amp; eviction</h2>
+    <h3>How TTLs are reclaimed</h3>
+    <p>Set a TTL with <code>EXPIRE k 60</code> / <code>SET k v EX 60</code> / <code>PEXPIRE</code> (ms). Redis frees expired keys two ways, combined:</p>
+    <div class="grid2">
+      <div class="card"><h4>① Lazy (passive)</h4><p>On access, if a key is found expired, it's deleted then and the command behaves as if the key was gone. Cheap, but expired-yet-untouched keys linger in RAM.</p></div>
+      <div class="card"><h4>② Active (sampling)</h4><p>A background cycle ~10×/sec samples keys with TTLs and deletes the expired ones; if a high fraction were expired, it repeats. Probabilistic — keeps stale-key memory bounded.</p></div>
+    </div>
+    <h3>Eviction when <code>maxmemory</code> is hit</h3>
+    <p>When memory fills, the <code>maxmemory-policy</code> decides what to drop:</p>
+    <table>
+      <tr><th>Policy</th><th>Behavior</th></tr>
+      <tr><td><code>noeviction</code></td><td>Reject writes with an error (safe default for a DB role)</td></tr>
+      <tr><td><code>allkeys-lru</code> / <code>allkeys-lfu</code></td><td>Evict least-recently / least-frequently used across all keys — classic cache mode</td></tr>
+      <tr><td><code>volatile-lru / -lfu / -ttl / -random</code></td><td>Same, but only among keys that have a TTL set</td></tr>
+      <tr><td><code>allkeys-random</code></td><td>Evict random keys</td></tr>
+    </table>
+    <div class="iq">For a <b>pure cache</b>, use <code>allkeys-lru</code> (or <code>lfu</code> for skewed access). For Redis as a <b>primary store</b>, use <code>noeviction</code> so you never silently lose data. LFU (since 4.0) tracks frequency with a decaying counter — better for "popular forever" items that LRU would wrongly evict.</div>
+  </section>
+
+  <!-- ============ ATOMICITY ============ -->
+  <section id="atomic">
+    <h2><span class="num">06</span>Atomicity — four levels</h2>
+    <p>"Atomic" gets thrown around loosely. Be precise about the four mechanisms and what each guarantees:</p>
+    <div class="mermaid">
+flowchart TB
+    A["Single command<br/>(INCR, SETNX, ZADD...)"]:::g --> note1["Always atomic — single thread runs it to completion"]:::n
+    B["MULTI / EXEC<br/>transaction"]:::g --> note2["Queued commands run with no interleaving.<br/>NO rollback on logical error"]:::n
+    C["Lua script / FUNCTION<br/>(EVAL)"]:::g --> note3["Whole script runs atomically.<br/>Read-compute-write in one shot"]:::n
+    D["WATCH + MULTI<br/>(optimistic lock / CAS)"]:::g --> note4["EXEC aborts if a watched key changed.<br/>Retry loop"]:::n
+    classDef g fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef n fill:#eef1f4,stroke:#c2ccd6,color:#55606b;
+    </div>
+    <div class="analogy">Like updating your bank balance: if you <i>read</i> $100, then walk away, then <i>write</i> $90 — but someone deposited $50 while you were gone — you just erased their deposit. <code>INCR</code>/Lua/<code>WATCH</code> are the "do the read and write without leaving the counter" guarantees.</div>
+    <div class="warn"><b>Key gotcha:</b> commands like <code>GET</code> then <code>SET</code> from your app are <b>two</b> round trips — another client can sneak in between. To make "read-modify-write" atomic you need <code>INCR</code> (if it's just math), a Lua script, or <code>WATCH</code>/<code>MULTI</code>.</div>
+  </section>
+
+  <!-- ============ TRANSACTIONS ============ -->
+  <section id="tx">
+    <h2><span class="num">07</span>Transactions: MULTI / EXEC / WATCH</h2>
+    <p>A Redis transaction <b>queues</b> commands after <code>MULTI</code> and runs them as one isolated unit at <code>EXEC</code>. No other client interleaves. But it is <b>not</b> a SQL transaction: there's <b>no rollback</b>. If a command fails logically at runtime (e.g. <code>INCR</code> on a string), the others still apply.</p>
+    <pre><code>WATCH balance              # optimistic lock: watch a key
+val = GET balance          # read
+MULTI                      # begin queuing
+SET balance {val-100}      # queued (not yet run)
+EXEC                       # runs ONLY if 'balance' was not
+                           # modified since WATCH; else returns nil → retry</code></pre>
+    <div class="mermaid">
+sequenceDiagram
+    participant App
+    participant R as Redis
+    App->>R: WATCH balance
+    App->>R: GET balance → 500
+    App->>R: MULTI
+    App->>R: SET balance 400 (queued)
+    Note over R: another client changes balance?
+    App->>R: EXEC
+    alt watched key untouched
+        R-->>App: [OK]  ✅ applied
+    else watched key changed
+        R-->>App: (nil) ❌ aborted → retry
+    end
+    </div>
+    <div class="iq">This is Redis's <b>optimistic concurrency control</b> (compare-and-set). Contrast with a pessimistic distributed lock. For most read-modify-write, a <b>Lua script is simpler</b> than WATCH retry loops because it's a single atomic server-side execution with no contention loop.</div>
+  </section>
+
+  <!-- ============ LUA ============ -->
+  <section id="lua">
+    <h2><span class="num">08</span>Lua scripting &amp; Functions</h2>
+    <p>Send logic to the server with <code>EVAL</code> / <code>EVALSHA</code> (or persistent <code>FUNCTION</code> in 7+). The entire script runs <b>atomically</b> — nothing interleaves — so you can do read → decide → write safely in one shot, server-side, in one round trip.</p>
+    <pre><code>-- Atomic "decrement stock if available" (oversell-proof)
+-- KEYS[1]=stock key, ARGV[1]=qty
+local stock = tonumber(redis.call('GET', KEYS[1]))
+if stock and stock >= tonumber(ARGV[1]) then
+  return redis.call('DECRBY', KEYS[1], ARGV[1])   -- success
+else
+  return -1                                        -- not enough
+end</code></pre>
+    <div class="tip"><b>Why it wins:</b> no network round trips mid-logic, no race window, fewer client/server hops. Use <code>EVALSHA</code> with a cached SHA to avoid resending the body.</div>
+    <div class="warn">Keep scripts <b>short</b> — they block the single thread like any command. Always pass keys via <code>KEYS[]</code> (not hardcoded) so Cluster can route correctly.</div>
+  </section>
+
+  <!-- ============ LOCKS ============ -->
+  <section id="patterns">
+    <h2><span class="num">09</span>Distributed locks</h2>
+    <p>The canonical pattern: <code>SET lock:resource &lt;random-token&gt; NX EX 30</code>. <code>NX</code> makes acquisition atomic; <code>EX</code> guarantees the lock self-expires if the holder crashes (no permanent deadlock).</p>
+    <pre><code># acquire
+SET lock:order:42 $token NX EX 30      # ok / nil
+
+# release — MUST be atomic check-then-delete (Lua),
+# so you only delete YOUR lock, not one that already expired & got reacquired
+if redis.call('GET', KEYS[1]) == ARGV[1]
+then return redis.call('DEL', KEYS[1]) else return 0 end</code></pre>
+    <div class="warn"><b>Three classic mistakes:</b> (1) no TTL → deadlock on crash; (2) deleting by key without checking the token → you delete someone else's lock after yours expired; (3) work outlasting the TTL → two holders at once (mitigate with a watchdog that extends TTL).</div>
+    <div class="iq"><b>Redlock:</b> for locking across multiple independent Redis masters, Martin Kleppmann's critique is famous — single-instance locks aren't safe under GC pauses/clock skew for correctness-critical sections. Say: "for efficiency locks, single-instance <code>SET NX EX</code> is fine; for correctness I'd use a real consensus system (ZooKeeper/etcd) or a fencing token."</div>
+  </section>
+
+  <!-- ============ PERSISTENCE ============ -->
+  <section id="persist">
+    <h2><span class="num">10</span>Persistence — RDB vs AOF</h2>
+    <p>RAM is volatile, so Redis offers two on-disk mechanisms. You can run either, both, or neither.</p>
+    <div class="grid2">
+      <div class="card">
+        <h4>RDB — point-in-time snapshot <span class="tag t-on">compact</span></h4>
+        <p>Forks the process and dumps the whole dataset to a binary <code>dump.rdb</code> file periodically (e.g. <code>save 900 1</code>). Uses copy-on-write so the main thread keeps serving.</p>
+        <p><b>+</b> tiny files, fast restart/load, great for backups & replication bootstrap.<br><b>−</b> you lose everything written since the last snapshot on a crash.</p>
+      </div>
+      <div class="card">
+        <h4>AOF — append-only command log <span class="tag t-on">durable</span></h4>
+        <p>Logs every write command to a file, replayed on restart. <code>appendfsync</code> controls flushing: <code>always</code> (safest, slowest), <code>everysec</code> (default — ≤1s loss), <code>no</code> (OS decides).</p>
+        <p><b>+</b> minimal data loss, human-readable-ish.<br><b>−</b> bigger files, slower restart. Periodic <b>rewrite</b> compacts it.</p>
+      </div>
+    </div>
+    <div class="mermaid">
+flowchart LR
+    W[Write commands]:::w --> MEM[(In-memory dataset)]:::m
+    MEM -->|fork + copy-on-write<br/>every N sec/changes| RDB[("dump.rdb<br/>snapshot")]:::rdb
+    W -->|append each write<br/>fsync everysec| AOF[("appendonly.aof<br/>command log")]:::aof
+    RDB & AOF -.->|on restart| LOAD[Reload dataset]:::l
+    classDef w fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef rdb fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef aof fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef l fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <table>
+      <tr><th></th><th>RDB</th><th>AOF</th></tr>
+      <tr><td>Data loss window</td><td>Minutes (since last snapshot)</td><td>≤1 sec (everysec)</td></tr>
+      <tr><td>File size</td><td>Small (compressed binary)</td><td>Larger (every write)</td></tr>
+      <tr><td>Restart speed</td><td>Fast</td><td>Slower (replay log)</td></tr>
+      <tr><td>Effect on latency</td><td>Fork spike</td><td>Steady fsync cost</td></tr>
+    </table>
+    <div class="analogy"><b>RDB</b> = taking a <i>photo</i> of your desk every hour: small, quick to restore, but you lose whatever you scribbled since the last photo. <b>AOF</b> = keeping a <i>diary</i> of every single thing you wrote: replay it to rebuild exactly, but the diary gets long. Pros keep <i>both</i> — a recent photo to load fast, plus the diary's last page for the gap.</div>
+    <div class="tip"><b>Production recommendation:</b> enable <b>both</b>. Redis 7 uses a <b>hybrid</b> rewrite — the AOF starts with an RDB preamble (fast load) then appends recent commands (low loss). Best of both. Note: persistence ≠ backup — copy the files off-box.</div>
+  </section>
+
+  <!-- ============ REPLICATION ============ -->
+  <section id="repl">
+    <h2><span class="num">11</span>Replication &amp; read/write split</h2>
+    <p>A <b>replica</b> (<code>REPLICAOF host port</code>) maintains a copy of a master. Replication is <b>asynchronous</b>: the master replies to the client immediately, then streams writes to replicas. This gives read-scaling and a hot standby — at the cost of possible brief staleness.</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph WRITES
+      APPw[App writes]:::w --> M[(MASTER<br/>read+write)]:::m
+    end
+    M -->|async replication stream| R1[(Replica 1<br/>read-only)]:::r
+    M -->|async replication stream| R2[(Replica 2<br/>read-only)]:::r
+    APPr[App reads] -.load-balanced.-> R1
+    APPr -.-> R2
+    classDef w fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>How a replica syncs</h4>
+    <ol>
+      <li><b>Full sync (PSYNC):</b> on first connect (or if too far behind), master forks an RDB snapshot, ships it, and buffers new writes in a <b>replication backlog</b>, then streams them.</li>
+      <li><b>Partial resync:</b> after a brief disconnect, the replica asks to resume from its offset; if still in the backlog buffer, only the gap is sent — no full snapshot.</li>
+    </ol>
+    <div class="warn"><b>Asynchronous = you can lose acknowledged writes.</b> If the master crashes after replying but before replicating, that write is gone after failover. <code>WAIT numreplicas timeout</code> lets you block until N replicas ack — stronger durability, higher latency. True synchronous replication is not Redis's model.</div>
+    <div class="analogy">The master is the <b>teacher writing on the board</b>; replicas are students <b>copying it into their notebooks</b>. Students can answer questions (reads scale!), but there's a split-second where the teacher wrote something the back row hasn't copied yet — that's <i>replication lag</i>. If the teacher faints before the back row copies the last line, that line is lost (async = possible data loss).</div>
+    <div class="iq"><b>Read-your-own-writes</b> caveat: reading from a replica right after writing to the master may return stale data due to lag. Solutions: route critical reads to the master, or use <code>WAIT</code>, or accept eventual consistency. Always articulate this trade-off.</div>
+  </section>
+
+  <!-- ============ SENTINEL ============ -->
+  <section id="sentinel">
+    <h2><span class="num">12</span>Sentinel — automatic failover (HA)</h2>
+    <p>Replication alone gives you a standby but no automatic promotion. <b>Sentinel</b> is a separate set of monitoring processes that watch the master, agree (via quorum) when it's down, elect a leader Sentinel, promote a replica to master, and tell clients about the new topology.</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph SENT["Sentinel quorum (odd number, e.g. 3)"]
+      S1((Sentinel 1)):::s
+      S2((Sentinel 2)):::s
+      S3((Sentinel 3)):::s
+    end
+    S1 & S2 & S3 -.monitor & gossip.-> M[(Master)]:::m
+    S1 & S2 & S3 -.monitor.-> R1[(Replica 1)]:::r
+    S1 & S2 & S3 -.monitor.-> R2[(Replica 2)]:::r
+    M -->|replicate| R1
+    M -->|replicate| R2
+    CL[Clients] -->|ask 'who is master?'| SENT
+    classDef s fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>Failover flow</h4>
+    <div class="mermaid">
+sequenceDiagram
+    participant S as Sentinels
+    participant M as Master
+    participant R as Replica
+    participant C as Client
+    S->>M: PING (health check)
+    M--xS: no reply (timeout)
+    Note over S: 1 sentinel marks SDOWN (subjective)
+    S->>S: gossip — do others agree?
+    Note over S: quorum reached → ODOWN (objective down)
+    S->>S: elect leader sentinel
+    S->>R: REPLICAOF NO ONE (promote!)
+    S->>C: new master = R
+    C->>R: writes now go here ✅
+    </div>
+    <div class="analogy">Sentinels are <b>security guards</b> watching the boss (master). One guard noticing the boss is unresponsive isn't enough (<b>SDOWN</b> — could be the guard's bad eyesight). Only when a <i>majority vote</i> agrees the boss is really down (<b>ODOWN</b>) do they promote the deputy (a replica) and announce the new boss to everyone. Odd number of guards so a vote can't tie.</div>
+    <div class="note"><b>Key terms:</b> <b>SDOWN</b> = one Sentinel thinks it's down; <b>ODOWN</b> = quorum agrees → triggers failover. Run an <b>odd number</b> (≥3) of Sentinels on separate hosts so the majority vote survives a split. Clients connect <i>through</i> Sentinel-aware libraries to always find the current master.</div>
+    <div class="iq"><b>Sentinel vs Cluster:</b> Sentinel = HA for a <b>single shard</b> (one dataset, master+replicas, auto-failover) — does <b>not</b> shard data. Cluster = HA <b>plus</b> horizontal sharding. If your data fits one node and you just need failover, Sentinel is simpler.</div>
+  </section>
+
+  <!-- ============ CLUSTER ============ -->
+  <section id="cluster">
+    <h2><span class="num">13</span>Cluster — horizontal sharding</h2>
+    <p>When data or throughput exceeds one machine, Redis <b>Cluster</b> shards the keyspace across multiple masters, each with its own replicas. There's no proxy — clients talk directly to the right node.</p>
+    <h4>The 16384 hash slots</h4>
+    <p>The keyspace is partitioned into a fixed <b>16384 slots</b>. A key's slot = <code>CRC16(key) mod 16384</code>. Each master owns a contiguous range of slots. To find a key's node: compute its slot, look up which master owns that slot.</p>
+    <div class="analogy">Imagine a <b>library with 16,384 numbered shelves</b> split across 3 buildings. A book's shelf number is decided by a formula on its title (CRC16). To grow, you don't renumber every book — you just <i>hand some shelf ranges to a new building</i> (resharding). Want two related books guaranteed in the same building? Put a <code>{tag}</code> in both titles so they hash to the same shelf zone.</div>
+    <div class="mermaid">
+flowchart TB
+    K["key 'user:42'"]:::k --> HC["CRC16(key) mod 16384<br/>= slot 9012"]:::calc
+    HC --> ROUTE{which master<br/>owns slot 9012?}:::q
+    ROUTE -->|slots 0–5460| MA[(Master A + replica)]:::m
+    ROUTE -->|slots 5461–10922 ✓| MB[(Master B + replica)]:::mh
+    ROUTE -->|slots 10923–16383| MC[(Master C + replica)]:::m
+    classDef k fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef calc fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef mh fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <h4>MOVED / ASK redirection</h4>
+    <p>If a client hits the wrong node, the node replies <code>MOVED &lt;slot&gt; host:port</code> (permanent — slot lives elsewhere) or <code>ASK</code> (temporary — slot is mid-migration). Smart clients cache the slot map and route directly; they only get redirected when the topology changes.</p>
+    <div class="warn"><b>Multi-key ops must share a slot.</b> <code>MGET a b</code>, <code>SINTER</code>, transactions, and Lua across keys only work if all keys hash to the same slot. Force that with a <b>hash tag</b>: <code>{user:42}:profile</code> and <code>{user:42}:cart</code> — only the part in <code>{}</code> is hashed, so both land together.</div>
+    <table>
+      <tr><th>Concern</th><th>How Cluster handles it</th></tr>
+      <tr><td>Sharding</td><td>16384 slots spread across masters; key → CRC16 → slot → node</td></tr>
+      <tr><td>HA / failover</td><td>Each master has replicas; masters gossip and promote a replica if a master dies (no separate Sentinel needed)</td></tr>
+      <tr><td>Resharding</td><td>Move slots between nodes live; keys migrate, ASK redirection covers the window</td></tr>
+      <tr><td>Failure detection</td><td>Gossip protocol over a cluster bus; majority of masters must agree a node is down</td></tr>
+    </table>
+    <div class="iq"><b>Why 16384 and not more?</b> The gossip heartbeat carries a bitmap of each node's slots; 16384 bits = 2 KB, small enough to ship cheaply between nodes, while still being far more than any realistic node count so slots distribute evenly. Classic trivia — worth memorizing.</div>
+    <div class="note"><b>Decision tree:</b> single node fits + want HA → <b>Sentinel</b>. Data/throughput too big for one node → <b>Cluster</b>. Just a cache, can tolerate loss → maybe neither, just replicas.</div>
+  </section>
+
+  <!-- ============ PITFALLS ============ -->
+  <section id="pitfalls">
+    <h2><span class="num">14</span>Cache patterns &amp; the three famous failures</h2>
+    <h3>Cache-aside (look-aside) — the default</h3>
+    <div class="mermaid">
+flowchart LR
+    A[App] -->|1. GET| R[(Redis)]:::r
+    R -->|hit ✓| A
+    R -.miss ✗.-> A
+    A -->|2. on miss: read| DB[(Database)]:::db
+    DB --> A
+    A -->|3. SET + TTL| R
+    classDef r fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef db fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    </div>
+    <table>
+      <tr><th>Problem</th><th>What it is</th><th>Mitigation</th></tr>
+      <tr><td><b>Penetration</b></td><td>Queries for keys that don't exist in DB either → every request hits the DB</td><td>Cache the "null" result with short TTL; <b>Bloom filter</b> in front to reject known-absent keys</td></tr>
+      <tr><td><b>Breakdown</b> (hot-key)</td><td>A single very popular key expires → a thundering herd all rebuild it at once</td><td>Mutex/lock so only one rebuilds (others wait); or logical expiry / never-expire hot keys + async refresh</td></tr>
+      <tr><td><b>Avalanche</b></td><td>Many keys expire at the same instant (or Redis goes down) → DB overwhelmed</td><td>Jitter the TTLs (random spread); multi-layer cache; circuit breaker; HA so Redis doesn't vanish</td></tr>
+    </table>
+    <div class="warn"><b>Cache–DB consistency:</b> there's no perfect dual-write. The common choice is <b>"update DB, then delete cache"</b> (cache-aside invalidation). Avoid "update DB then update cache" (races produce stale writes). For stronger guarantees, drive invalidation off the DB binlog/CDC (e.g. Debezium) rather than app code.</div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section id="cheatsheet">
+    <h2><span class="num">15</span>Rapid-fire cheat sheet</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>Why fast?</h4>
+        <p>RAM + single-thread (atomic, lock-free) + epoll event loop + efficient structures + RESP protocol + pipelining.</p>
+        <h4>O(N) commands to avoid on hot paths</h4>
+        <p><code>KEYS *</code>, <code>HGETALL</code>, <code>SMEMBERS</code>, <code>LRANGE 0 -1</code>, <code>FLUSHALL</code> (sync). Prefer <code>SCAN</code> family, <code>UNLINK</code> over <code>DEL</code> for big keys.</p>
+        <h4>Atomic toolkit</h4>
+        <p>Single cmd · <code>INCR</code> · <code>MULTI/EXEC</code> · <code>WATCH</code> (CAS) · Lua <code>EVAL</code>.</p>
+      </div>
+      <div class="card">
+        <h4>Pick the type</h4>
+        <p>Counter → <b>String/INCR</b> · object → <b>Hash</b> · queue → <b>List/Stream</b> · uniqueness/tags → <b>Set</b> · ranking/leaderboard/rate-limit → <b>ZSet</b> · uniques-count → <b>HLL</b> · presence flags → <b>Bitmap</b> · geo → <b>GEO</b>.</p>
+        <h4>HA / scale decision</h4>
+        <p>Failover only → <b>Sentinel</b>. Shard + failover → <b>Cluster</b> (16384 slots, hash tags for multi-key). Read scale → <b>replicas</b> (async, can be stale).</p>
+        <h4>Durability dial</h4>
+        <p>RDB (snapshot, fast, lossy) + AOF (log, ≤1s loss) → run both / hybrid. <code>WAIT</code> for stronger replica ack.</p>
+      </div>
+    </div>
+    <div class="iq"><b>One-line summaries to have ready:</b> "Redis is single-threaded so every command is atomic." · "Replication is async, so failover can lose unacked writes." · "Transactions queue + isolate but don't roll back." · "Cluster shards into 16384 slots via CRC16; multi-key needs same slot." · "Sentinel = HA for one shard; Cluster = HA + sharding." · "For a cache use allkeys-lru; as a DB use noeviction."</div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">16</span>Self-test flashcards <span class="xp" id="score">🃏 0 / 0 flipped</span></h2>
+    <p>Cover the answer, say it out loud, then <b>click to flip</b> and check yourself. The bar fills as you review the deck.</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why is Redis fast despite being single-threaded?</div><div class="hint">three reasons →</div></div>
+        <div class="flip-face flip-back">In-memory (no disk seeks) · single thread = no locks/context-switch &amp; atomic ops · epoll event loop + tight data structures + RESP protocol. Single-thread is a feature, not a limit.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Which type for a leaderboard / rate limiter?</div><div class="hint">and the key command →</div></div>
+        <div class="flip-face flip-back"><b>Sorted Set (ZSet)</b>. <code>ZADD</code> with score, <code>ZREVRANGE 0 9</code> for top-10. Rate limiter: score = timestamp, <code>ZREMRANGEBYSCORE</code> to drop old, <code>ZCARD</code> to count.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Does MULTI/EXEC roll back on error?</div><div class="hint">trick question →</div></div>
+        <div class="flip-face flip-back"><b>No rollback.</b> Commands are queued &amp; run isolated, but a runtime error on one doesn't undo the others. It's isolation, not SQL-style ACID atomicity. Use Lua for real read-modify-write logic.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">RDB vs AOF in one breath?</div><div class="hint">photo vs diary →</div></div>
+        <div class="flip-face flip-back"><b>RDB</b> = periodic snapshot: small, fast restart, lose recent writes. <b>AOF</b> = log every write: ≤1s loss, bigger/slower. Run both → Redis 7 hybrid (RDB preamble + AOF tail).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Is replication sync or async? Consequence?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>Async.</b> Master replies before replicas ack → a crash can lose acknowledged writes after failover. Use <code>WAIT n</code> for stronger durability; replica reads can be stale (lag).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Sentinel vs Cluster — when each?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>Sentinel</b> = auto-failover for ONE shard (no sharding). <b>Cluster</b> = sharding across 16384 slots + built-in failover. Fits one node + need HA → Sentinel. Too big for one node → Cluster.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">How does Cluster find a key's node?</div><div class="hint">the formula →</div></div>
+        <div class="flip-face flip-back"><code>slot = CRC16(key) mod 16384</code>; whichever master owns that slot. Wrong node → <code>MOVED</code>/<code>ASK</code> redirect. Multi-key ops need same slot → use a <code>{hash tag}</code>.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Safe distributed lock in one line?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><code>SET lock val NX EX 30</code> (atomic acquire + auto-expire). Release via <b>Lua</b> that checks the token before <code>DEL</code> so you never delete someone else's lock.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Eviction policy: cache vs database role?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">Cache → <code>allkeys-lru</code> (or <code>lfu</code> for skewed traffic). Primary store → <code>noeviction</code> so writes error instead of silently dropping data.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Penetration vs Breakdown vs Avalanche?</div><div class="hint">the 3 cache failures →</div></div>
+        <div class="flip-face flip-back"><b>Penetration</b>: missing key hammers DB → cache null / Bloom filter. <b>Breakdown</b>: one hot key expires → mutex rebuild. <b>Avalanche</b>: many expire at once → jitter TTLs + HA.</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 Flip all</button>
+      <button class="btn" id="resetdeck">↺ Reset</button>
+      <span>Tip: hide the right column and quiz a friend.</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">17</span>Boss-level questions <span class="boss">EXPERT</span></h2>
+    <p>The ones that separate "used Redis" from "understands Redis." Think first, then tap to reveal.</p>
+
+    <details class="qa"><summary>Why exactly <b>16384</b> slots — why not a million? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">Nodes gossip their slot ownership as a <b>bitmap</b> in every heartbeat. 16384 bits = 2 KB per message — cheap to send constantly. A million slots would bloat every heartbeat. 16384 is still vastly larger than any realistic node count, so slots spread evenly. Sweet spot of "big enough to balance, small enough to gossip."</div>
+    </details>
+
+    <details class="qa"><summary>Your hottest key expires at midnight and 10k requests stampede the DB. Fix it. <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">That's <b>cache breakdown</b>. Options: (1) <b>mutex</b> — first miss acquires a lock (<code>SET NX</code>) and rebuilds; others briefly wait or serve stale. (2) <b>Logical expiry</b> — never physically expire the key; store an "expires-at" field, and on read if it's logically stale, one thread async-refreshes while everyone keeps serving the old value. (3) Pre-warm + randomized TTL so hot keys don't all die together (that last one also prevents <b>avalanche</b>).</div>
+    </details>
+
+    <details class="qa"><summary>How do you make read-modify-write atomic across the network — and why is <code>WATCH</code> often the wrong tool? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans"><b>Lua / <code>EVAL</code></b> is usually best: the whole read→decide→write runs server-side in one atomic shot, one round trip, zero race window. <code>WATCH</code>/<code>MULTI</code> is <i>optimistic</i> CAS — it aborts &amp; you retry if the watched key changed, which under contention becomes a retry storm and extra round trips. Use <code>INCR</code>/<code>HINCRBY</code> if it's pure math; Lua for conditional logic; <code>WATCH</code> only for occasional low-contention cases.</div>
+    </details>
+
+    <details class="qa"><summary>Is a Redis distributed lock actually <i>safe</i>? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">For <b>efficiency</b> (avoid duplicate work) — yes, <code>SET NX EX</code> + Lua release is fine. For <b>correctness</b> (must never have two holders) — no, single-instance isn't bulletproof: a GC pause or clock skew can let your lock expire while you think you hold it. Redlock (multi-master) was proposed but Kleppmann's critique shows it's still not safe under those conditions. The honest answer: use a <b>fencing token</b> (monotonic number checked by the resource) or a real consensus store (etcd/ZooKeeper) for correctness-critical locks.</div>
+    </details>
+
+    <details class="qa"><summary>Master fails. Walk me through what Sentinel does, second by second. <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">(1) Sentinels <code>PING</code> the master; one stops getting replies → marks it <b>SDOWN</b> (subjective). (2) It asks the others via gossip; once a configured <b>quorum</b> agrees → <b>ODOWN</b> (objective). (3) Sentinels <b>elect a leader</b> (Raft-ish). (4) Leader picks the best replica (most up-to-date, lowest priority number) and sends <code>REPLICAOF NO ONE</code> to promote it. (5) Other replicas are re-pointed at the new master; clients querying Sentinel get the new address. Brief unavailability + possibly a few lost async writes.</div>
+    </details>
+
+    <details class="qa"><summary>You set 1M keys to expire but RAM barely drops. Why? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">Expiry is <b>lazy + active-sampling</b>, not instant. Untouched expired keys linger until either accessed (lazy) or caught by the ~10Hz sampling cycle (which only deletes a probabilistic batch). For a hard bulk purge, delete explicitly (<code>UNLINK</code> for big keys to free async), or rely on <code>maxmemory</code>+eviction. Also: deleting/expiring is itself work on the single thread, so a giant simultaneous expiry can cause latency spikes.</div>
+    </details>
+
+    <details class="qa"><summary>When is single-threaded a real bottleneck, and what do you do? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">When one core's worth of command execution is saturated, or a single big O(N) command stalls everything. Fixes: <b>shard with Cluster</b> (more masters = more cores), eliminate O(N) hot commands (<code>SCAN</code> not <code>KEYS</code>, avoid huge <code>HGETALL</code>), <b>pipeline</b> to amortize round trips, move CPU-heavy work out of Lua, and lean on Redis 6+ <b>threaded I/O</b> for the socket layer. Note the keyspace mutation stays serial by design — you scale <i>out</i>, not <i>up</i> the exec thread.</div>
+    </details>
+  </section>
+
+  <div class="footer">
+    Built as a single self-contained file · diagrams via Mermaid.js · open in any browser, no server needed.<br>
+    Verify anything live with <code>redis-cli</code>: <code>OBJECT ENCODING k</code>, <code>INFO replication</code>, <code>CLUSTER NODES</code>, <code>MEMORY USAGE k</code>.
+  </div>
+</main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

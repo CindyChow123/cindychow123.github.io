@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engineering Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --border:#e4dccc; --text:#2c2823; --muted:#6f6657;
+    --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+    --display:"Shantell Sans","Bradley Hand",cursive;
+    --hand:"Shantell Sans","Bradley Hand",cursive;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);font-size:18px;line-height:1.7;
+    background-image:radial-gradient(700px 300px at 100% 0%, rgba(31,122,112,.08), transparent 60%),
+                     radial-gradient(700px 300px at 0% 100%, rgba(196,69,46,.07), transparent 60%);
+    min-height:100vh}
+  .wrap{max-width:880px;margin:0 auto;padding:70px 28px 100px}
+  .kicker{font-family:var(--hand);font-size:1.6rem;color:#c43d8a;margin-bottom:2px}
+  h1{font-family:var(--display);font-weight:500;font-size:2.8rem;letter-spacing:-.01em;color:#1c1814;margin:0 0 8px;line-height:1.08}
+  .sub{color:#5c5346;max-width:600px;margin:0 0 38px;font-size:1.06rem}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--border);
+    border-radius:18px;padding:26px 26px 24px;box-shadow:0 2px 10px rgba(60,50,30,.05);transition:.18s;position:relative;overflow:hidden}
+  a.card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(60,50,30,.12);border-color:#d8cfbd}
+  .accent{position:absolute;top:0;left:0;right:0;height:5px}
+  .redis .accent{background:linear-gradient(90deg,#c4452e,#e0875f)}
+  .db .accent{background:linear-gradient(90deg,#1f7a70,#5ca99c)}
+  .ico{font-size:2rem;line-height:1}
+  .card h2{font-family:var(--display);font-weight:500;font-size:1.6rem;margin:14px 0 6px;color:#1c1814}
+  .redis h2{color:#a83a25}.db h2{color:#155f57}
+  .card p{margin:0 0 14px;color:#5c5346;font-size:.96rem;line-height:1.55}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .t{font-family:"Newsreader",serif;font-size:.74rem;padding:3px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:#f3ecdf}
+  .go{font-family:var(--hand);font-size:1.3rem;margin-top:14px;display:inline-block}
+  .redis .go{color:#c4452e}.db .go{color:#1f7a70}
+  .soon{opacity:.6;pointer-events:none}
+  .soon .accent{background:repeating-linear-gradient(45deg,#d8cfbd,#d8cfbd 8px,#e8e0d0 8px,#e8e0d0 16px)}
+  .footer{margin-top:50px;color:var(--muted);font-size:.85rem;text-align:center}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="kicker">tech knowledge, by hand</div>
+    <h1>Engineering Notes</h1>
+    <p class="sub">Single-page visual notes — diagrams, analogies, flashcards, and boss-level questions — for the systems worth knowing cold. Pick one and scroll.</p>
+
+    <div class="grid">
+      <a class="card redis" href="redis-guide.html">
+        <div class="accent"></div>
+        <div class="ico">◆</div>
+        <h2>Redis</h2>
+        <p>In-memory data structures, atomicity, persistence (RDB/AOF), replication, Sentinel &amp; Cluster — the whole mental model.</p>
+        <div class="tags"><span class="t">data types</span><span class="t">MVCC-free atomicity</span><span class="t">cluster</span><span class="t">caching</span></div>
+        <span class="go">read →</span>
+      </a>
+
+      <a class="card db" href="reldb-guide.html">
+        <div class="accent"></div>
+        <div class="ico">⛁</div>
+        <h2>Relational DBs</h2>
+        <p>MySQL &amp; PostgreSQL: SQL, indexes, transactions &amp; isolation, MVCC, the WAL, replication, sharding, plus SQL-vs-NoSQL.</p>
+        <div class="tags"><span class="t">SQL</span><span class="t">indexes</span><span class="t">ACID</span><span class="t">MVCC</span><span class="t">replication</span></div>
+        <span class="go">read →</span>
+      </a>
+    </div>
+
+    <div class="footer">More notes will land here. Each is one self-contained HTML file.</div>
+  </div>
+</body>
+</html>
