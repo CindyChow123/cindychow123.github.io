@@ -137,6 +137,8 @@
 <div class="wrap">
 
 <nav class="toc" id="toc">
+  <h2>Overview</h2>
+  <a href="#map">The big picture</a>
   <h2>Foundations</h2>
   <a href="#intro">Relational model</a>
   <a href="#schema">Keys &amp; constraints</a>
@@ -178,6 +180,7 @@
 <main>
   <div class="hero">
     <h1><span class="logo">⛁ Relational Databases</span><br>MySQL &amp; PostgreSQL — Visual Guide</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="zh/reldb-guide.html">中文版本 →</a></p>
     <p>Everything you need in your head for engineering and interviews: the relational model, SQL, indexing, transactions &amp; isolation, MVCC, the write-ahead log, replication, sharding, and ops — with diagrams and "MySQL vs Postgres" notes wherever the two diverge.</p>
     <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (progress bar up top), hit the 🎭 analogies to make it stick, flip the 🃏 cards in <a href="#quiz">Self-test</a>, then unlock the 🎯 <a href="#boss">boss questions</a>. The <span class="db pg">PG</span><span class="db my">MySQL</span><span class="db both">BOTH</span> badges flag engine-specific behavior.</p>
     <div class="pills">
@@ -189,6 +192,48 @@
       <span class="pill">Replication &amp; HA</span>
     </div>
   </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>The big picture — one map to memorize</h2>
+    <div class="tldr"><b>The spine:</b> <b>Model</b> the data → <b>query</b> it → <b>design</b> the schema → make it <b>fast</b> → keep it <b>correct</b> under concurrency → <b>store</b> it crash-safe → <b>scale</b> it → <b>run</b> it → know when <b>not</b> to use it. Memorize that order; every section hangs off it.</div>
+    <div class="mermaid">
+flowchart TB
+    REL["relational model<br/>tables · keys · constraints"]:::core -->|queried by| SQL["SQL<br/>joins · aggregation · subquery/CTE/window"]:::feat
+    REL -->|schema shaped by| NORM["normalization<br/>(↔ denormalize for speed)"]:::feat
+    SQL -->|sped up by| IDX["indexes (B+Tree)"]:::feat
+    IDX -->|chosen by| PLAN["query planner"]:::feat
+    PLAN -->|inspected via| EXP["EXPLAIN"]:::feat
+    WAL["WAL — write-ahead log"]:::core -->|gives| AD["Atomicity + Durability<br/>+ crash recovery"]:::feat
+    LCK["locks + MVCC"]:::core -->|gives| ISO["Isolation"]:::feat
+    AD -->|two of| TXN["transactions = ACID"]:::idea
+    ISO -->|the other| TXN
+    ISO -->|level chosen prevents| ANO["dirty · non-repeatable · phantom reads"]:::feat
+    WAL -->|log stream feeds| REP["replication"]:::feat
+    REP -->|enables| FO["failover (HA) + read scaling"]:::feat
+    REP -->|one node not enough → add| SHARD["partitioning / sharding"]:::feat
+    click REL href "#intro" "The relational model" _self
+    click SQL href "#sql" "SQL anatomy & order" _self
+    click NORM href "#normalization" "Normalization" _self
+    click IDX href "#indexes" "Indexes (B+Tree)" _self
+    click PLAN href "#explain" "Query planner & EXPLAIN" _self
+    click EXP href "#explain" "EXPLAIN" _self
+    click WAL href "#wal" "WAL, recovery & storage" _self
+    click AD href "#acid" "ACID" _self
+    click LCK href "#mvcc" "Locking & MVCC" _self
+    click ISO href "#isolation" "Isolation & anomalies" _self
+    click TXN href "#acid" "Transactions = ACID" _self
+    click ANO href "#isolation" "Isolation anomalies" _self
+    click REP href "#replication" "Replication" _self
+    click FO href "#ha" "Failover (HA)" _self
+    click SHARD href "#sharding" "Partitioning & sharding" _self
+    classDef core fill:#e4f1ee,stroke:#1f7a70,color:#155f57;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 tap any box to jump to the section that explains it</p>
+    <div class="tip"><b>Two patterns repeat:</b> (1) <b>Scaling escalation</b> — single node → replication → failover → sharding (same shape as Redis); (2) <b>Isolation ladder</b>, weakest→strongest — READ UNCOMMITTED → READ COMMITTED → REPEATABLE READ → SERIALIZABLE.</div>
+  </section>
 
   <!-- ============ INTRO ============ -->
   <section id="intro">
@@ -538,7 +583,7 @@ sequenceDiagram
     Note over Row: A still kept for T1
     T1->>Row: read again → STILL 500 (no block, repeatable)
     T2->>T2: COMMIT
-    Note over Row: new txns see 400; A reclaimable later
+    Note over Row: new txns see 400, A reclaimable later
     </div>
     <div class="grid2">
       <div class="card"><h4><span class="db pg">PostgreSQL</span> MVCC</h4><p>New row versions written <b>into the heap</b>; old versions stay until <b>VACUUM</b> reclaims them. Visibility via transaction-id (xmin/xmax). Trade-off: <b>table bloat</b> &amp; the need for (auto)vacuum.</p></div>

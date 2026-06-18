@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分布式系统 —— 可视化工程与面试指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#5b54c7; --red2:#403a9e;
+    --accent:#2f6f9f; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,"Noto Sans SC",monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Noto Serif SC","Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans SC",sans-serif;
+    --hand:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#f1e9da;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#a83a25}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#f6e4dd;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(91,84,199,.12), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#f3ecdf);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 面试视角";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* ---- FUN: analogy callout ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 现实类比";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- FUN: progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(220,56,45,.4)}
+
+  /* ---- FUN: flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:158px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.9rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#f6e4dd}
+
+  /* ---- FUN: reveal Q&A (boss level) ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ 点击查看";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ 答案"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#fdeceb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  /* ---- FUN: emoji bullets / sparkle ---- */
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>总览</h2>
+  <a href="#map">全局地图</a>
+  <h2>理论</h2>
+  <a href="#intro">什么是「分布式」？</a>
+  <a href="#cap">CAP 定理</a>
+  <a href="#base">BASE 与一致性</a>
+  <h2>达成共识</h2>
+  <a href="#consensus">共识：Raft · Paxos · ZAB</a>
+  <h2>事务</h2>
+  <a href="#txn">分布式事务</a>
+  <h2>协调</h2>
+  <a href="#lock">分布式锁</a>
+  <a href="#id">分布式 ID</a>
+  <a href="#ratelimit">限流</a>
+  <a href="#rpc">RPC</a>
+  <a href="#zk">ZooKeeper</a>
+  <h2>速查</h2>
+  <a href="#cheatsheet">速查表</a>
+  <h2>练习 🎮</h2>
+  <a href="#quiz">自测闪卡</a>
+  <a href="#boss">Boss 级问题</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">🌐 分布式系统</span> —— 可视化工程与面试指南</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="../distributed-guide.html">English version →</a></p>
+    <p>跨越多台机器的系统背后的理论与模式 —— CAP 与 BASE、共识（Raft / Paxos / ZAB）、分布式事务、分布式锁、分布式 ID、限流、RPC 以及 ZooKeeper。面试或做系统设计前，用这一页就能快速过一遍。</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>玩法：</b>往下滚动边读边学（留意顶部进度条一点点填满），看到 🎭 现实类比就停下来加深印象，到 <a href="#quiz">§12</a> 翻一翻 🃏 闪卡，最后解锁 🎯 <a href="#boss">Boss 级问题</a>。</p>
+    <div class="pills">
+      <span class="pill">CAP · 分区下二选一</span>
+      <span class="pill">BASE · 最终一致性</span>
+      <span class="pill">Raft / Paxos 共识</span>
+      <span class="pill">2PC · TCC · Saga</span>
+      <span class="pill">Snowflake ID</span>
+      <span class="pill">令牌桶</span>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>全局地图 —— 一张图记住主线</h2>
+    <div class="tldr"><b>主线：</b>网络不可靠，所以分区一定会发生 → 这逼着你做出 <b>CAP</b> 取舍 → 选可用性就走向 <b>BASE</b>；要达成一致就需要<b>共识</b>，而共识又支撑起协调服务、分布式锁和领导者选举。其余的一切（事务、ID、限流、RPC）则是你为了真正把系统搭起来而往上叠的部件。</div>
+    <div class="mermaid">
+flowchart TB
+    NET["网络不可靠 ——<br/>分区一定会发生（P）"]:::core -->|逼你做出取舍| CAP["CAP —— 分区之下<br/>只能选 C 或 A"]:::idea
+    CAP -->|选 A| BASE["BASE<br/>最终一致性"]:::feat
+    CAP -->|需要达成一致 / C| CON["共识<br/>Raft · Paxos · ZAB"]:::feat
+    CON -->|为其选出领导者| COORD["协调服务<br/>ZooKeeper / etcd"]:::feat
+    COORD --> LOCK["分布式锁"]:::feat
+    XS["一项工作横跨多个服务和数据库"]:::core --> TXN["分布式事务<br/>2PC · TCC · Saga"]:::feat
+    SH["分片数据需要全局 ID"]:::core --> ID["分布式 ID<br/>Snowflake · 号段"]:::feat
+    SV["服务之间相互调用"]:::core --> RPC["RPC"]:::feat
+    SV --> RL["限流<br/>保护每个服务"]:::feat
+    click CAP href "#cap" "CAP 定理" _self
+    click BASE href "#base" "BASE 与一致性" _self
+    click CON href "#consensus" "共识" _self
+    click COORD href "#zk" "ZooKeeper" _self
+    click LOCK href "#lock" "分布式锁" _self
+    click TXN href "#txn" "分布式事务" _self
+    click ID href "#id" "分布式 ID" _self
+    click RPC href "#rpc" "RPC" _self
+    click RL href "#ratelimit" "限流" _self
+    classDef core fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 点击任意方框，即可跳到讲解它的章节</p>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>「分布式」到底是什么意思</h2>
+    <p><b>分布式系统</b>是一组各自独立的机器，它们通过网络相互协调，对用户而言看起来就像<b>一个</b>系统。走向分布式通常出于三个理由：<b>扩展</b>（单台机器扛不住）、<b>可用性</b>（一台机器挂了系统照常运行）和<b>就近</b>（离用户更近）。代价是，计算里所有棘手的东西 —— 故障、时间、顺序、一致性 —— 都被成倍放大。</p>
+    <div class="grid3">
+      <div class="card"><div class="big">部分故障</div><div class="kv">一部分节点挂了，另一部分还在跑 —— 不存在干脆的「整体宕或整体活」</div></div>
+      <div class="card"><div class="big">没有时钟</div><div class="kv">没有共享的全局时间，你无法确信两个事件在不同节点上「谁先谁后」</div></div>
+      <div class="card"><div class="big">异步</div><div class="kv">消息可能被延迟、乱序、重复，甚至丢失</div></div>
+    </div>
+    <h3>分布式 vs 微服务 —— 不是同一个维度</h3>
+    <p>「分布式」讲的是<b>物理部署</b>（工作被拆到多台机器上）。「微服务」讲的是<b>软件架构</b>（一个应用按业务能力拆成一个个小而可独立部署的服务）。微服务只是构建分布式系统的<i>一种方式</i>：你可以不用微服务也很分布式（比如一个分片数据库），也可以精神上很「微」却并非真正分布式（比如模块化单体）。</p>
+    <div class="analogy">分布式系统就像一间有很多厨师的<b>餐厅后厨</b>：比一个大厨更快、更抗造，但现在他们必须协调起来 —— 订单会丢、两个厨师抢同一口锅、没人对得上现在几点。下面每一个主题，都是解决这类协调问题的工具。</div>
+    <div class="iq">把整个领域框定在<b>三个「做不到」</b>上：你躲不开部分故障，你共享不了一个完美时钟，并且（按 CAP）你在分区期间无法同时拥有一致性<i>和</i>可用性。分布式系统，就是为这三件事工程化地给出「足够好」的答案。</div>
+  </section>
+
+  <!-- ============ CAP ============ -->
+  <section id="cap">
+    <h2><span class="num">02</span>CAP 定理</h2>
+    <p>对于一份在多个节点间复制的数据，下面三者你最多只能同时拥有<b>两个</b>：<b>C</b>onsistency 一致性（每次读都能看到最新的写）、<b>A</b>vailability 可用性（每个请求都能拿到非错误响应）、<b>P</b>artition tolerance 分区容错（网络被切开时系统照常工作）。</p>
+    <div class="mermaid">
+flowchart TB
+    P{"发生网络分区了吗？"}:::q
+    P -->|否（正常状态）| OK["C 和 A 都能自在地提供"]:::ok
+    P -->|是| CHOOSE{"你必须做出选择"}:::q
+    CHOOSE -->|保 一致性| CP["CP —— 少数派一侧<br/>拒绝服务 / 报错（不读到旧数据）"]:::cp
+    CHOOSE -->|保 可用性| AP["AP —— 照样响应，<br/>但可能返回旧数据"]:::ap
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef cp fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef ap fill:#fbeee2,stroke:#c98a3a,color:#7a4a12;
+    </div>
+    <div class="warn"><b>最容易被忽略的一点：</b>P 是<b>不可选</b>的 —— 在任何真实网络里，分区都会发生。所以 CAP 真正的含义是：<i>在分区期间</i>做一道二选一题 —— 选 <b>CP</b>（牺牲可用性 —— 宁可拒绝请求也不返回旧数据），还是 <b>AP</b>（牺牲一致性 —— 保持在线，事后再对账）。所谓「CA」只存在于一个永不分区的单节点里。</div>
+    <table>
+      <tr><th>选择</th><th>含义</th><th>例子</th></tr>
+      <tr><td><b>CP</b></td><td>一致性优先于可用性；少数派一侧停止服务</td><td>ZooKeeper、etcd、HBase（Redis Cluster 在多数派一侧偏向这一边）</td></tr>
+      <tr><td><b>AP</b></td><td>可用性优先于一致性；先响应，事后对账</td><td>Cassandra、DynamoDB、Eureka、DNS</td></tr>
+    </table>
+    <div class="analogy">两位银行柜员之间的电话线断了（分区）。<b>CP</b>：在线路恢复前两人都拒绝取款 —— 不会出现错误余额，但客户得等。<b>AP</b>：两人都按各自最后已知的余额继续办理 —— 没人等待，但在同步之前两边账目可能对不上。</div>
+    <div class="iq">永远别说「我的系统是 CA」。要说：「分区是既定前提，所以这里我选 <b>CP</b>（比如配置 / 锁必须正确），那里我选 <b>AP</b>（比如商品目录必须保持在线）。CAP 是按功能逐项决策的，而不是给整个系统贴一个标签。」</div>
+  </section>
+
+  <!-- ============ BASE ============ -->
+  <section id="base">
+    <h2><span class="num">03</span>BASE 与一致性模型</h2>
+    <p><b>BASE</b> 是 AP 一侧的处事哲学，与数据库的 <b>ACID</b> 相对：<b>B</b>asically <b>A</b>vailable（基本可用）、<b>S</b>oft state（软状态）、<b>E</b>ventual consistency（最终一致性）。你放弃「此刻永远正确」，换来「永远有应答，并最终收敛到正确」。</p>
+    <div class="grid3">
+      <div class="card"><h4>基本可用</h4><p>系统在故障下仍保持响应 —— 也许会降级（变慢、只提供部分功能），但不会整个宕掉。</p></div>
+      <div class="card"><h4>软状态</h4><p>即便没有新的写入，节点之间的状态也可能在一段时间内处于「在途 / 不一致」的状态。</p></div>
+      <div class="card"><h4>最终一致性</h4><p>停止写入后，假以时日，所有副本都会收敛到同一个值。</p></div>
+    </div>
+    <h3>一致性的光谱</h3>
+    <table>
+      <tr><th>模型</th><th>保证</th><th>取舍</th></tr>
+      <tr><td><b>强一致 / 线性一致</b></td><td>每次读都能看到最新的写，仿佛只有一份副本</td><td>慢，需要共识，分区时会阻塞（CP）</td></tr>
+      <tr><td><b>读己之写</b></td><td>你总能看到自己最新的那次写</td><td>会话粘连，或读主库</td></tr>
+      <tr><td><b>最终一致</b></td><td>「晚一点」才收敛，期间读到的可能是旧数据</td><td>便宜、快、可用（AP）</td></tr>
+    </table>
+    <div class="iq">ACID vs BASE 和 CP vs AP 是同一道取舍题，只是上升了一个层次：当错误数据不可接受时（钱、锁）选 ACID/CP，当在线时长更重要、短暂读到旧数据也无妨时（信息流、商品目录、计数器）选 BASE/AP。</div>
+  </section>
+
+  <!-- ============ CONSENSUS ============ -->
+  <section id="consensus">
+    <h2><span class="num">04</span>共识 —— 让节点们达成一致</h2>
+    <p>在部分节点崩溃的情况下，多个节点如何就<b>同一个值</b>（或同一份有序的操作日志）达成一致？这就是<b>共识</b>问题，它是领导者选举、复制状态机、协调服务的底层基石。所有实用的算法都需要凑齐<b>多数派（quorum，法定人数）</b>才能推进 —— 这也正是集群通常采用<b>奇数</b>个节点的原因。</p>
+
+    <h3>Raft —— 务必烂熟于心的那一个</h3>
+    <div class="tldr"><b>一句话记住：</b>单点写入控制同步进度，心跳 + 多数投票选主。</div>
+    <p>Raft 把共识拆成<b>领导者选举</b>和<b>日志复制</b>两块。时间被切成一个个<b>任期（term，逻辑时钟）</b>，每个任期至多一个领导者；每个节点要么是 <b>Follower（跟随者）</b>、<b>Candidate（候选人）</b>，要么是 <b>Leader（领导者）</b>。</p>
+    <div class="mermaid">
+flowchart LR
+    F["Follower（跟随者）"]:::s -->|选举超时，<br/>开启新任期| C["Candidate（候选人）"]:::s
+    C -->|赢得多数选票| L["Leader（领导者）"]:::l
+    C -->|发现更高的任期| F
+    L -->|发现更高的任期| F
+    L -.->|心跳让跟随者<br/>继续当跟随者| F
+    classDef s fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef l fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <h4>领导者选举</h4>
+    <ol>
+      <li>跟随者会一直期待领导者的<b>心跳</b>。在自己（随机）的<b>选举超时</b>内一个心跳都没等到，它就转成<b>候选人</b>：把<b>任期号加一</b>、先投自己一票，再向其他所有节点发 <code>RequestVote</code> 拉票。</li>
+      <li>拿到<b>多数票</b>就当选 <b>Leader</b>。每个节点在每个任期里<b>最多投一票</b>，而且只投给<b>日志至少和自己一样新</b>的候选人——正是这条"选举限制"保证了新领导者一定已经握有全部已提交的日志。</li>
+      <li>由于超时是<b>随机</b>的，<b>选票被瓜分</b>（谁都没过半）很少见，而且能自愈：各节点在不同时刻超时，下一轮通常就有人胜出。</li>
+    </ol>
+    <h4>日志复制</h4>
+    <ol>
+      <li>所有客户端写入都发给领导者；它先把这条记录追加到自己的<b>日志</b>（尚未提交），再用 <code>AppendEntries</code> 同步给跟随者——空的 <code>AppendEntries</code> 同时就当心跳。</li>
+      <li>一旦<b>多数</b>节点都存下了它，领导者就<b>提交</b>这条记录、应用到状态机、给客户端回复，并推进自己的<b>提交位点（commit index）</b>——再把这个位点告诉跟随者，让它们也跟着应用。</li>
+      <li><b>日志匹配：</b>每条 <code>AppendEntries</code> 都带着前一条日志的下标和任期；跟随者一旦对不上就<b>拒绝</b>，于是领导者把 <code>nextIndex</code> 往回退、重发，直到对齐为止，其间会<b>覆盖</b>跟随者那些冲突的条目。这样各节点日志收敛，<b>已提交的记录永不丢失</b>。</li>
+    </ol>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cl as 客户端
+    participant L as 领导者
+    participant F1 as 跟随者 1
+    participant F2 as 跟随者 2
+    Cl->>L: 写入 x=5
+    Note over L: 追加到日志的 (term, index)，未提交
+    L->>F1: AppendEntries (x=5)
+    L->>F2: AppendEntries (x=5)
+    F1-->>L: ack
+    F2-->>L: ack
+    Note over L: 多数已存下 → 这条在领导者已提交，领导者应用到状态机
+    L-->>Cl: 成功
+    L->>F1: AppendEntries（带上更新后的 commitIndex）
+    L->>F2: AppendEntries（带上更新后的 commitIndex）
+    Note over F1,F2: 这里也变为已提交 → 跟随者应用到状态机
+    </div>
+    <p>有两个指针让这一切跑起来——值得在脑子里画出来：</p>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem">
+      <div style="line-height:2.2">领导者日志&nbsp;
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">1</span>
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">2</span>
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">3</span>
+        <span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 9px;border-radius:5px">4</span>
+        <span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 9px;border-radius:5px">5</span>
+      </div>
+      <div class="kv" style="margin-top:10px;line-height:1.7"><b>commitIndex = 3</b>——第 1~3 条已经存到了多数派，所以是<b>已提交</b>并已应用（绿色）。第 4~5 条已经复制出去，但<i>还没</i>到多数派 → 仍未提交（黄色）。<br><b>nextIndex[F2] = 4</b>——领导者会给<i>每个</i>跟随者各记一个"下一条该发的日志下标"；要是这个跟随者拒绝了（日志对不上），领导者就把它的 nextIndex 往回退、重发，直到两边对齐。</div>
+    </div>
+    <h4>Raft 里容易绕晕的几个词</h4>
+    <table>
+      <tr><th>术语</th><th>到底指什么</th></tr>
+      <tr><td><b>append → commit → apply</b></td><td>一条日志的三个阶段：<b>追加（append）</b>= 写进日志，但还暂定（可能丢）；<b>提交（commit）</b>= 多数派存下了 → 从此永久、再也不会丢或改；<b>应用（apply）</b>= 真正作用到状态机上（并回复客户端）。<i>只有已提交的条目才会被应用。</i></td></tr>
+      <tr><td><b>commitIndex</b></td><td>最高的已提交位置——每个节点都按序把日志应用到这里为止。</td></tr>
+      <tr><td><b>nextIndex[跟随者]</b></td><td>每个跟随者一个的游标 = 领导者下一条要发给它的日志。日志对不上时领导者把它<i>往回退</i>、重发，所以<b>同一条 AppendEntries 既追加新日志、又补齐落后的跟随者</b>——Raft 不需要单独的"同步"协议（空的 AppendEntries 也就是心跳）。</td></tr>
+      <tr><td><b>"发现更高的任期"</b></td><td>每条 RPC 都带着发送方的任期。任何节点——哪怕是被分区隔开的旧领导者——一旦收到<i>更高</i>的任期，就退回成 Follower；于是旧领导者发现自己已被取代，绝不会有两个领导者同时提交。</td></tr>
+    </table>
+    <div class="analogy">Raft 就像一支<b>每一轮（任期）靠多数票推选队长</b>的球队。队长喊出每一次战术（写入），而一次战术只有在队里大多数人都记下来之后才算数。要是队长突然没声了，就会有人超时并发起新一轮选举。</div>
+
+    <h3>Paxos —— 最早，也出了名地难</h3>
+    <p>三种角色：<b>提议者（Proposer）</b>提出值，<b>接受者（Acceptor）</b>投票，<b>学习者（Learner）</b>只负责获知结果。Basic Paxos 让整个集群就<b>一个</b>值达成一致，分两个阶段、每个阶段都要凑齐多数派——可以这么理解：<b>阶段一 = 占个坑，并打听有没有值已经被选定了</b>；<b>阶段二 = 真正把值敲定下来</b>。（全程记住：<code>n</code> 是<b>提案编号</b>——只是个递增序号，用来给互相竞争的提案排序，<i>不是</i>数据；<code>v</code> 才是<b>要达成一致的那个值</b>。被选定、并交给 Learner 的是 <code>v</code>，永远不是 <code>n</code>。）</p>
+    <ol>
+      <li><b>准备 / 承诺（Prepare / Promise，阶段一 —— 占坑）：</b>提议者挑一个不断递增的编号 <code>n</code>，发出 <code>Prepare(n)</code>。一个还没见过更大编号的接受者会<b>承诺</b>不再接受任何更小编号的提案，并把它<i>已经</i>接受过的、编号最大的那个值回报上来（如果有的话）。这一步既占住了 <code>n</code>，<i>又</i>把可能已经在流转的值探了出来。</li>
+      <li><b>接受 / 已接受（Accept / Accepted，阶段二 —— 敲定）：</b><code>Accept(n, v)</code> 就是提议者对接受者说"请投票，接受编号 <code>n</code> 下的值 <code>v</code>"。关键在于：<code>v</code> 并<b>不能随便填</b>——只要有任何一个承诺回报了已接受的值，提议者就<b>必须</b>沿用其中编号最大的那个（只有都没有时，才能用自己的值）。接受者只要之后没再承诺过更大的 <code>n</code>，就接受它。一旦<b>多数派</b>都接受了 <code>(n, v)</code>，<code>v</code> 就被<b>选定</b>。</li>
+    </ol>
+    <div class="mermaid">
+sequenceDiagram
+    participant P as 提议者
+    participant A1 as 接受者 1
+    participant A2 as 接受者 2
+    participant A3 as 接受者 3
+    Note over P,A3: 阶段一 —— Prepare / Promise
+    P->>A1: Prepare(n)
+    P->>A2: Prepare(n)
+    A1-->>P: Promise(n)，暂无已接受值
+    A2-->>P: Promise(n)，暂无已接受值
+    Note over P,A3: 阶段二 —— Accept / Accepted
+    P->>A1: Accept(n, v)
+    P->>A2: Accept(n, v)
+    A1-->>P: Accepted(n, v)
+    A2-->>P: Accepted(n, v)
+    Note over P,A3: 多数已接受，v 被选定
+    </div>
+    <p><b>"选定"意味着什么、之后又会怎样：</b>只要多数派接受了某个值，它就在那一刻被选定——而且从此<b>永不改变</b>。接受者把这个结果传播给<b>学习者（Learner）</b>，由它们应用并回复客户端。为什么不可变？正是因为上面阶段二那条规则：任何后来的提议者，哪怕编号更大，也会在自己的准备阶段<i>发现</i>这个已选定的值，从而被迫提出同一个 <code>v</code>——于是整个集群永远收敛到同一个值。</p>
+
+    <h4>Multi-Paxos —— 从一个值到一整条日志</h4>
+    <p>真实系统要达成一致的不是单个值，而是一条有序的<b>命令日志</b>——所以<b>每个日志槽位都是一个独立的 Paxos 实例</b>。给<i>每一条</i>都跑完整两个阶段既慢又容易引发"打架"，于是 <b>Multi-Paxos</b> 选出一个稳定的<b>领导者</b>（一个特定的提议者）：阶段一只做一次，之后每条新记录只需要走阶段二。这个"一个领导者 + 一条只追加的复制日志"的形态，基本就是 <b>Raft</b> 后来用更好懂的方式重新包装的东西。</p>
+
+    <h4>活锁陷阱（提议者互相打架）</h4>
+    <p>一旦有两个提议者竞争，Basic Paxos 可能永远推进不下去：P1 准备 <code>n=1</code>；P2 准备 <code>n=2</code>（接受者现在都承诺了 2，于是 P1 的 <code>Accept(1,…)</code> 被拒）；P1 改用 <code>n=3</code> 重试（这下 P2 的 <code>Accept(2,…)</code> 又被拒）；两人就这样互相抢占，谁都走不完阶段二。解法就是别再竞争——随机退避，或者干脆选一个唯一的领导者（→ Multi-Paxos）。这正是裸用 Basic Paxos 几乎不可行的现实原因。</p>
+
+    <h3>ZAB —— ZooKeeper 原子广播</h3>
+    <p>基于领导者，有两种模式：</p>
+    <ul>
+      <li><b>原子广播</b>（正常运行时）：领导者给每个写入打上单调递增的 <b>zxid</b>，然后用类 2PC 的方式广播——<code>PROPOSE</code> → 多数派 <code>ACK</code> → <code>COMMIT</code>——从而得到严格的写入<b>全序</b>。</li>
+      <li><b>崩溃恢复</b>：领导者挂了就重新选一个——<b>zxid 最大</b>的节点胜出（它持有最完整的已提交数据）——把各跟随者同步到它的进度，再恢复广播。zxid 里嵌了一个 <b>epoch</b>（类似 Raft 的任期），这样旧领导者的写入不会和新的混淆。</li>
+    </ul>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cl as 客户端
+    participant L as 领导者
+    participant F1 as 跟随者 1
+    participant F2 as 跟随者 2
+    Cl->>L: 写入 x=5
+    Note over L: 打上 zxid，追加到日志，未提交
+    L->>F1: PROPOSE (zxid, x=5)
+    L->>F2: PROPOSE (zxid, x=5)
+    F1-->>L: ACK
+    F2-->>L: ACK
+    Note over L: 多数 ACK → 这条在领导者已提交，领导者应用到状态机（znode 树）
+    L-->>Cl: 成功
+    L->>F1: COMMIT (zxid)
+    L->>F2: COMMIT (zxid)
+    Note over F1,F2: 这里也变为已提交 → 跟随者应用到状态机（znode 树）
+    </div>
+    <h4>Raft vs ZAB —— 自底向上看（同一副骨架，像又不全像）</h4>
+    <p>从底层往上搭，两者几乎是同一台机器；真正的差异只落在两个层。按 ① → ④ 读：</p>
+    <table>
+      <tr><th>层（自底向上）</th><th>Raft</th><th>ZAB（ZooKeeper）</th></tr>
+      <tr><td><b>① 状态机</b><br/>真正的数据</td><td><b>可插拔</b>——由你提供（etcd 的 KV 存储、你的应用……）</td><td><b>固定</b> = ZooKeeper 的 <b>znode 树</b></td></tr>
+      <tr><td><b>② 日志</b><br/>有序条目</td><td>条目以 <b>(term, index)</b> 标识</td><td>事务以 <b>zxid =（epoch, 计数）</b> 标识</td></tr>
+      <tr><td><b>③ 复制</b><br/>正常运行时</td><td><code>AppendEntries</code> → 多数派 → 提交 → 应用</td><td><code>PROPOSE → 多数派 ACK → COMMIT</code> → 应用</td></tr>
+      <tr><td><b>④ 领导权与恢复</b></td><td>每个 <b>term</b> 一个领导者；新领导者 = 日志最新；<b>追赶被揉进普通的 AppendEntries</b>，所以选完主就能立刻对外服务</td><td>每个 <b>epoch</b> 一个领导者；新领导者 = zxid 最大；先有一个<b>明确的恢复阶段</b>把多数派同步到新主，<b>然后</b>才切到广播、对外服务</td></tr>
+    </table>
+    <div class="note"><b>那它们到底差在哪？</b>骨架——领导者 + 复制的有序日志 + 多数派提交 + 应用到状态机——是<i>一样</i>的（没错，ZooKeeper <i>有</i>状态机：就是那棵 <b>znode 树</b>，已提交的 zxid 会按序应用到它上面）。真正不同的只有三点：
+      <ol style="margin:6px 0 0">
+        <li>Raft 的状态机是通用的；ZAB 则写死成 znode 树。</li>
+        <li>选主之后，<b>Raft 立刻就能对外服务</b>、在普通 AppendEntries 过程中<i>顺带</i>把跟随者追平；而 <b>ZAB 把"对外服务"挡在一个明确的"恢复"阶段之后</b>，先把多数派同步到新主——最终结果一样（一个一致的多数派），区别只在"持续地做" vs "作为前置步骤做"。</li>
+        <li>Raft 把领导任期和日志下标分成两个数；ZAB 把它们合进一个 zxid。</li>
+      </ol>
+    </div>
+    <div class="iq"><b>Raft vs Paxos vs ZAB：</b>目标相同——通过多数派 quorum 就一份有序日志达成一致。Paxos 最通用但微妙难懂；Raft 用一点通用性换来可理解性（etcd、Consul）；ZAB 与 Raft 神似，是为 ZooKeeper 的主备复制量身打造的。记得报出：<b>etcd / Consul → Raft</b>，<b>ZooKeeper → ZAB</b>。</div>
+  </section>
+
+  <!-- ============ TRANSACTIONS ============ -->
+  <section id="txn">
+    <h2><span class="num">05</span>分布式事务</h2>
+    <p>当一个逻辑操作横跨多个服务或数据库时（扣库存<i>且</i>扣款<i>且</i>创建订单），你需要它们要么全部提交、要么全部回滚。本地数据库事务跨不了机器，于是你只能从下面这几种模式里挑一个。</p>
+
+    <h3>2PC —— 两阶段提交</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant Co as 协调者
+    participant A as 服务 A
+    participant B as 服务 B
+    Co->>A: 阶段一 —— 准备好了吗？
+    Co->>B: 阶段一 —— 准备好了吗？
+    A-->>Co: 好的，已就绪（已加锁）
+    B-->>Co: 好的，已就绪（已加锁）
+    Note over Co: 所有人都投了赞成票
+    Co->>A: 阶段二 —— 提交
+    Co->>B: 阶段二 —— 提交
+    </div>
+    <div class="warn"><b>2PC 的硬伤：</b>它是<b>同步且阻塞</b>的——参与者在等待阶段二期间一直持有锁；而一旦协调者在「准备」之后挂掉，参与者既不敢擅自提交、也不敢擅自回滚，就会卡死（陷入不确定状态）。它还难以横向扩展。</div>
+
+    <h3>3PC —— 三阶段提交</h3>
+    <p>3PC 专治 2PC 的阻塞：把"准备"拆成两步，并在<b>两端都加上超时</b>：</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant Co as 协调者
+    participant P as 参与者
+    Co->>P: 1. CanCommit？（轻量探问，先不加锁）
+    P-->>Co: 行 / 不行
+    Note over Co: 全部同意
+    Co->>P: 2. PreCommit（这时才加锁、做准备）
+    P-->>Co: ack
+    Co->>P: 3. DoCommit
+    P-->>Co: 已提交
+    </div>
+    <ol>
+      <li><b>CanCommit：</b>协调者先问一句"你能提交吗？"——一次不加锁的轻量探问。只要有谁说"不行"，就早早中止。</li>
+      <li><b>PreCommit：</b>如果都说行，大家这才真正加锁、写好 undo/redo，然后 ack。到这一步，所有节点都已经知道最终决定是"提交"。</li>
+      <li><b>DoCommit：</b>协调者通知大家真正提交。</li>
+    </ol>
+    <p>好处在于<b>超时</b>：一个已经收到 PreCommit、却随后联系不上协调者的参与者，会在<b>超时后径直提交</b>（因为 PreCommit 本就意味着"大家都同意了"）；而还停在 CanCommit/PreCommit 苦等的参与者，则会<b>超时后中止</b>——于是谁都不会无限期卡死。</p>
+    <div class="warn"><b>但 3PC 在网络分区下依然不安全：</b>如果集群在 PreCommit 之后被分开，能联系上的那一侧超时后提交，而一个没收到 PreCommit、被隔离的参与者却中止 → <b>数据不一致</b>。所以 3PC 是拿 2PC 的"阻塞"换了"小概率不一致"，还多搭进去一轮延迟。实践中两者都用得不多——下面的最终一致性方案才是主流。</div>
+
+    <h3>实战中常用的模式</h3>
+    <table>
+      <tr><th>模式</th><th>思路</th><th>取舍</th></tr>
+      <tr><td><b>TCC</b>（Try-Confirm-Cancel，尝试-确认-取消）</td><td>应用层的 2PC：先预留资源（Try），再 Confirm 或 Cancel</td><td>掌控力强，但每个动作都要写 3 个方法</td></tr>
+      <tr><td><b>Saga</b></td><td>一连串本地事务，每一步都配一个<b>补偿</b>动作，后续步骤失败时用它回退</td><td>无锁，最终一致；补偿逻辑很棘手</td></tr>
+      <tr><td><b>本地消息表 / MQ</b></td><td>在一个本地事务里同时写入业务数据 + 一行「事件」记录，随后可靠地投递到消息队列</td><td>最终一致；现实中最主流的选择</td></tr>
+    </table>
+    <h4>TCC —— Try / Confirm / Cancel（尝试 / 确认 / 取消）</h4>
+    <p>业务层的 2PC：每个动作你都要实现三个方法。<b>Try</b> 只预留资源、不最终落定（冻结金额、占住库存）。如果所有 Try 都成功，<b>Confirm</b> 就用预留的那部分真正提交；只要有一个失败，<b>Cancel</b> 就把预留释放掉。Confirm/Cancel 必须<b>幂等</b>，还要处理空回滚（Cancel 比它的 Try 先到）。掌控力强，但代码量是三倍——只留给支付这类高价值流程。</p>
+
+    <h4>Saga —— 一串本地事务</h4>
+    <p>把全局事务拆成本地步骤 T<sub>1</sub>…T<sub>n</sub>，每一步配一个<b>补偿</b>动作 C<sub>i</sub>。正向依次执行；某一步失败了，就反向跑补偿，把已经提交的部分一一回退。跨服务期间不持有锁（可用性高），但你得设计出正确且幂等的补偿逻辑。</p>
+    <div class="mermaid">
+flowchart LR
+    T1["T1 扣库存"]:::ok --> T2["T2 扣款"]:::ok --> T3["T3 创建订单 ✗"]:::bad
+    T3 -.失败，反向补偿.-> C2["C2 退款"]:::comp
+    C2 -.-> C1["C1 回补库存"]:::comp
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef bad fill:#fdeceb,stroke:#c52a20,color:#7a1810;
+    classDef comp fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p>两种风格：<b>编排（orchestration）</b>——由一个中心协调者依次调用每一步；或<b>编舞（choreography）</b>——每个服务发出事件，下一个服务监听响应。</p>
+
+    <h4>本地消息表 / 事务消息表 —— 日常首选</h4>
+    <p>要让"改自己的库<i>并且</i>可靠地通知另一个服务"这件事原子化，靠的就是这个套路：在<b>同一个本地事务</b>里，既写业务数据，也往<b>消息表（outbox）</b>里写一行事件记录。然后一个中继程序不断扫描消息表、投递到 MQ，直到收到确认为止；消费者<b>幂等</b>处理（按消息 id 去重）。这样，消息当且仅当业务数据提交成功才会发出——既不会丢，也不会凭空多发。</p>
+
+    <div class="iq">直白地说：「强分布式事务（2PC）代价高且会阻塞，所以实践中我们用<b>最终一致性</b> —— Saga，或者可靠消息（本地消息表 + MQ）配合幂等消费者 —— 只把 TCC 留给少数真正需要接近强一致保证的流程，比如支付。」</div>
+  </section>
+
+  <!-- ============ LOCKS ============ -->
+  <section id="lock">
+    <h2><span class="num">06</span>分布式锁</h2>
+    <p>一把能<i>跨机器</i>生效的互斥锁 —— 同一时刻只允许一个节点持有。两种常见的后端实现：</p>
+    <div class="grid2">
+      <div class="card"><h4>Redis</h4><p><code>SET key token NX PX 30000</code> —— 原子地获取锁 + 自动过期，这样持锁者崩溃也不会死锁。释放时用一段 Lua 做<i>先校验 token 再 DEL</i>，确保你只释放自己的锁。<b>Redlock</b> 把它扩展到 N 个相互独立的 master 上（在「对正确性要求很高」的场景里其安全性仍有争议）。</p></div>
+      <div class="card"><h4>ZooKeeper</h4><p>创建一个<b>临时顺序（ephemeral sequential）</b>znode；序号最小的那个持有锁。每个等待者只<b>监听（watch）</b>排在自己前面的那个节点。临时 = 持锁者的会话一断，锁自动释放 —— 不必去猜 TTL 设多少。</p></div>
+    </div>
+    <table>
+      <tr><th></th><th>Redis 锁</th><th>ZooKeeper 锁</th></tr>
+      <tr><td>风格</td><td>AP —— 快，但故障切换时可能不安全</td><td>CP —— 安全，略慢一些</td></tr>
+      <tr><td>过期</td><td>TTL 需要你自己调（再加看门狗 watchdog）</td><td>基于会话 / 临时节点，自动处理</td></tr>
+      <tr><td>适用场景</td><td>效率锁（避免重复做同一件事）</td><td>正确性锁（必须严格互斥）</td></tr>
+    </table>
+    <h4>为什么一个只配做"效率锁"、另一个能做"正确性锁"？</h4>
+    <p>Redis 锁有两种方式会破坏互斥：</p>
+    <ol>
+      <li><b>TTL 到期</b>——如果持有者卡顿（一次 GC 的 stop-the-world、一次慢磁盘）超过了 TTL，这个 key 就自动过期，于是<i>第二个</i>客户端拿到了锁——这下两个一起在跑，而 Redis 和被保护的资源都浑然不觉。</li>
+      <li><b>异步故障转移</b>——如果主节点发出锁之后、还没复制就崩了，被提升的副本根本没有这把锁的记录，于是又有客户端把它锁上。</li>
+    </ol>
+    <p>这对<b>效率锁</b>来说可以忍（最坏不过多干一遍活），但对<b>正确性锁</b>就是致命的（两个写入者 = 数据损坏）。</p>
+    <div class="note"><b>"效率锁"和"正确性锁"到底差在哪？</b>先厘清一点：锁是一张<i>许可证</i>（"这件事现在归我做"），<b>它本身不是那件活</b>——两种锁的流程都一样：<code>拿锁 → 干活 → 放锁</code>。"效率/正确性"形容的是<b>万一锁没锁住、两个客户端同时持有时会出什么事</b>。<b>效率锁</b>只是为了别<i>重复</i>干活——这件事就算被执行两遍也无害（或本身幂等），两个持有者顶多浪费点 CPU：比如刷新缓存、发日报、处理一个同事已经抢走的任务。<b>正确性锁</b>则是互斥本身就是正确性的前提——两个持有者会写出<b>错误数据</b>：扣余额、转账，或任何非原子的"读-改-写"。所以"可以忍、最坏不过多干一遍"只适用于前一种；对后一种，两个持有者 = 数据损坏。</div>
+    <p>ZooKeeper 把这些洞堵上了——再加一层兜底，连残留的极端情况也防住：</p>
+    <ol>
+      <li><b>会话租约</b>——锁的存活靠客户端持续心跳维持的<b>会话</b>，而不是一个猜出来的 TTL，所以没有"我还在干活、锁却过期了"那段需要费心去调的间隙。<i>（堵住 Redis 的第 ① 个洞。）</i></li>
+      <li><b>强一致</b>——锁状态由 ZAB 多数派达成一致，故障转移也绝不会忘了谁持有它。<i>（堵住第 ② 个洞。）</i></li>
+      <li><b>隔离令牌 —— 兜底</b>——连 ZK 自己都拦不住"持有者卡顿超过会话超时"这种极端情况；所以每次发锁都带一个单调递增的令牌，<b>资源端</b>只认见过的最大令牌、拒绝更小的——"僵尸"旧持有者根本写不进去。<b>详见下方。</b></li>
+    </ol>
+    <h4>ZooKeeper 锁到底是怎么跑的</h4>
+    <p>先说<b>会话（session）</b>：客户端一连上来，ZooKeeper 就为它开一个带超时的会话，靠客户端定期发<b>心跳</b>维持。心跳断够久了（崩溃、长时间卡顿、网断了），ZK 就判定会话死亡，并<b>自动删掉这个会话创建的所有临时节点</b>。这就是那张"存活租约"——没有需要你去猜的锁 TTL。</p>
+    <p>锁是用<b>临时顺序（ephemeral sequential）</b>节点排出来的一个队列。每个想拿锁的客户端，都在 <code>/lock/</code> 下建一个子节点，ZK 给它打上一个递增的编号。<b>编号最小的那个持有锁。</b>关键在于：等待者<b>只监听排在它前面的那一个节点</b>——不监听持有者，也不监听所有人：</p>
+    <div class="mermaid">
+flowchart LR
+    A["客户端 A<br/>持有锁"]:::ca
+    B["客户端 B<br/>等待中"]:::cb
+    C["客户端 C<br/>等待中"]:::cb
+    subgraph ZK["ZooKeeper  /lock/"]
+      direction TB
+      N1["req-0001（最小）"]:::hold
+      N2["req-0002"]:::wait
+      N3["req-0003"]:::wait
+    end
+    A ==>|"创建临时节点<br/>（随 A 的会话存活）"| N1
+    B ==>|创建| N2
+    C ==>|创建| N3
+    B -.监听.-> N1
+    C -.监听.-> N2
+    classDef ca fill:#dcefe2,stroke:#3aa856,color:#1d6b32;
+    classDef cb fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef hold fill:#dcefe2,stroke:#3aa856,color:#1d6b32;
+    classDef wait fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p>当持有者干完活（删掉自己的节点）<i>或者</i>挂掉（会话结束 → 节点被自动删除）时，只有它的<b>紧邻后继者</b>的监听会被触发；那个客户端检查一下"我现在是不是最小了？"，是就拿锁。客户端之间从不直接通信——它们全程<b>通过 ZK 的共享树</b>来协调，而且各自只盯着一个邻居，所以一次释放只唤醒一个等待者（不会惊群）。这就是为什么不存在"两个持有者"的窗口：锁永远归编号最小的那个<i>活着</i>的节点，而"活着"由会话说了算，不是你拍脑袋定的定时器。</p>
+
+    <div class="note"><b>看清这是哪一层。</b>这张图是一个<i>搭在 ZooKeeper 之上</i>的锁配方——你建/删的这些 znode，都是在<b>对 ZK 的状态机（znode 树）做写入</b>，watch 则是它的变更通知。它<b>不是</b> §04 里的 ZAB 共识协议——该对标的是"用 Redis 搭的锁"，而不是 Raft 的内部实现。这也正是它和 §04 共识图长得完全不一样的原因：Raft 那张画的是<i>复制</i>层（状态机是画面外、被 apply 进去的一个盒子），而这里你看到的是"ZooKeeper 的状态机正被直接使用"。底下都是同样的四层——只是图画的是不同层而已。</div>
+    <h4>隔离令牌（fencing token）—— 真正安全的兜底</h4>
+    <p>即便是 ZooKeeper，也拦不住一个卡顿到<i>超过</i>会话超时的进程：ZK 把锁放了、下一个客户端拿到了锁，而那个卡住的客户端醒来后仍以为自己还握着锁。真正的修法在<b>资源端</b>，而不在锁本身——每次发锁都附带一个<b>隔离令牌</b>，一个只增不减的数字（ZK 节点的序号/版本号就能用）。每次写入都带上自己的令牌，资源端<b>记住见过的最大令牌，并拒绝任何更小的</b>：</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C1 as 客户端 1
+    participant L as 锁服务
+    participant C2 as 客户端 2
+    participant R as 资源（数据库）
+    C1->>L: 请求锁
+    L-->>C1: 授予，令牌 33
+    Note over C1: 长时间 GC 停顿，会话过期，锁被释放
+    C2->>L: 请求锁
+    L-->>C2: 授予，令牌 34
+    C2->>R: 写入（令牌 34）
+    Note over R: 见过的最大令牌 = 34
+    C1->>R: 写入（令牌 33）—— 醒得太晚
+    R-->>C1: 拒绝，33 小于 34
+    </div>
+    <p>于是那个"僵尸"旧持有者就无害了——它那张过期的令牌会被拒掉。这正是为什么真正安全的答案是"CP 锁<b>外加</b>一个由资源端校验的隔离令牌"，而不是只靠锁本身。</p>
+    <div class="iq">那句经典论断（出自 Kleppmann 对 Redlock 的批评）：对于<b>效率</b>锁，单机 Redis 的 <code>SET NX PX</code> 就够了；但对于<b>正确性</b>锁，你需要一个<b>隔离令牌（fencing token，由资源端校验的单调递增数字）</b>，或者像 ZooKeeper / etcd 这样的 CP 系统 —— 因为 GC 停顿和时钟偏移可能让两个客户端都以为自己持有锁。</div>
+  </section>
+
+  <!-- ============ IDS ============ -->
+  <section id="id">
+    <h2><span class="num">07</span>分布式 ID</h2>
+    <p>一旦数据被分片，单库自增主键就不再奏效了 —— 你需要<b>全局唯一</b>的 ID，最好还能<b>大致按时间有序</b>（这样索引友好、也能按创建时间排序）。四种标准做法：</p>
+    <table>
+      <tr><th>做法</th><th>怎么做</th><th>坑在哪</th></tr>
+      <tr><td><b>UUID</b></td><td>128 位随机数，任何地方都能生成</td><td>唯一但<b>无序</b>且占用空间大 → 对 B+ 树索引的局部性不友好</td></tr>
+      <tr><td><b>数据库号段</b>（segment）</td><td>用一张表给每个应用分发一段区间（如 1–1000），之后在本地发号</td><td>很少访问数据库、大致有序；但依赖数据库可用</td></tr>
+      <tr><td><b>Redis INCR</b></td><td>原子计数器，还可按前缀分别计数</td><td>简单且有序；但 Redis 变成依赖 / 单点故障（SPOF）</td></tr>
+      <tr><td><b>Snowflake</b></td><td>64 位：时间 + 机器 + 序列号，在本地生成</td><td>有序且无需中心调用；但要求机器 ID 唯一、时钟正常</td></tr>
+    </table>
+    <h3>Snowflake —— 64 位的位布局</h3>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem;line-height:1.8">
+      <span class="tag t-off">1 位</span> 符号位（恒为 0） &nbsp; · &nbsp;
+      <span class="tag t-on">41 位</span> 时间戳（毫秒，约 69 年） &nbsp; · &nbsp;
+      <span class="tag t-warn">10 位</span> 机器 ID（1024 个节点） &nbsp; · &nbsp;
+      <span class="tag t-on">12 位</span> 序列号（每毫秒每节点 4096 个）
+    </div>
+    <div class="warn"><b>Snowflake 的软肋是时钟：</b>如果一台机器的时钟<i>往回跳</i>（NTP 校正），它就可能生成重复的 ID。各种实现要么在时间追上来之前拒绝发号，要么借用某些位 —— 一定要提到对时钟漂移的处理。</div>
+    <div class="iq">按需求选型：有序 + 去中心化 → <b>Snowflake</b>；最省事且手头已有数据库 → <b>号段</b>；规模很小 → <b>Redis INCR</b>；只要唯一、不要有序 → <b>UUID</b>。</div>
+  </section>
+
+  <!-- ============ RATE LIMITING ============ -->
+  <section id="ratelimit">
+    <h2><span class="num">08</span>限流</h2>
+    <p>通过限制请求速率，保护服务不被压垮（或强制执行配额）。四种经典算法，输出越来越平滑：</p>
+    <table>
+      <tr><th>算法</th><th>怎么做</th><th>优劣</th></tr>
+      <tr><td><b>固定窗口</b></td><td>在固定时间区间内计数（如 100 次/分钟），每个窗口重置</td><td>简单，但<b>跨窗口边界的突发</b>会让临界处放行 2 倍流量</td></tr>
+      <tr><td><b>滑动窗口</b></td><td>在一个滑动的窗口内记录各请求的时间戳（Redis ZSet）</td><td>平滑了边界问题；但更耗内存</td></tr>
+      <tr><td><b>漏桶</b></td><td>请求排队，以<b>固定</b>速率流出</td><td>输出绝对平滑；但无法吸收突发</td></tr>
+      <tr><td><b>令牌桶</b></td><td>令牌以稳定速率补充，每个请求消耗一个</td><td>允许<b>受控的突发</b>（用攒下来的令牌）—— 最常用的默认选择</td></tr>
+    </table>
+    <div class="mermaid">
+flowchart LR
+    R["补充：每秒 N 个令牌"]:::r --> B["桶<br/>（容量 = 突发上限）"]:::b
+    REQ["请求"]:::q --> CHK{"有可用令牌吗？"}:::q
+    B --> CHK
+    CHK -->|有 —— 取走 1 个| PASS["放行"]:::ok
+    CHK -->|没有| DROP["拒绝 / 限流"]:::no
+    classDef r fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef b fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef no fill:#fdeceb,stroke:#c52a20,color:#7a1810;
+    </div>
+    <div class="iq"><b>令牌桶 vs 漏桶</b>是面试官的心头好：两者都限制平均速率，但令牌桶<b>允许突发</b>，上限为桶的容量（适合真实世界里本就突发的流量），而漏桶强制输出速率绝对恒定。对于分布式限流器，把计数器放到 <b>Redis + Lua</b> 里实现，让「检查并扣减」在所有应用服务器间是原子的。</div>
+  </section>
+
+  <!-- ============ RPC ============ -->
+  <section id="rpc">
+    <h2><span class="num">09</span>RPC —— 调用一个远程函数</h2>
+    <p><b>RPC</b>（Remote Procedure Call，远程过程调用）让你像调用本地方法一样去调用另一个服务上的方法。框架把底层管道都藏了起来：客户端的<b>存根（stub）</b>把参数序列化、通过网络发出去，服务端反序列化、执行方法，再把结果发回来。</p>
+    <div class="mermaid">
+flowchart LR
+    C["客户端代码<br/>调用 foo(x)"]:::c --> S1["客户端存根<br/>序列化 + 发送"]:::s
+    S1 -->|网络| S2["服务端存根<br/>接收 + 反序列化"]:::s
+    S2 --> SV["服务端执行 foo(x)"]:::sv
+    SV --> S2
+    S2 -->|网络| S1
+    S1 --> C
+    classDef c fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef s fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef sv fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <p>真正重要的几块拼图：<b>序列化</b>格式（Protobuf、Thrift、JSON）、<b>传输</b>（gRPC 用 HTTP/2，或 TCP）、<b>服务发现</b>（找到一个实例）和<b>负载均衡</b>。代表：gRPC、Apache Dubbo、Thrift。</p>
+    <div class="iq"><b>RPC vs REST：</b>RPC 面向动作（「调用这个方法」，二进制、快、强类型契约）—— 非常适合内部服务间调用。REST 面向资源（在 URL 上用 HTTP 动词，可读性好）—— 非常适合对外 / 跨团队的 API。另外记住<b>分布式计算的若干谬误</b>：网络<i>并不</i>可靠、免费或零延迟，所以每一次 RPC 都需要超时、重试（务必幂等！）和熔断器。</div>
+  </section>
+
+  <!-- ============ ZOOKEEPER ============ -->
+  <section id="zk">
+    <h2><span class="num">10</span>ZooKeeper 与服务发现</h2>
+    <p><b>ZooKeeper</b> 是一个 CP 协调服务：一棵小巧、强一致、可复制的 <b>znode</b> 树（很像文件系统），由众多客户端共享。它是其他分布式系统所依赖的「单一可信来源」。</p>
+    <div class="grid2">
+      <div class="card"><h4>znode 类型</h4><p><b>持久（persistent）</b>节点（删除前一直存在）、<b>临时（ephemeral）</b>节点（创建者会话结束就消失 —— 用来判活再合适不过）、以及<b>顺序（sequential）</b>节点（自动追加一个递增计数器 —— 非常适合有序的锁 / 队列）。</p></div>
+      <div class="card"><h4>监听（Watch）</h4><p>客户端可以<b>监听</b>一个 znode，在它发生变化时收到一次性通知 —— 这是配置更新、领导者选举和锁交接的基础。</p></div>
+    </div>
+    <h4>人们用它来搭什么</h4>
+    <ul>
+      <li><b>服务发现</b> —— 服务以临时 znode 的形式注册；某个实例挂掉，它的节点随之消失，客户端立刻被通知。</li>
+      <li><b>配置管理</b> —— 把共享配置存进 znode；监听者能实时收到更新。</li>
+      <li><b>领导者选举与分布式锁</b> —— 通过临时顺序节点实现（见 §06）。</li>
+    </ul>
+    <div class="note">服务发现里的 <b>ZooKeeper（CP）vs Eureka（AP）</b>：ZooKeeper 保证一致性，但分区时可能会拒绝服务；Eureka 保持可用，可能返回一份略微陈旧的服务列表。对于服务发现，很多人认为 AP 更合适 —— 一份稍旧的列表也好过没有列表。<b>etcd</b>（基于 Raft）和 <b>Consul</b> 是更现代的替代方案。</div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section id="cheatsheet">
+    <h2><span class="num">11</span>速答速查表</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>CAP / BASE</h4>
+        <p>P 是必选 → 分区时选 <b>CP</b>（拒绝请求，保持正确）或 <b>AP</b>（照常服务，保持在线）。BASE = AP 一侧的哲学：基本可用、软状态、最终一致。与 ACID 相对。</p>
+        <h4>共识</h4>
+        <p>通过<b>多数派 quorum</b> 就一份复制日志达成一致 → 节点数取奇数。<b>Raft</b>（etcd、Consul）、<b>Paxos</b>（通用、难懂）、<b>ZAB</b>（ZooKeeper）。</p>
+        <h4>事务</h4>
+        <p>2PC = 阻塞、同步。实践中 = <b>Saga</b> / <b>本地消息表 + MQ</b>（最终一致、幂等），<b>TCC</b> 用于需要接近强一致的流程。</p>
+      </div>
+      <div class="card">
+        <h4>锁</h4>
+        <p>Redis <code>SET NX PX</code> + Lua 释放（AP，效率锁）。ZooKeeper 临时顺序节点（CP，正确性锁）。要正确性 → 隔离令牌（fencing token）。</p>
+        <h4>ID</h4>
+        <p>有序 + 去中心化 → <b>Snowflake</b>（时间+机器+序列号，留意时钟偏移）。否则用号段 / Redis INCR / UUID（无序）。</p>
+        <h4>限流</h4>
+        <p>固定窗口 → 滑动窗口 → 漏桶 → <b>令牌桶</b>（允许突发）。分布式 → Redis + Lua。</p>
+        <h4>RPC</h4>
+        <p>存根 + 序列化 + 传输 + 服务发现。永远记得：超时、幂等重试、熔断器。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">12</span>自测闪卡 <span class="xp" id="score">🃏 已翻 0 / 0</span></h2>
+    <p>盖住答案，先大声说出来，再<b>点击翻面</b>。你每翻一张，进度条都会往前走一点。</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">为什么真实系统里不可能是「CA」？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">因为在真实网络里，分区（P）<b>一定</b>会发生 —— 你没得选择不要它。所以真正的选择是：<i>在分区期间</i>，要 CP（牺牲可用性）还是 AP（牺牲一致性）。CA 只能描述一个永不分区的单节点。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">BASE 是哪几个词的缩写，又与什么相对？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back"><b>B</b>asically <b>A</b>vailable（基本可用）、<b>S</b>oft state（软状态）、<b>E</b>ventual consistency（最终一致性）—— AP 一侧的哲学，与数据库的 <b>ACID</b> 相对。用「此刻正确」换「永远有应答 + 最终收敛」。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Raft 的两个子问题是什么？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back"><b>领导者选举</b>（每个任期一个领导者，由多数派选出）和<b>日志复制</b>（领导者追加日志，一条条目被多数派存下即提交）。需要 quorum → 节点数取奇数。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">为什么大规模下要避开 2PC？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">它同步且<b>阻塞</b>：参与者持有锁等待阶段二，而协调者在「准备」之后崩溃会让它们卡死 / 陷入不确定。改用 Saga 或消息驱动的最终一致性。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">令牌桶 vs 漏桶？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">两者都限制平均速率。<b>令牌桶</b>允许突发，上限为桶容量（按速率补充令牌，每个请求消耗一个）。<b>漏桶</b>强制输出速率绝对恒定 —— 不允许突发。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Snowflake ID 的 4 个字段？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">64 位 = 1 符号位 + <b>41 时间戳</b>（毫秒）+ <b>10 机器 ID</b> + <b>12 序列号</b>（每毫秒）。有序且去中心化；风险在于<b>时钟回拨</b>导致生成重复 ID。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Redis 锁 vs ZooKeeper 锁？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">Redis <code>SET NX PX</code> + Lua 释放：快、AP、需要 TTL —— 适合<b>效率</b>锁。ZooKeeper 临时顺序节点：CP，会话丢失即自动释放 —— 更适合<b>正确性</b>锁。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">服务发现选 ZooKeeper 还是 Eureka？</div><div class="hint">点击翻面 →</div></div>
+        <div class="flip-face flip-back">ZooKeeper 是 <b>CP</b>（分区时可能拒绝）；Eureka 是 <b>AP</b>（保持在线，列表可能略旧）。对于服务发现，AP 往往更可取 —— 一份稍旧的列表也好过没有列表。</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 全部翻面</button>
+      <button class="btn" id="resetdeck">↺ 重置</button>
+      <span>小贴士：盖住背面，考考身边的朋友。</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">13</span>Boss 级问题 <span class="boss">专家</span></h2>
+    <p>这些问题能把「我用过」和「我真懂」区分开来。先自己想，再揭晓答案。</p>
+
+    <details class="qa"><summary>CAP 里的「C」和 ACID 里的「C」是一回事吗？ <span class="boss lvl2">中等</span></summary>
+      <div class="ans"><b>不是 —— 常见陷阱。</b>CAP 的 C 指<b>线性一致性</b>（跨副本，每次读都能看到最新的写）。ACID 的 C 指<b>一致性意义上的「保持不变量 / 约束」</b>（事务内任何违反规则的写都会被拒绝）。两者只是共用了一个字母，概念完全不同。</div></details>
+
+    <details class="qa"><summary>你需要一笔取款在多个数据中心间全局互斥。用不用 Redis 锁？ <span class="boss lvl3">困难</span></summary>
+      <div class="ans">这是一把<b>正确性</b>锁，所以单实例 Redis 的 <code>SET NX PX</code> 是<i>不</i>安全的：GC 停顿或时钟偏移可能让第二个客户端拿到锁，而第一个还以为自己持有。可选方案：
+        <ol style="margin:6px 0">
+          <li>用带临时节点的 CP 协调者（ZooKeeper / etcd）。</li>
+          <li>用<b>隔离令牌（fencing token）</b> —— 锁发放一个单调递增的数字，资源端（数据库）拒绝任何携带过期令牌的写，这样「僵尸」持锁者就无法造成破坏。</li>
+        </ol>
+        仅靠 Redlock 解决不了 GC 停顿这个问题。</div></details>
+
+    <details class="qa"><summary>怎样让一条「可靠消息」在多个服务间做到恰好一次（exactly-once）？ <span class="boss lvl3">困难</span></summary>
+      <div class="ans">真正的「恰好一次」投递是做不到的 —— 目标应是<b>至少一次 + 幂等</b>。用<b>本地消息表 / 事务消息表（transactional outbox）</b>：在一个本地数据库事务里，同时写入业务变更<i>和</i>一行 outbox 记录；由一个中继可靠地把 outbox 记录投递到 MQ（失败重试）。消费者按唯一的消息 ID（幂等键）<b>去重</b>。最终效果 = 实际上的恰好一次（effectively-once）。</div></details>
+
+    <details class="qa"><summary>为什么共识集群总是希望节点数为奇数？ <span class="boss lvl1">热身</span></summary>
+      <div class="ans">推进需要<b>多数派</b>（quorum）。2N+1 个节点可以容忍 N 个故障；从 3 个加到 4 个，仍然只能容忍 1 个故障，却让多数派更难凑齐、也更容易出现平票。奇数能让「每个节点带来的容错能力」最大化，并避免选票僵局。</div></details>
+
+    <details class="qa"><summary>一个节点短暂分区后又重新加入。Raft 如何避免两个领导者把日志搞乱？ <span class="boss lvl2">中等</span></summary>
+      <div class="ans">每个领导者只服务于一个<b>任期</b>；被分区的旧领导者无法凑齐多数派来提交新条目，所以它什么都提交不了。当它重新加入、看到一个<b>更高的任期</b>时，便退回为跟随者，它那些未提交的条目会被当前领导者的日志覆盖。多数派提交 + 任期编号，让陈旧的写入不可能生效。</div></details>
+  </section>
+</main>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 已翻 '+flippedSet.size+' / '+cards.length;}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

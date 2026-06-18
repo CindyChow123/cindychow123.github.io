@@ -29,17 +29,20 @@ function Projects() {
                                 </div>
                             )}
                             <div className="projects__cta-group">
-                                {project.links.map((link) => (
-                                    <a
-                                        key={link.href}
-                                        href={link.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="projects__cta"
-                                    >
-                                        {link.label}
-                                    </a>
-                                ))}
+                                {project.links.map((link) => {
+                                    const isInternal = link.href.startsWith('#');
+                                    return (
+                                        <a
+                                            key={link.href}
+                                            href={link.href}
+                                            target={isInternal ? undefined : '_blank'}
+                                            rel={isInternal ? undefined : 'noopener noreferrer'}
+                                            className="projects__cta"
+                                        >
+                                            {link.label}
+                                        </a>
+                                    );
+                                })}
                             </div>
                         </li>
                     ))}

@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redis — 可视化工程与面试指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#c4452e; --red2:#a83a25;
+    --accent:#2f6f9f; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,"Noto Sans SC",monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Noto Serif SC","Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans SC",sans-serif;
+    --hand:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#f1e9da;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#a83a25}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#f6e4dd;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(196,69,46,.12), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#f3ecdf);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 面试视角";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* ---- FUN: analogy callout ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 现实类比";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- FUN: progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(220,56,45,.4)}
+
+  /* ---- FUN: flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:158px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.9rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#f6e4dd}
+
+  /* ---- FUN: reveal Q&A (boss level) ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ 点击查看";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ 答案"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#fdeceb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  /* ---- FUN: emoji bullets / sparkle ---- */
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>概览</h2>
+  <a href="#map">全局结构</a>
+  <a href="#usage">实战演示 🎬</a>
+  <h2>基础</h2>
+  <a href="#intro">为什么用 Redis / 模型</a>
+  <a href="#single-thread">单线程与速度</a>
+  <a href="#reactor">网络模型（Reactor）</a>
+  <h2>数据</h2>
+  <a href="#types">数据类型与命令</a>
+  <a href="#encoding">内部编码</a>
+  <a href="#internals">底层数据结构</a>
+  <a href="#expire">过期与淘汰</a>
+  <h2>正确性</h2>
+  <a href="#atomic">原子性</a>
+  <a href="#tx">事务 (MULTI)</a>
+  <a href="#lua">Lua 与函数</a>
+  <a href="#patterns">分布式锁</a>
+  <h2>持久化</h2>
+  <a href="#persist">持久化:RDB / AOF</a>
+  <h2>扩展与高可用</h2>
+  <a href="#repl">主从复制 / 读写分离</a>
+  <a href="#sentinel">Sentinel</a>
+  <a href="#cluster">Cluster</a>
+  <h2>边界问题</h2>
+  <a href="#pitfalls">陷阱与缓存模式</a>
+  <a href="#consistency">缓存一致性</a>
+  <a href="#bigkey">大 Key 与热 Key</a>
+  <a href="#cheatsheet">速查表</a>
+  <h2>实战 🎮</h2>
+  <a href="#quiz">自测闪卡</a>
+  <a href="#boss">Boss 级问题</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">◆ Redis</span> — 可视化工程与面试指南</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="../redis-guide.html">English version →</a></p>
+    <p>一个内存数据结构存储,可用作缓存、数据库、消息代理和协调层。本页帮你建立完整的心智模型:数据类型、原子性、持久化、主从复制、Sentinel 和 Cluster,并配上图示,方便面试或系统设计前快速过一遍。</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>玩法:</b> 边往下滚边学(留意顶部那条慢慢填满的进度条),点开 🎭 类比把知识记得更牢,到 <a href="#quiz">§16 自测</a> 翻一翻 🃏 闪卡,面试前再来挑战 🎯 <a href="#boss">Boss 级问题</a>。开始吧。</p>
+    <div class="pills">
+      <span class="pill">内存级 · 微秒延迟</span>
+      <span class="pill">单线程命令执行</span>
+      <span class="pill">丰富的数据类型</span>
+      <span class="pill">RDB + AOF 持久化</span>
+      <span class="pill">异步复制</span>
+      <span class="pill">16384 个哈希槽</span>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>全局结构 —— 一张图记住全部</h2>
+    <div class="tldr"><b>主线：</b>Redis 本质上就是<b>一个单线程驱动的内存大字典</b> → 先让它<b>正确</b> → 再让它<b>持久</b> → 然后让它<b>可扩展</b> → 最后处理<b>各种边界问题</b>。记住这个顺序，下面每一节都是顺着它展开的。</div>
+    <div class="mermaid">
+flowchart TB
+    THR["单线程"]:::core -->|带来| ATO["原子性<br/>(每条命令执行到底)"]:::idea
+    ATO -->|是基础| TX["事务 · Lua · 分布式锁"]:::feat
+    RAM["内存键空间<br/>key → value"]:::core -->|存放| DT["数据类型<br/>String·Hash·List·Set·ZSet·Stream"]:::feat
+    DT -->|压缩存储为| ENC["内部编码<br/>listpack → hashtable…"]:::feat
+    RAM -->|内存有限 → 引出| EV["过期与淘汰<br/>LRU · LFU · TTL"]:::feat
+    RAM -->|内存易失 → 需要| PER["持久化<br/>RDB 快照 + AOF 日志"]:::feat
+    PER -->|RDB 快照用于引导| REP["复制（异步）"]:::feat
+    REP -->|被监控| SEN["Sentinel（多数派）"]:::feat
+    SEN -->|提升某个副本| FO["自动故障转移（HA）"]:::feat
+    REP -->|+ 分片 · 16384 槽| CL["Cluster"]:::feat
+    CL -->|内置| FO
+    DT --> CACHE["缓存模式<br/>穿透 · 击穿 · 雪崩"]:::edge
+    EV -->|TTL 是基础| CACHE
+    click THR href "#single-thread" "单线程事件循环" _self
+    click ATO href "#atomic" "原子性 —— 四个层级" _self
+    click TX href "#tx" "事务 · Lua · 分布式锁" _self
+    click RAM href "#intro" "心智模型" _self
+    click DT href "#types" "数据类型与命令" _self
+    click ENC href "#encoding" "内部编码" _self
+    click EV href "#expire" "过期与淘汰" _self
+    click PER href "#persist" "持久化：RDB / AOF" _self
+    click REP href "#repl" "复制与读写分离" _self
+    click SEN href "#sentinel" "Sentinel" _self
+    click FO href "#sentinel" "自动故障转移" _self
+    click CL href "#cluster" "Cluster —— 分片" _self
+    click CACHE href "#pitfalls" "缓存模式与失效" _self
+    classDef core fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef edge fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 点击任意方框，跳转到对应的讲解章节</p>
+    <div class="tip"><b>两条反复出现的阶梯：</b>（1）<b>扩展阶梯</b>——单机 → 复制 → 自动故障转移 → 分片；（2）<b>正确性阶梯</b>，保证由弱到强——单命令 → MULTI/EXEC → Lua → WATCH（CAS 乐观锁）。</div>
+  </section>
+
+  <!-- ============ IN ACTION (story) ============ -->
+  <section id="usage">
+    <h2><span class="num">🎬</span>实战演示 —— 一个真实系统是怎么一步步用上 Redis 的</h2>
+    <p>深入细节之前，先看看回报。我们跟着一个应用，从最早的几个用户一路长到第一个百万用户——你会发现，<b>这份指南里的每一块，都会在你真正需要它的那一刻登场</b>。点任意 📍 就能跳到讲解对应机制的章节。</p>
+
+    <h3>Redis 待在哪儿</h3>
+    <div class="mermaid">
+flowchart TB
+    U["用户 / 浏览器"]:::cli --> LB["负载均衡器"]:::infra
+    LB --> A1["应用服务器 1<br/>（无状态）"]:::app
+    LB --> A2["应用服务器 2<br/>（无状态）"]:::app
+    LB --> A3["应用服务器 3<br/>（无状态）"]:::app
+    A1 & A2 & A3 -->|"缓存 · 会话 · 锁 · 计数 —— 微秒级"| R[("Redis<br/>共享内存层")]:::redis
+    A1 & A2 & A3 -->|"真实数据来源 —— 毫秒级"| DB[("主数据库<br/>Postgres / MySQL")]:::db
+    R -.->|"未命中 → 回源加载后 SET"| DB
+    classDef cli fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef infra fill:#f1ebdf,stroke:#c9a83a,color:#6b5212;
+    classDef app fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef redis fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef db fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="analogy">数据库是<b>仓库</b>——什么都有，但取货慢。Redis 是<b>柜台后那排货架</b>——小、快，所有收银员共用。应用服务器自己柜台后不藏私货，共享状态都搁在货架上，于是你能随时加人、随时撤人。这正是应用能水平扩展的底气。</div>
+
+    <h3>成长的故事</h3>
+    <p>下面每一幕，都是团队真实会撞上的难题，以及那个一招解决它的 Redis 用法。</p>
+
+    <div class="card">
+      <h4>🔥 第 1 幕 —— 数据库要烧起来了</h4>
+      <p>商品页每次访问都打到数据库。一万用户时风平浪静，到了十万，数据库 CPU 直接顶到 100%。你在前面加一层<b>旁路缓存</b>：先查 Redis，未命中再读数据库、把结果带上 TTL 写回。从此数据库只会看到"未命中"的那一小撮请求。</p>
+      <p class="kv">📍 对应机制：<a href="#types">§03 String 类型</a> · <a href="#expire">§05 TTL 与淘汰</a> · <a href="#pitfalls">§14 旁路缓存与三大失效</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🧍 第 2 幕 —— 用户莫名其妙被登出</h4>
+      <p>你在负载均衡器后面多加了几台应用服务器，结果用户开始随机掉登录——因为会话存在最先服务它的那台机器的内存里。把会话挪进<b>共享的 Redis</b>，每台机器看到的就是同一份数据；那个 TTL 还顺手充当了自动登出。</p>
+      <p class="kv">📍 对应机制：<a href="#intro">§01 同一个共享字典</a> · <a href="#types">§03 用 Hash 存会话对象</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🤖 第 3 幕 —— 机器人在猛刷 /login</h4>
+      <p>一个 IP 每秒打来 5000 次请求。你给它设个上限：每个 IP 每分钟一次原子 <code>INCR</code> 加 <code>EXPIRE</code>；要更精确，就用 ZSet 滑动窗口。不写数据库，也没有竞态。</p>
+      <p class="kv">📍 对应机制：<a href="#atomic">§06 为什么 INCR 是原子的</a> · <a href="#types">§03 Sorted Set</a> · <a href="#lua">§08 用 Lua 实现多步限流</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🏆 第 4 幕 —— 运营想要实时排行榜</h4>
+      <p>面向数百万用户、实时更新的前十名。一个 <b>Sorted Set</b> 就能以 O(log N) 按分数排名：<code>ZINCRBY</code> 加分，<code>ZREVRANGE 0 9</code> 秒读前十。排名实时更新，不用每天定时批量重算。</p>
+      <p class="kv">📍 对应机制：<a href="#types">§03 Sorted Set</a> · <a href="#encoding">§04 内部编码让它省内存</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🐌 第 5 幕 —— 结账卡顿</h4>
+      <p>每笔订单都要发邮件、生成 PDF——这 3 秒不该让用户干等。请求先 <code>LPUSH</code> 一个任务就立刻返回；一组工作进程 <code>BRPOP</code> 取出来慢慢干。想要可靠投递？升级到带消费者组的 <b>Streams</b>。</p>
+      <p class="kv">📍 对应机制：<a href="#types">§03 List（阻塞弹出）与 Streams</a></p>
+    </div>
+
+    <div class="card">
+      <h4>👯 第 6 幕 —— 两个工作进程发了同一笔订单</h4>
+      <p>你有个定时任务——比如<i>"每分钟扫一遍'已支付待发货'的订单去发货"</i>——它部署在<b>每台</b>服务器上。到点时每台都触发了一次，于是同一笔订单被发了两遍。一把 <code>SET NX EX</code> <b>分布式锁</b>能让整个集群里同一时刻只有一台真正执行（其余抢不到锁就跳过）；释放时用一小段 Lua 先校验 token 再删除，确保只删掉自己那把锁。</p>
+      <p class="kv">📍 对应机制：<a href="#patterns">§09 分布式锁</a> · <a href="#lua">§08 Lua 脚本</a></p>
+    </div>
+
+    <div class="card">
+      <h4>⏰ 第 7 幕 —— 锁座 15 分钟，不付款就自动释放</h4>
+      <p>用户锁定了一张票，15 分钟内不付款就得把座位放出来——可你又不能每秒去全库扫一遍，找哪些到期了。用<b>延迟队列</b>：拿一个 Sorted Set，分数就设成<b>截止时间戳</b>。下单锁座时 <code>ZADD reservations &lt;现在+15分钟&gt; seat:42</code>；一个工作进程不断 <code>ZRANGEBYSCORE reservations -inf &lt;现在&gt;</code> 把已经到点的捞出来，释放这些座位再 <code>ZREM</code> 掉。分数本身就是那个定时器——"取消超时未支付订单"、定时提醒，用的都是这一招。</p>
+      <p class="kv">📍 对应机制：<a href="#types">§03 Sorted Set（分数 = 时间）</a> · <a href="#lua">§08 用 Lua 原子地取出并删除</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🛡️ 第 8 幕 —— 双十一：Redis 不能成为短板</h4>
+      <p>现在一切都压在 Redis 上，它就得既扛得住崩溃，也扛得住节点宕机。落盘快照（<b>RDB</b>）加写命令日志（<b>AOF</b>），重启不再是冷启动；加<b>副本</b>分担读、做热备；让 <b>Sentinel</b> 自动提升副本，或者上 <b>Cluster</b> 把数据分片到多台机器。</p>
+      <p class="kv">📍 对应机制：<a href="#persist">§10 RDB / AOF</a> · <a href="#repl">§11 复制</a> · <a href="#sentinel">§12 Sentinel 故障转移</a> · <a href="#cluster">§13 Cluster</a></p>
+    </div>
+
+    <h4>一次请求，从头到尾</h4>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as 客户端
+    participant A as 应用服务器
+    participant R as Redis
+    participant D as 数据库
+    participant W as 工作进程
+    C->>A: GET /product/42
+    A->>R: GET product:42
+    alt 缓存命中
+        R-->>A: 值（微秒级）✅
+    else 缓存未命中
+        R-->>A: (nil)
+        A->>D: SELECT …（毫秒级）
+        D-->>A: 行数据
+        A->>R: SET product:42 … EX 300
+    end
+    A-->>C: 响应
+    A->>R: LPUSH analytics:queue {view:42}
+    W->>R: BRPOP analytics:queue
+    W->>D: 批量写入分析数据
+    </div>
+    <div class="iq"><b>面试表述：</b>被问到"你会在哪儿加 Redis？"时，紧扣三个角色——<b>(1) 缓存</b>，挡在数据库前面；<b>(2) 共享状态</b>，给无状态服务用（会话、锁、计数器）；<b>(3) 实时数据结构</b>（排行榜、队列、限流器）。然后坦白你接受的取舍：数据在易失内存里、复制是异步的，所以 Redis 是一层<i>性能与协调</i>层——数据库始终是真实数据来源。</div>
+    <div class="tldr"><b>把这个故事记在脑子里。</b>上面那张图里的每个方框，都在这里挣到了自己的位置——而下面每个带编号的章节，不过是把其中某一招讲透而已。</div>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>心智模型</h2>
+    <p>说到底,Redis 就是一个驻留在内存里的巨大<b>字典(键 → 值)</b>,只不过其中的<i>值</i>不只是一段二进制数据,而可以是多种数据结构。命令由单个线程执行,所以每条命令本身都是原子的。持久化和扩展能力都是围绕这个内核搭起来的:把快照/日志写入磁盘来实现持久化,用副本来分担读流量、提供高可用,用 Sentinel 实现自动故障转移,用 Cluster 实现水平分片。</p>
+
+    <div class="mermaid">
+flowchart LR
+    C1[客户端]:::cli --> CORE
+    C2[客户端]:::cli --> CORE
+    subgraph CORE["Redis 服务器(一个键空间,一个执行线程)"]
+      direction TB
+      KS["键空间字典:键 → 值"]:::ks
+      KS --> S["String"]:::dt
+      KS --> L["List"]:::dt
+      KS --> H["Hash"]:::dt
+      KS --> ST["Set"]:::dt
+      KS --> Z["Sorted Set"]:::dt
+      KS --> X["Stream / Bitmap / HLL / Geo"]:::dt
+    end
+    CORE -.快照/日志.-> DISK[(磁盘上的 RDB / AOF)]:::disk
+    CORE -.异步流.-> REP[(副本)]:::rep
+    classDef cli fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef ks fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef dt fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef disk fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef rep fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+
+    <div class="grid3">
+      <div class="card"><div class="big">&lt;1ms</div><div class="kv">简单操作的典型 p99 延迟 —— 数据全在内存里</div></div>
+      <div class="card"><div class="big">~100k+</div><div class="kv">单实例每秒操作数轻松可达;用流水线(pipelining)还能更高</div></div>
+      <div class="card"><div class="big">O(1)</div><div class="kv">大多数键级操作都是 O(1);但有些命令是 O(N) —— 心里要有数</div></div>
+    </div>
+    <div class="analogy">把 Redis 想象成手边的<b>白板</b>,数据库则是<b>走廊尽头的文件柜</b>。白板不大,一断电就擦没了(易失的 RAM)—— 但在上面读写是瞬时的。持久化、副本和 Cluster 做的事,无非是<i>给白板拍照</i>、再<i>把它复制到各个房间</i>,这样内容就不会丢。</div>
+    <div class="iq">回答 "<i>为什么 Redis 快?</i>" 时,记住三点:(1) 数据都在内存里,(2) 单线程省去了锁和上下文切换,还让每条命令天然原子,(3) 高效的事件循环(epoll)再配上优化过的数据结构和简单的二进制协议(RESP)。</div>
+  </section>
+
+  <!-- ============ SINGLE THREAD ============ -->
+  <section id="single-thread">
+    <h2><span class="num">02</span>单线程事件循环</h2>
+    <p>Redis 用一个 <b>I/O 多路复用事件循环</b>(epoll/kqueue)在单个线程上处理命令。命令进入队列后逐条执行到完成 —— 这正是每条命令什么都不用你管就天然原子的原因。</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cs as 客户端
+    participant EL as 事件循环(单线程)
+    participant DS as 数据结构(内存)
+    Cs->>EL: 多个套接字就绪(epoll)
+    loop 一条命令执行完,再处理下一条
+        EL->>DS: 执行命令 A(原子)
+        DS-->>EL: 回复 A
+        EL->>DS: 执行命令 B(原子)
+        DS-->>EL: 回复 B
+    end
+    EL-->>Cs: 回复(RESP)
+    </div>
+    <div class="analogy">这就像<b>一位咖啡师</b>一次只做一杯。订单不会互相冲突(原子!),也不会抢同一台浓缩咖啡机(无锁)。可一旦有顾客点了 500 杯拿铁(<code>KEYS *</code>),排在他后面的<i>所有人</i>都得干等。所以,订单要小。</div>
+    <div class="warn"><b>坑就在这:</b> 一条慢的 O(N) 命令会把<i>所有人</i>都堵住。一个 <code>KEYS *</code>、一个超大的 <code>HGETALL</code>,或对百万元素的集合执行 <code>SMEMBERS</code>,都会在执行期间冻住整个服务器。改用 <code>SCAN</code>/<code>HSCAN</code>/<code>SSCAN</code> 游标,别在热点路径上跑大的 O(N) 操作。</div>
+    <div class="note"><b>面试中的进阶细节:</b> "单线程" 说的是<i>命令执行</i>这一环。现代 Redis(6+)对读写套接字用了<b>多线程 I/O</b>,后台线程则负责 <code>UNLINK</code>(异步删除)、RDB <code>fork</code>、AOF fsync 这类慢活儿。但键空间本身的改动依然是串行的。</div>
+    <h3 id="reactor">网络模型 —— Reactor + I/O 多路复用</h3>
+    <p>一个线程怎么扛住几万条连接？靠 <b>I/O 多路复用</b>：内核的 <code>epoll</code>（Linux）/ <code>kqueue</code>（BSD）一次性盯着所有客户端 socket，只把<i>就绪</i>的那几个交给事件循环。循环永远不会卡在某一条慢连接上干等。</p>
+    <div class="mermaid">
+flowchart LR
+    S1["socket 1"]:::s --> EP["epoll<br/>（内核盯着 N 个 socket）"]:::k
+    S2["socket 2"]:::s --> EP
+    S3["socket … N"]:::s --> EP
+    EP -->|只交出就绪的 fd| EL["事件循环<br/>单线程"]:::el
+    EL --> H["解析 → 执行 → 回复"]:::h
+    classDef k fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef s fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef el fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef h fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p>这就是 <b>Reactor 模式</b>：一个循环对 socket 事件做出"反应"，再分发给对应的处理器。Redis 6+ 引入了<b>多线程 I/O</b>——额外的线程只负责读取/解析、写回 socket 的字节，命令本身仍在唯一的主线程上执行，所以原子性不受影响。另外还有<b>后台线程（BIO）</b>处理慢的回收/刷盘工作——<code>UNLINK</code>（异步删除）、AOF fsync、关闭大文件——这样它们就不会卡住主循环。</p>
+    <div class="iq">说准确点："单线程"指的是<b>命令执行</b>这一环是串行的。网络 I/O（6+）和后台杂活（BIO）都是多线程的。这也正是为什么删大键要用 <code>UNLINK</code>——内存回收会丢到主线程之外去做。</div>
+  </section>
+
+  <!-- ============ DATA TYPES ============ -->
+  <section id="types">
+    <h2><span class="num">03</span>数据类型及其命令</h2>
+    <p>选对类型<i>本身</i>就是一种设计。下面逐一说清:每种类型是什么、什么时候用、以及哪些命令最重要。</p>
+
+    <h3>String —— 字节、计数器、位图</h3>
+    <p>最简单的值类型(最大 512 MB)。可以存文本、序列化后的 JSON、整数或原始位。缓存和原子计数器都靠它打底。</p>
+    <table>
+      <tr><th>命令</th><th>作用</th><th>大 O</th></tr>
+      <tr><td><code>SET k v [EX s] [NX|XX]</code></td><td>设置值;<code>EX</code> 设 TTL,<code>NX</code> 表示仅当键不存在时才设</td><td>O(1)</td></tr>
+      <tr><td><code>GET k</code> / <code>GETSET</code> / <code>GETDEL</code></td><td>读取 / 读取并设置 / 读取并删除</td><td>O(1)</td></tr>
+      <tr><td><code>INCR k</code> / <code>INCRBY</code> / <code>DECR</code></td><td><b>原子</b>计数运算</td><td>O(1)</td></tr>
+      <tr><td><code>MSET / MGET</code></td><td>一次往返完成多个键的设置/读取</td><td>O(N)</td></tr>
+      <tr><td><code>SETNX</code> / <code>SET k v NX EX 30</code></td><td>锁原语(键不存在则设置 + 加 TTL)</td><td>O(1)</td></tr>
+      <tr><td><code>SETBIT / GETBIT / BITCOUNT</code></td><td>位图操作 —— 比如标记日活用户</td><td>O(1)/O(N)</td></tr>
+    </table>
+    <div class="tip"><b>适用于:</b> 缓存值、限流计数器(<code>INCR</code> + <code>EXPIRE</code>)、分布式锁(<code>SET NX EX</code>)、功能开关、原子 ID 生成。</div>
+
+    <h3>Hash —— 带字段的对象</h3>
+    <p>一个键下保存一组字段 → 值的映射。非常适合表示一个对象(用户、会话),改某个字段时不必把整个对象重新序列化一遍。</p>
+    <table>
+      <tr><th>命令</th><th>作用</th><th>大 O</th></tr>
+      <tr><td><code>HSET k f v [f v ...]</code></td><td>设置一个/多个字段</td><td>每字段 O(1)</td></tr>
+      <tr><td><code>HGET k f</code> / <code>HMGET k f1 f2</code></td><td>获取一个 / 多个字段</td><td>O(1)/O(N)</td></tr>
+      <tr><td><code>HGETALL k</code></td><td>所有字段+值 <span class="tag t-warn">O(N) —— 小心</span></td><td>O(N)</td></tr>
+      <tr><td><code>HINCRBY k f n</code></td><td>对某个字段做原子自增</td><td>O(1)</td></tr>
+      <tr><td><code>HDEL / HEXISTS / HKEYS / HVALS / HSCAN</code></td><td>删除 / 判断存在 / 枚举(字段多时用 HSCAN)</td><td>视情况而定</td></tr>
+    </table>
+    <div class="tip"><b>适用于:</b> 用户资料、购物车、配置对象,以及任何需要单独改某个字段的场景。比拆成一堆独立的 string 键更省内存。</div>
+
+    <h3>List —— 有序、双端队列、队列</h3>
+    <p>字符串组成的链表;两端的 push/pop 都是 O(1)。最经典的简单队列 / 栈。</p>
+    <table>
+      <tr><th>命令</th><th>作用</th><th>大 O</th></tr>
+      <tr><td><code>LPUSH / RPUSH</code></td><td>从头部 / 尾部压入</td><td>O(1)</td></tr>
+      <tr><td><code>LPOP / RPOP</code></td><td>从头部 / 尾部弹出</td><td>O(1)</td></tr>
+      <tr><td><code>BLPOP / BRPOP k timeout</code></td><td><b>阻塞式</b>弹出 —— 工作进程等着取任务</td><td>O(1)</td></tr>
+      <tr><td><code>LRANGE k 0 -1</code></td><td>范围读取 <span class="tag t-warn">O(N)</span></td><td>O(N)</td></tr>
+      <tr><td><code>LLEN / LREM / LINDEX / LTRIM</code></td><td>长度 / 移除 / 按索引 / 裁剪到窗口</td><td>视情况而定</td></tr>
+    </table>
+    <div class="tip"><b>适用于:</b> 简单任务队列(生产者 LPUSH + 工作进程 BRPOP)、最近动态流(LPUSH + LTRIM 控制长度)、栈。要做正经的消息系统,优先选 <b>Streams</b>。</div>
+
+    <h3>Set —— 唯一、无序的成员集合</h3>
+    <p>一组不重复的字符串,支持快速判断成员是否存在,以及各种集合运算。</p>
+    <table>
+      <tr><th>命令</th><th>作用</th><th>大 O</th></tr>
+      <tr><td><code>SADD / SREM</code></td><td>添加 / 移除成员</td><td>O(1)</td></tr>
+      <tr><td><code>SISMEMBER k m</code></td><td>是不是成员?(O(1) —— 很适合判断 "我见过 X 吗")</td><td>O(1)</td></tr>
+      <tr><td><code>SCARD</code></td><td>基数(元素个数)</td><td>O(1)</td></tr>
+      <tr><td><code>SINTER / SUNION / SDIFF</code></td><td>交集 / 并集 / 差集</td><td>O(N)</td></tr>
+      <tr><td><code>SPOP / SRANDMEMBER</code></td><td>随机弹出 / 随机取一个看看</td><td>O(1)</td></tr>
+    </table>
+    <div class="tip"><b>适用于:</b> 标签、独立访客统计、"点赞了 X 的用户"、好友列表、用 <code>SINTER</code> 求共同好友、去重。</div>
+
+    <h3>Sorted Set (ZSet) —— 按分数排名</h3>
+    <p>一种集合,每个成员都带一个浮点<b>分数</b>,成员始终按分数排好序。这是<b>面试里最爱考</b>的类型 —— 排行榜、优先级队列、限流器、时间序列索引全靠它。</p>
+    <table>
+      <tr><th>命令</th><th>作用</th><th>大 O</th></tr>
+      <tr><td><code>ZADD k score member</code></td><td>添加/更新带分数的成员</td><td>O(log N)</td></tr>
+      <tr><td><code>ZRANGE / ZREVRANGE k 0 9 [WITHSCORES]</code></td><td>按排名取 Top-N(排行榜!)</td><td>O(log N + M)</td></tr>
+      <tr><td><code>ZRANGEBYSCORE k min max</code></td><td>按分数取范围(例如时间窗口)</td><td>O(log N + M)</td></tr>
+      <tr><td><code>ZRANK / ZSCORE</code></td><td>某成员的排名 / 分数</td><td>O(log N)</td></tr>
+      <tr><td><code>ZINCRBY k n member</code></td><td>原子地增加分数</td><td>O(log N)</td></tr>
+      <tr><td><code>ZPOPMIN / ZPOPMAX / BZPOPMIN</code></td><td>弹出最低/最高(优先级队列)</td><td>O(log N)</td></tr>
+      <tr><td><code>ZREMRANGEBYSCORE k -inf t</code></td><td>淘汰旧条目(滑动窗口)</td><td>O(log N + M)</td></tr>
+    </table>
+    <div class="iq"><b>滑动窗口限流器</b>是个高频考点。给每个用户配一个 ZSet:以<i>时间戳</i>为分数 <code>ZADD</code> 这次请求,用 <code>ZREMRANGEBYSCORE</code> 清掉窗口之外的旧条目,再用 <code>ZCARD</code> 数一下还剩多少 —— 这几步全塞进一个 Lua 脚本,保证原子性。</div>
+
+    <h3>专用类型</h3>
+    <div class="grid2">
+      <div class="card"><h4>Streams (XADD/XREAD)</h4><p>带消费者组、ID 和确认机制的只追加日志 —— Redis 对标 Kafka 的轻量级消息方案。用 <code>XADD</code>、<code>XREADGROUP</code>、<code>XACK</code> 配合多个工作进程,实现可靠的至少一次投递。</p></div>
+      <div class="card"><h4>HyperLogLog (PFADD/PFCOUNT)</h4><p>只用约 12 KB、约 0.81% 误差做概率性去重计数 —— 不存原始数据就能统计上百万个不同值(比如日活独立数)。用一点精度换来极小的内存占用。</p></div>
+      <div class="card"><h4>Bitmap (SETBIT/BITCOUNT)</h4><p>把字符串当成位数组来用。每个用户占 1 位 → 日活用户、A/B 标记、在线状态 —— 内存省到极致。</p></div>
+      <div class="card"><h4>Geospatial (GEOADD/GEOSEARCH)</h4><p>存储经纬度(底层用 geohash 编码的 ZSet 实现);查询 "某点 N 公里范围内有什么"。附近搜索功能靠它实现。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ ENCODINGS ============ -->
+  <section id="encoding">
+    <h2><span class="num">04</span>内部编码(省内存的技巧)</h2>
+    <p>每种逻辑类型在底层都有几种<b>内部编码</b>。数据量小的时候用紧凑、对缓存友好的表示;一旦超过配置的阈值,就 "升级" 成通用结构。Redis 之所以存小对象特别省内存,原因就在这 —— 这也是面试爱深挖的点。</p>
+    <table>
+      <tr><th>类型</th><th>小编码</th><th>升级为</th><th>阈值(可配置)</th></tr>
+      <tr><td>Hash</td><td><code>listpack</code>(扁平数组)</td><td><code>hashtable</code></td><td>hash-max-listpack-entries (128) / -value (64)</td></tr>
+      <tr><td>List</td><td><code>listpack</code></td><td><code>quicklist</code>(listpack 链表)</td><td>list-max-listpack-size</td></tr>
+      <tr><td>Set</td><td><code>intset</code> / <code>listpack</code></td><td><code>hashtable</code></td><td>set-max-intset/listpack-entries</td></tr>
+      <tr><td>Sorted Set</td><td><code>listpack</code></td><td><code>skiplist</code> + dict</td><td>zset-max-listpack-entries (128)</td></tr>
+      <tr><td>String</td><td><code>int</code> / <code>embstr</code>(&le;44B)</td><td><code>raw</code></td><td>—</td></tr>
+    </table>
+    <div class="note">想实时查看,用 <code>OBJECT ENCODING mykey</code>。ZSet 变大后会<b>跳表 + 哈希表</b>一起上:跳表负责 O(log N) 的有序操作,哈希负责 O(1) 的分数查找。</div>
+    <h3 id="internals">底层揭秘 —— 让它快起来的那些结构</h3>
+    <p>有四个底层结构在面试里反复出现——它们正是上面那些编码存在的<i>原因</i>。</p>
+
+    <h4>SDS —— Redis 为什么不用 C 字符串</h4>
+    <p>Redis 里每个字符串都是 <b>SDS</b>（Simple Dynamic String，简单动态字符串），而不是裸的 C 字符数组。它把<b>长度</b>和<b>剩余空间</b>跟字节内容存在一起：</p>
+    <ul>
+      <li><b>O(1) 取长度</b>——<code>STRLEN</code> 直接读一个字段；C 字符串得一路扫到 <code>\0</code>（O(N)）。</li>
+      <li><b>二进制安全</b>——靠长度前缀，能存任意字节（中间带 <code>\0</code>、图片等）；C 字符串遇到第一个 <code>\0</code> 就当结束了。</li>
+      <li><b>不会缓冲区溢出</b>——追加前先检查容量，再安全扩容。</li>
+      <li><b>少 realloc</b>——预分配 + 记录剩余空间，反复 <code>APPEND</code> 通常不必每次都 <code>realloc</code>。</li>
+    </ul>
+
+    <h4>跳表（skip list）—— O(log N) 的有序结构</h4>
+    <p>较大的 Sorted Set 底层是<b>跳表</b>（再配一个哈希表做 O(1) 的分数查找）。跳表就是在普通链表上叠几层"快速通道"：上层一步能跨过很多节点，查找时一层层往下落——相当于在链表上做 O(log N) 的二分。每个节点的层高由抛硬币（概率约 1/4）随机决定，所以平均下来就是平衡的，<i>不需要</i>树那套旋转维护。</p>
+    <div class="mermaid">
+flowchart LR
+    a2["1"]:::x --> c2["9"]:::x --> e2["25"]:::x
+    a1["1"]:::y --> b1["5"]:::y --> c1["9"]:::y --> d1["17"]:::y --> e1["25"]:::y --> f1["31"]:::y
+    a2 -.-> a1
+    c2 -.-> c1
+    e2 -.-> e1
+    classDef x fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef y fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+
+    <h4>跳表 vs B+树 —— Redis 为什么选跳表</h4>
+    <table>
+      <tr><th>跳表</th><th>B+树</th></tr>
+      <tr><td>实现和维护都简单</td><td>再平衡复杂（分裂 / 合并）</td></tr>
+      <tr><td>范围扫描直接走底层链表</td><td>为<b>磁盘</b>页优化（减少 I/O 次数）</td></tr>
+      <tr><td>不假设页/磁盘——天生适合内存</td><td>数据在磁盘上时才发挥优势（MySQL）</td></tr>
+    </table>
+    <div class="note">一句话：B+树是为了减少<b>磁盘</b>读取（矮胖、按页对齐）。Redis 在内存里，这个优势就没了——跳表用少得多的代码就能拿到同样的 O(log N)。这就是经典的"为什么不用 B+树"的标准答案。</div>
+
+    <h4>dict 与渐进式 rehash</h4>
+    <p>键空间（以及较大的 Hash/Set）底层是<b>哈希表（dict）</b>。负载因子一高就得扩容——但一次性把上百万个条目重新哈希会卡死单线程。于是 Redis 同时留<b>两张表</b>（<code>ht[0]</code>、<code>ht[1]</code>），<b>分批</b>迁移：每次操作顺手搬几个桶过去。迁移期间，<b>读会同时查两张表</b>，写则落到新表，直到 <code>ht[0]</code> 清空。</p>
+    <div class="iq"><b>渐进式 rehash</b> 是面试常客——关键就在于把一次巨大的 O(N) 迁移，摊成无数个 O(1) 的小步，让延迟永远不会突然飙高。</div>
+
+    <h4>ziplist 的连锁更新 → listpack</h4>
+    <p>老的紧凑编码 <b>ziplist</b>，每个条目里都存了<i>前一个</i>条目的长度。如果靠前的某个条目涨过了 254 字节，后一个条目的"prevlen"字段就得变宽——这又可能让<i>它自己</i>变大，逼着再后一个也变宽：这就是<b>连锁更新</b>（连锁反应），最坏 O(N²)。<b>listpack</b>（Redis 7）解决了这个问题——每个条目自描述、只存<i>自己</i>的长度，没有了"前一个长度"的链条，自然也就没有连锁更新。</p>
+  </section>
+
+  <!-- ============ EXPIRE ============ -->
+  <section id="expire">
+    <h2><span class="num">05</span>过期与淘汰</h2>
+    <h3>过期的键是怎么被回收的</h3>
+    <p>用 <code>EXPIRE k 60</code> / <code>SET k v EX 60</code> / <code>PEXPIRE</code>(毫秒)设置 TTL。Redis 用两种方式(配合使用)释放过期键:</p>
+    <div class="grid2">
+      <div class="card"><h4>① 惰性(被动)</h4><p>访问某个键时,如果发现它已经过期,就当场删掉,命令的表现就跟这个键不存在一样。开销很低,但那些过期了又一直没人访问的键,会一直占着内存。</p></div>
+      <div class="card"><h4>② 主动(采样)</h4><p>有个后台任务每秒大约跑 10 次,抽样检查带 TTL 的键并删掉过期的;如果发现过期比例很高,就再来一轮。这是概率性的 —— 目的是把过期键占用的内存控制在一定范围内。</p></div>
+    </div>
+    <h3>内存到达 <code>maxmemory</code> 时的淘汰</h3>
+    <p>内存写满后,<code>maxmemory-policy</code> 决定该丢掉什么:</p>
+    <table>
+      <tr><th>策略</th><th>行为</th></tr>
+      <tr><td><code>noeviction</code></td><td>直接拒绝写入并返回错误(把 Redis 当数据库用时的安全默认值)</td></tr>
+      <tr><td><code>allkeys-lru</code> / <code>allkeys-lfu</code></td><td>在所有键里淘汰最近最少使用 / 最不常使用的 —— 经典缓存模式</td></tr>
+      <tr><td><code>volatile-lru / -lfu / -ttl / -random</code></td><td>同上,但只在设置了 TTL 的键里淘汰</td></tr>
+      <tr><td><code>allkeys-random</code></td><td>随机淘汰键</td></tr>
+    </table>
+    <div class="iq"><b>纯缓存</b>场景用 <code>allkeys-lru</code>(访问分布很不均匀时用 <code>lfu</code>)。把 Redis 当<b>主存储</b>用时,选 <code>noeviction</code>,这样绝不会悄无声息地把数据丢掉。LFU(4.0 起)用一个带衰减的计数器跟踪访问频率 —— 对那些 "一直很热" 的条目更友好,而 LRU 反而可能把它们误删。</div>
+  </section>
+
+  <!-- ============ ATOMICITY ============ -->
+  <section id="atomic">
+    <h2><span class="num">06</span>原子性 —— 四个层次</h2>
+    <p>"原子" 这个词常被用得很随意。这里精确区分四种机制,以及各自到底保证了什么:</p>
+    <div class="mermaid">
+flowchart TB
+    A["单条命令<br/>(INCR、SETNX、ZADD...)"]:::g --> note1["永远原子 —— 单线程会把它执行到底"]:::n
+    B["MULTI / EXEC<br/>事务"]:::g --> note2["排队的命令不会被打断。<br/>但逻辑错误不回滚"]:::n
+    C["Lua 脚本 / FUNCTION<br/>(EVAL)"]:::g --> note3["整个脚本原子执行。<br/>读取-计算-写入一气呵成"]:::n
+    D["WATCH + MULTI<br/>(乐观锁 / CAS)"]:::g --> note4["被监视的键一变,EXEC 就中止。<br/>需要重试"]:::n
+    classDef g fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef n fill:#eef1f4,stroke:#c2ccd6,color:#55606b;
+    </div>
+    <div class="analogy">就像改你的银行余额:你<i>读到</i> 100 元,然后走开,回来再<i>写回</i> 90 元 —— 可你离开那会儿有人存了 50 元 —— 这笔存款就被你抹掉了。<code>INCR</code>/Lua/<code>WATCH</code> 保证的就是 "人不离开柜台,把读和写一口气做完"。</div>
+    <div class="warn"><b>关键的坑:</b> 在应用里先 <code>GET</code> 再 <code>SET</code>,是<b>两</b>次往返 —— 中间可能被别的客户端插一脚。要让 "读取-修改-写入" 变成一个原子操作,你得用 <code>INCR</code>(纯算术的话)、Lua 脚本,或者 <code>WATCH</code>/<code>MULTI</code>。</div>
+  </section>
+
+  <!-- ============ TRANSACTIONS ============ -->
+  <section id="tx">
+    <h2><span class="num">07</span>事务:MULTI / EXEC / WATCH</h2>
+    <p>Redis 事务在 <code>MULTI</code> 之后把命令先<b>排进队列</b>,到 <code>EXEC</code> 时作为一个隔离的整体执行,中途不会有别的客户端插进来。但它<b>不是</b> SQL 那种事务:<b>没有回滚</b>。如果某条命令在执行时出现逻辑错误(比如对一个 string 执行 <code>INCR</code>),其余命令照样会执行。</p>
+    <pre><code>WATCH balance              # 乐观锁:监视一个键
+val = GET balance          # 读取
+MULTI                      # 开始排队
+SET balance {val-100}      # 已排队(尚未执行)
+EXEC                       # 仅当 'balance' 自 WATCH 起未被
+                           # 修改时才执行;否则返回 nil → 重试</code></pre>
+    <div class="mermaid">
+sequenceDiagram
+    participant App as 应用
+    participant R as Redis
+    App->>R: WATCH balance
+    App->>R: GET balance → 500
+    App->>R: MULTI
+    App->>R: SET balance 400(已排队)
+    Note over R: 此时别的客户端改了 balance?
+    App->>R: EXEC
+    alt 被监视的键没被动过
+        R-->>App: [OK]  ✅ 执行成功
+    else 被监视的键变了
+        R-->>App: (nil) ❌ 中止 → 重试
+    end
+    </div>
+    <div class="iq">这就是 Redis 的<b>乐观并发控制</b>(比较并设置),正好和悲观式的分布式锁相对。对大多数读取-修改-写入来说,<b>用 Lua 脚本比写 WATCH 重试循环省事</b>,因为它在服务端一次性原子执行,不用反复重试。</div>
+  </section>
+
+  <!-- ============ LUA ============ -->
+  <section id="lua">
+    <h2><span class="num">08</span>Lua 脚本与函数</h2>
+    <p>用 <code>EVAL</code> / <code>EVALSHA</code>(或 7+ 里可持久化的 <code>FUNCTION</code>)把逻辑下发到服务端执行。整个脚本<b>原子</b>运行 —— 中途不会被打断 —— 所以你能在服务端、一次往返里安全地走完读取 → 判断 → 写入。</p>
+    <pre><code>-- 原子地 "若有库存则扣减"(防超卖)
+-- KEYS[1]=库存键, ARGV[1]=数量
+local stock = tonumber(redis.call('GET', KEYS[1]))
+if stock and stock >= tonumber(ARGV[1]) then
+  return redis.call('DECRBY', KEYS[1], ARGV[1])   -- 成功
+else
+  return -1                                        -- 库存不足
+end</code></pre>
+    <div class="tip"><b>它好在哪:</b> 整段逻辑里没有网络往返,没有竞态窗口,客户端和服务端之间的往返也更少。用 <code>EVALSHA</code> 配合已缓存的 SHA,就不用每次都把脚本正文重新发一遍。</div>
+    <div class="warn">脚本要<b>短</b> —— 它和普通命令一样会阻塞单线程。键一定要通过 <code>KEYS[]</code> 传(别硬编码),这样 Cluster 才能正确路由。</div>
+  </section>
+
+  <!-- ============ LOCKS ============ -->
+  <section id="patterns">
+    <h2><span class="num">09</span>分布式锁</h2>
+    <p>经典写法:<code>SET lock:resource &lt;random-token&gt; NX EX 30</code>。<code>NX</code> 让 "抢锁" 这一步是原子的;<code>EX</code> 保证持有者万一崩溃,锁也会自动过期(不会一直死锁下去)。</p>
+    <pre><code># 获取
+SET lock:order:42 $token NX EX 30      # ok / nil
+
+# 释放 —— 必须是原子的 "检查后删除"(用 Lua),
+# 这样你只删除自己的锁,而不会删除一个已过期并被他人重新获取的锁
+if redis.call('GET', KEYS[1]) == ARGV[1]
+then return redis.call('DEL', KEYS[1]) else return 0 end</code></pre>
+    <div class="warn"><b>三个经典错误:</b>(1) 不设 TTL → 一崩溃就死锁;(2) 删锁时只按键删、不检查 token → 你的锁过期后,可能误删了别人刚拿到的锁;(3) 干活时间超过了 TTL → 锁同时被两个人持有(可以用看门狗自动续期 TTL 来缓解)。</div>
+    <div class="iq"><b>Redlock:</b> 针对 "跨多个独立 Redis 主节点加锁" 这套方案,Martin Kleppmann 有过一段很有名的批评 —— 在 GC 停顿、时钟漂移的情况下,单实例锁对正确性关键的临界区并不安全。可以这样答:"如果锁只是为了效率,单实例的 <code>SET NX EX</code> 够用;如果关乎正确性,我会用真正的共识系统(ZooKeeper/etcd)或栅栏令牌(fencing token)。"</div>
+  </section>
+
+  <!-- ============ PERSISTENCE ============ -->
+  <section id="persist">
+    <h2><span class="num">10</span>持久化 —— RDB vs AOF</h2>
+    <p>内存断电即失,所以 Redis 提供了两种落盘机制。你可以只用一种、两种都用,或者都不用。</p>
+    <div class="grid2">
+      <div class="card">
+        <h4>RDB —— 时间点快照 <span class="tag t-on">紧凑</span></h4>
+        <p>fork 出一个子进程,周期性地把整个数据集 dump 成一个二进制 <code>dump.rdb</code> 文件(例如 <code>save 900 1</code>)。靠写时复制(copy-on-write)让主线程在此期间照常服务。</p>
+        <p><b>+</b> 文件小、重启加载快,很适合做备份和复制时的引导。<br><b>−</b> 一旦崩溃,上次快照之后写入的数据全没了。</p>
+      </div>
+      <div class="card">
+        <h4>AOF —— 只追加命令日志 <span class="tag t-on">持久</span></h4>
+        <p>把每条写命令追加到文件里,重启时重放一遍。<code>appendfsync</code> 控制刷盘时机:<code>always</code>(最安全、最慢)、<code>everysec</code>(默认 —— 最多丢 1 秒)、<code>no</code>(交给操作系统决定)。</p>
+        <p><b>+</b> 丢的数据最少,而且大致能看懂内容。<br><b>−</b> 文件更大、重启更慢。会定期<b>重写</b>(rewrite)来压缩文件。</p>
+      </div>
+    </div>
+    <div class="mermaid">
+flowchart LR
+    W[写命令]:::w --> MEM[(内存数据集)]:::m
+    MEM -->|fork + 写时复制<br/>每 N 秒/达到变更数| RDB[("dump.rdb<br/>快照")]:::rdb
+    W -->|每次写入都追加<br/>每秒 fsync| AOF[("appendonly.aof<br/>命令日志")]:::aof
+    RDB & AOF -.->|重启时| LOAD[重新加载数据集]:::l
+    classDef w fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef rdb fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef aof fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef l fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <table>
+      <tr><th></th><th>RDB</th><th>AOF</th></tr>
+      <tr><td>数据丢失窗口</td><td>几分钟(从上次快照算起)</td><td>≤1 秒(everysec)</td></tr>
+      <tr><td>文件大小</td><td>小(压缩后的二进制)</td><td>较大(逐条记写入)</td></tr>
+      <tr><td>重启速度</td><td>快</td><td>较慢(要重放日志)</td></tr>
+      <tr><td>对延迟的影响</td><td>fork 时有尖峰</td><td>持续的 fsync 开销</td></tr>
+    </table>
+    <div class="analogy"><b>RDB</b> = 每小时给桌面<i>拍一张照</i>:文件小、恢复快,但上次拍照之后写的东西会丢。<b>AOF</b> = 记<i>流水账</i>,每件事都写下来:照着重放就能精确还原,但账本会越记越长。老手两个<i>都用</i> —— 用一张近期照片快速加载,再用账本最后几页补上缺口。</div>
+    <div class="tip"><b>生产建议:</b> <b>两个都开</b>。Redis 7 用的是<b>混合</b>重写 —— AOF 文件开头放一段 RDB 格式的数据(加载快),后面再追加近期命令(丢得少),两头的好处都占了。注意:持久化 ≠ 备份 —— 记得把文件拷到机器之外。</div>
+  </section>
+
+  <!-- ============ REPLICATION ============ -->
+  <section id="repl">
+    <h2><span class="num">11</span>主从复制与读写分离</h2>
+    <p>一个<b>副本</b>(<code>REPLICAOF host port</code>)会维护一份主节点数据的拷贝。复制是<b>异步</b>的:主节点先立即回复客户端,再把写入以数据流的方式发给副本。这样既能分担读流量,又有了热备 —— 代价是数据可能会短暂地不一致(读到旧值)。</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph WRITES["写入"]
+      APPw[应用写入]:::w --> M[(主节点<br/>读+写)]:::m
+    end
+    M -->|异步复制流| R1[(副本 1<br/>只读)]:::r
+    M -->|异步复制流| R2[(副本 2<br/>只读)]:::r
+    APPr[应用读取] -.负载均衡.-> R1
+    APPr -.-> R2
+    classDef w fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>副本是怎么同步的</h4>
+    <ol>
+      <li><b>全量同步(PSYNC):</b> 首次连接时(或落后太多时),主节点 fork 出一个 RDB 快照发给副本,同时把这期间的新写入先存进<b>复制积压缓冲区</b>(replication backlog),随后再补发给副本。</li>
+      <li><b>部分重同步:</b> 短暂断连重连后,副本会请求从自己的偏移量继续;只要这个偏移还在积压缓冲区里,主节点就只补发断开期间缺的那段 —— 不必再来一次全量快照。</li>
+    </ol>
+    <div class="warn"><b>异步 = 已确认的写入也可能丢。</b> 如果主节点回复完客户端、还没来得及复制就崩了,那条写入在故障转移后就没了。<code>WAIT numreplicas timeout</code> 能让你阻塞到 N 个副本都确认为止 —— 更持久,但延迟更高。Redis 本身并不提供真正的同步复制。</div>
+    <div class="analogy">主节点是<b>在黑板上写字的老师</b>,副本是<b>埋头往笔记本上抄的学生</b>。学生也能答问题(读扩展!),但总有那么一瞬,老师写的新内容后排还没抄上 —— 这就是<i>复制延迟</i>。要是老师在后排抄完最后一行之前晕倒了,那行就没了(异步 = 可能丢数据)。</div>
+    <div class="iq"><b>读己之写</b>(read-your-own-writes)要小心:写完主节点立刻去副本读,可能因为延迟而读到旧数据。办法有几种:把关键的读请求打到主节点,或者用 <code>WAIT</code>,再或者干脆接受最终一致性。面试时一定要把这个取舍讲明白。</div>
+  </section>
+
+  <!-- ============ SENTINEL ============ -->
+  <section id="sentinel">
+    <h2><span class="num">12</span>Sentinel —— 自动故障转移(高可用)</h2>
+    <p>光有复制,你只是多了个备用节点,主节点挂了也不会自动顶上。<b>Sentinel（哨兵）</b> 是一组独立的监控进程:它们盯着主节点,(通过法定人数 quorum)一致认定它宕机后,选出一个领头 Sentinel,把某个副本提升为新主节点,再把新的拓扑通知给客户端。</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph SENT["Sentinel 法定人数(奇数个,例如 3)"]
+      S1((Sentinel 1)):::s
+      S2((Sentinel 2)):::s
+      S3((Sentinel 3)):::s
+    end
+    S1 & S2 & S3 -.监控与流言.-> M[(主节点)]:::m
+    S1 & S2 & S3 -.监控.-> R1[(副本 1)]:::r
+    S1 & S2 & S3 -.监控.-> R2[(副本 2)]:::r
+    M -->|复制| R1
+    M -->|复制| R2
+    CL[客户端] -->|问「现在谁是主节点?」| SENT
+    classDef s fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>故障转移流程</h4>
+    <div class="mermaid">
+sequenceDiagram
+    participant S as Sentinels
+    participant M as 主节点
+    participant R as 副本
+    participant C as 客户端
+    S->>M: PING(健康检查)
+    M--xS: 没有回复(超时)
+    Note over S: 1 个 sentinel 标记 SDOWN(主观下线)
+    S->>S: 互相流言 —— 别的节点也这么认为吗?
+    Note over S: 达到法定人数 → ODOWN(客观下线)
+    S->>S: 选出领头 sentinel
+    S->>R: REPLICAOF NO ONE(提升它!)
+    S->>C: 新主节点 = R
+    C->>R: 写入从此发到这里 ✅
+    </div>
+    <div class="analogy">Sentinel 就像盯着老板(主节点)的一群<b>保安</b>。单凭一个保安发现老板没反应还不算数(<b>SDOWN</b> —— 没准是这个保安自己眼花了)。只有当<i>多数人投票</i>认定老板确实出事(<b>ODOWN</b>),他们才会提拔副手(一个副本)上位,并向所有人宣布新老板是谁。保安人数要取奇数,投票才不会打平。</div>
+    <div class="note"><b>关键术语:</b> <b>SDOWN</b> = 单个 Sentinel 认为主节点挂了;<b>ODOWN</b> = 达到法定人数、大家一致认定 → 触发故障转移。把<b>奇数个</b>(≥3)Sentinel 分散部署在不同主机上,这样脑裂时多数派依然能形成。客户端要用支持 Sentinel 的客户端库连接,才能始终找到当前的主节点。</div>
+    <div class="iq"><b>Sentinel vs Cluster:</b> Sentinel = 给<b>单个分片</b>做高可用(一份数据集,主 + 副本,自动故障转移)—— 它<b>不</b>对数据分片。Cluster = 高可用<b>再加上</b>水平分片。如果数据一个节点就装得下,你又只需要故障转移,那 Sentinel 更省事。</div>
+    <h3 id="sentinel-election">哨兵怎么选出领头者（类 Raft）</h3>
+    <p>哨兵之间一直在<b>流言（gossip）</b>——通过一个发布订阅频道，互相交换各自对主节点、以及对彼此的看法。一旦达到法定人数、一致认定主节点 <b>ODOWN</b>，就必须由<b>恰好一个</b>哨兵来执行故障转移——否则两个哨兵可能各自提升出一个副本（也就是<b>脑裂，split-brain</b>）。于是它们走一轮<b>类 Raft 的选举</b>：</p>
+    <ol>
+      <li>每次故障转移都带一个单调递增的<b>纪元（epoch，相当于任期）</b>。</li>
+      <li>发现 ODOWN 的哨兵，请求其他哨兵在这个纪元里投自己当领头者。</li>
+      <li>每个哨兵在每个纪元里只投<b>一票</b>（先到先得）；谁拿到<b>多数票</b>谁当选。</li>
+      <li>领头者挑出最合适的副本（数据最新、优先级数最小），用 <code>REPLICAOF NO ONE</code> 把它提升为主节点，再把其余副本重新指向它。</li>
+    </ol>
+    <div class="warn"><b>脑裂（split-brain）：</b>如果网络分区让旧主节点在少数派那一侧还活着，那一侧的客户端可能继续往它写——等它重新入群、被降级时，这些写入就丢了。可以用 <code>min-replicas-to-write</code> 缓解（可达副本太少时，主节点干脆拒绝写入）。而部署<b>奇数个（≥3）</b>哨兵，正是为了保证任何时刻只有一侧能凑齐多数。</div>
+  </section>
+
+  <!-- ============ CLUSTER ============ -->
+  <section id="cluster">
+    <h2><span class="num">13</span>Cluster —— 水平分片</h2>
+    <p>当数据量或吞吐量超出一台机器的承受范围时,Redis <b>Cluster</b> 会把键空间分片到多个主节点上,每个主节点各自带副本。中间没有代理 —— 客户端直接连到对应的节点。</p>
+    <h4>16384 个哈希槽</h4>
+    <p>键空间被固定划分成 <b>16384 个槽</b>。某个键属于哪个槽 = <code>CRC16(key) mod 16384</code>。每个主节点负责一段连续的槽范围。要定位某个键在哪个节点:先算出它的槽,再看哪个主节点管这个槽。</p>
+    <div class="analogy">想象一座<b>有 16384 个编号书架的图书馆</b>,分散在 3 栋楼里。一本书放在几号书架,由书名经一个公式(CRC16)算出来。要扩容,你不用给每本书重新编号 —— 只需<i>把某几段书架范围划给新建的那栋楼</i>(重新分片)。想让两本相关的书一定待在同一栋楼?在两个书名里都加一个 <code>{标签}</code>,它们就会哈希到同一片书架区域。</div>
+    <div class="mermaid">
+flowchart TB
+    K["键 'user:42'"]:::k --> HC["CRC16(key) mod 16384<br/>= 槽 9012"]:::calc
+    HC --> ROUTE{哪个主节点<br/>管槽 9012?}:::q
+    ROUTE -->|槽 0–5460| MA[(主节点 A + 副本)]:::m
+    ROUTE -->|槽 5461–10922 ✓| MB[(主节点 B + 副本)]:::mh
+    ROUTE -->|槽 10923–16383| MC[(主节点 C + 副本)]:::m
+    classDef k fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef calc fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef mh fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <h4>MOVED / ASK 重定向</h4>
+    <p>如果客户端连错了节点,该节点会回复 <code>MOVED &lt;slot&gt; host:port</code>(永久性 —— 槽就在别处)或 <code>ASK</code>(临时性 —— 槽正在迁移途中)。聪明的客户端会把槽映射缓存下来直接路由;只有拓扑变化时才需要被重定向一次。</p>
+    <div class="warn"><b>多键操作的所有键必须落在同一个槽。</b> <code>MGET a b</code>、<code>SINTER</code>、事务以及跨键的 Lua,只有在所有键都哈希到同一个槽时才能用。可以用<b>哈希标签</b>强制做到:<code>{user:42}:profile</code> 和 <code>{user:42}:cart</code> —— 只有 <code>{}</code> 里的部分参与哈希,所以这两个键会落到一起。</div>
+    <table>
+      <tr><th>关注点</th><th>Cluster 如何处理</th></tr>
+      <tr><td>分片</td><td>16384 个槽分摊到各主节点;键 → CRC16 → 槽 → 节点</td></tr>
+      <tr><td>高可用 / 故障转移</td><td>每个主节点都带副本;主节点之间靠流言通信,某个主节点挂了就提升它的副本(不用额外部署 Sentinel)</td></tr>
+      <tr><td>重新分片</td><td>在节点间在线迁移槽;键跟着搬,迁移过程中用 ASK 重定向兜底</td></tr>
+      <tr><td>故障检测</td><td>走集群总线上的流言协议;多数主节点必须就某节点是否宕机达成一致</td></tr>
+    </table>
+    <div class="iq"><b>为什么是 16384,而不是更多?</b> 流言心跳里要带上每个节点所管槽的位图;16384 位 = 2 KB,小到可以频繁互发也不心疼,同时又远比现实中的节点数多得多,槽能分得很均匀。经典冷知识 —— 值得记一记。</div>
+    <div class="note"><b>怎么选:</b> 单节点够用 + 想要高可用 → <b>Sentinel</b>。数据量 / 吞吐量一个节点扛不住 → <b>Cluster</b>。纯缓存、丢了也无所谓 → 也许什么都不用,挂几个副本就行。</div>
+    <h3 id="cluster-cap">Cluster 与 CAP —— 你在拿什么做交换</h3>
+    <p>按 CAP 定理，一个会发生网络分区的分布式存储，没法同时做到完美的一致性和可用性。Redis 的复制是<b>异步</b>的，所以 Redis Cluster 偏向 <b>AP</b>（保住可用性），而不是 CP：</p>
+    <ul>
+      <li>主节点是<i>先回复客户端、再复制</i>的，所以故障转移时可能<b>丢掉</b>最后那批还没复制出去的写入——不是强一致。</li>
+      <li>节点之间靠集群总线上的<b>流言（gossip）</b>探测故障；只有<b>多数主节点</b>都同意，才会对某个主节点做故障转移——这正是少数派分区无法擅自提升副本的原因。</li>
+      <li><code>cluster-node-timeout</code> 再加上对被孤立的少数派主节点的写入暂停，限制了它还能继续接受写入多久（从而压住<b>脑裂</b>带来的数据分叉）。</li>
+    </ul>
+    <div class="iq">干脆利落地说："Redis Cluster 是<b>异步复制的 AP 系统</b>——优先保可用，并接受故障转移时有一小段可能丢写的窗口。要强一致就得上 CP 系统，或者用 <code>WAIT</code> 换更强的确认（代价是延迟）。"</div>
+  </section>
+
+  <!-- ============ PITFALLS ============ -->
+  <section id="pitfalls">
+    <h2><span class="num">14</span>缓存模式与三大著名失效</h2>
+    <h3>Cache-aside(旁路缓存)—— 默认模式</h3>
+    <div class="mermaid">
+flowchart LR
+    A[应用] -->|1. GET| R[(Redis)]:::r
+    R -->|命中 ✓| A
+    R -.未命中 ✗.-> A
+    A -->|2. 未命中时:读取| DB[(数据库)]:::db
+    DB --> A
+    A -->|3. SET + TTL| R
+    classDef r fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef db fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    </div>
+    <table>
+      <tr><th>问题</th><th>它是什么</th><th>缓解措施</th></tr>
+      <tr><td><b>穿透(Penetration)</b></td><td>查的键在数据库里压根不存在 → 每个请求都直接打到数据库</td><td>就算数据库里也查不到，也把这个<b>空结果</b>用很短的 TTL 缓存下来，后续一模一样的无效查询就不会再打到数据库。再在前面加一层<b>布隆过滤器</b>，一看就不可能存在的键，根本不放它去查库。</td></tr>
+      <tr><td><b>击穿(Breakdown,热点键)</b></td><td>某个特别热的单个键刚好过期 → 一大波请求同时去重建它</td><td>加一把<b>互斥锁</b>，只放一个请求去重建缓存，其余请求稍等它的结果就行。或者干脆让热点键不设物理过期，改用"逻辑过期"——由后台异步悄悄刷新，读到的人始终先拿旧值，不会一窝蜂全涌向数据库。</td></tr>
+      <tr><td><b>雪崩(Avalanche)</b></td><td>大量键在同一刻集中过期(或 Redis 整个挂了)→ 数据库被打垮</td><td>给每个键的 TTL 加上随机<b>抖动</b>，把过期时间错开，避免大家在同一刻集体失效。再配合多级缓存、熔断降级，以及 Redis 自身的高可用，确保缓存不会整个消失。</td></tr>
+    </table>
+    <div class="warn"><b>缓存与数据库的一致性:</b> 双写没有完美方案。常见做法是<b>"先更新数据库,再删除缓存"</b>(cache-aside 失效)。别用 "先更新数据库,再更新缓存"(并发竞争会写进旧值)。想要更强的保证,就别靠应用代码,而是用数据库的 binlog/CDC(比如 Debezium)来触发缓存失效。</div>
+    <h3 id="consistency">缓存与数据库一致性 —— 到底该怎么做</h3>
+    <p>往两个系统里同时写、还想完美一致，是做不到的。所以现实里是一套<b>层层递进</b>的方案：越往后越可靠，也越复杂——按你的需求选到哪层就停：</p>
+    <ol>
+      <li><b>基线 —— Cache Aside：「先更新数据库，再删缓存」。</b>失效时用<b>删</b>而不是<b>改</b>（直接改缓存会和别的写抢，可能写进旧值），而且要<b>在数据库提交之后</b>再删。下一个读的人没命中，自然会从库里读到最新值，再重新缓存。</li>
+      <li><b>加强 —— 延迟双删：</b>基线还留着一个小竞态——你这次删除，可能和"某个并发读正打算把旧值写回缓存"擦肩而过。于是删一次 → 写库 → 过一小会儿<b>再删一次</b>，把中途被塞回的旧值清掉。</li>
+      <li><b>最强 —— 用 binlog/CDC 驱动失效：</b>前两层都靠业务代码<i>记得</i>去删；万一应用在"写完库、还没删缓存"之间崩了，这次失效就漏了。改成订阅数据库的变更日志（比如 Debezium → 删缓存），一条都不会漏。</li>
+    </ol>
+    <div class="warn">认清现实：这是带一个极小旧值窗口的<b>最终一致性</b>，不是分布式事务。如果你真的需要"写完立刻读到自己写的"，那就在写完后直接读数据库（或主节点）的那个键。</div>
+
+    <h3 id="bloom">布隆过滤器 —— 用极小内存挡掉不存在的键</h3>
+    <p><b>布隆过滤器</b>能用极小的内存回答："这个键<i>一定不存在</i>，还是<i>可能存在</i>？"。它是一个位数组 + <b>k</b> 个哈希函数：加一个键就把对应的 k 个位置 1；查的时候就看这 k 个位。只要<i>有一个</i>是 0 → <b>一定不存在</b>（直接拒掉、根本不碰数据库 → 干掉缓存<b>穿透</b>）。如果 k 个全是 1 → <i>可能</i>存在（偶有误判，但<b>绝不会</b>漏判）。</p>
+    <div class="note">取舍：普通布隆过滤器删不掉元素（真要删就用计数型 / cuckoo 变体）。按你想要的误判率来定位数组大小和 k。</div>
+
+    <h3 id="bigkey">大 Key —— 沉默的杀手</h3>
+    <p><b>大 key</b> 就是单个键装了超大的值——一个好几 MB 的 String，或者带上百万成员的 Hash/Set/ZSet。</p>
+    <div class="grid2">
+      <div class="card"><h4>危害在哪</h4><p>一次 O(N) 操作（或一把 <code>DEL</code>）就卡住单线程；内存在 Cluster 各分片上分布不均；一次 <code>GET</code> 就能把网卡打满；过期/删除时还会引发延迟尖刺。</p></div>
+      <div class="card"><h4>怎么排查 & 解决</h4><p>用 <code>redis-cli --bigkeys</code> 或 <code>MEMORY USAGE</code> 找出来。解决靠<b>拆分</b>（把一个大 hash 拆到很多键上）、只读局部（用 <code>HSCAN</code> 而不是 <code>HGETALL</code>）、删除用 <code>UNLINK</code>（异步）而不是 <code>DEL</code>。</p></div>
+    </div>
+
+    <h3 id="hotkey">热 Key —— 蜂拥而上的人群</h3>
+    <p><b>热 key</b> 是某一个键吃掉了多到离谱的流量（明星、秒杀商品）——它会把持有它的那个分片压垮。</p>
+    <div class="grid2">
+      <div class="card"><h4>危害在哪</h4><p>对这个键的所有请求都（按哈希槽）路由到同一个主节点，于是它打满了、其他节点却闲着——而它一旦过期，所有客户端会在同一时刻涌向数据库。</p></div>
+      <div class="card"><h4>怎么排查 & 解决</h4><p>用 <code>redis-cli --hotkeys</code> / 监控找出来。解决靠在前面加<b>本地（进程内）缓存</b>、用<b>副本 + 读写分离</b>分摊读、或者<b>把键拆开</b>（把值复制到多个带后缀的键上，随机挑一个读）。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section id="cheatsheet">
+    <h2><span class="num">15</span>速答速查表</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>为什么快?</h4>
+        <p>内存 + 单线程(原子、无锁)+ epoll 事件循环 + 高效数据结构 + RESP 协议 + 流水线(pipelining)。</p>
+        <h4>热点路径上要避开的 O(N) 命令</h4>
+        <p><code>KEYS *</code>、<code>HGETALL</code>、<code>SMEMBERS</code>、<code>LRANGE 0 -1</code>、<code>FLUSHALL</code>(同步版)。优先用 <code>SCAN</code> 系列,删大键用 <code>UNLINK</code> 而不是 <code>DEL</code>。</p>
+        <h4>原子性工具箱</h4>
+        <p>单条命令 · <code>INCR</code> · <code>MULTI/EXEC</code> · <code>WATCH</code>(CAS)· Lua <code>EVAL</code>。</p>
+      </div>
+      <div class="card">
+        <h4>选类型</h4>
+        <p>计数器 → <b>String/INCR</b> · 对象 → <b>Hash</b> · 队列 → <b>List/Stream</b> · 唯一性/标签 → <b>Set</b> · 排名/排行榜/限流 → <b>ZSet</b> · 去重计数 → <b>HLL</b> · 在线标记 → <b>Bitmap</b> · 地理位置 → <b>GEO</b>。</p>
+        <h4>高可用 / 扩展怎么选</h4>
+        <p>只要故障转移 → <b>Sentinel</b>。分片 + 故障转移 → <b>Cluster</b>(16384 个槽,多键用哈希标签)。分担读流量 → <b>副本</b>(异步,可能读到旧值)。</p>
+        <h4>持久化档位</h4>
+        <p>RDB(快照,快,会丢一点)+ AOF(日志,最多丢 1 秒)→ 两者都用 / 混合。<code>WAIT</code> 可换来更强的副本确认。</p>
+      </div>
+    </div>
+    <div class="iq"><b>随口能甩出来的一句话总结:</b> "Redis 是单线程的,所以每条命令都是原子的。" · "复制是异步的,所以故障转移时可能丢掉还没确认的写入。" · "事务会排队 + 隔离,但不回滚。" · "Cluster 用 CRC16 把键分到 16384 个槽;多键操作得落在同一个槽。" · "Sentinel = 单分片的高可用;Cluster = 高可用 + 分片。" · "当缓存用 allkeys-lru;当数据库用 noeviction。"</div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">16</span>自测闪卡 <span class="xp" id="score">🃏 0 / 0 已翻</span></h2>
+    <p>先盖住答案,大声说出来,再<b>点击翻面</b>对一对。随着你一张张过,进度条会慢慢填满。</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">明明是单线程,Redis 凭什么还这么快?</div><div class="hint">三个原因 →</div></div>
+        <div class="flip-face flip-back">数据在内存(没有磁盘寻道)· 单线程 = 无锁、无上下文切换 &amp; 操作天然原子 · epoll 事件循环 + 紧凑的数据结构 + RESP 协议。单线程是优点,不是短板。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">排行榜 / 限流器该用哪种类型?</div><div class="hint">外加关键命令 →</div></div>
+        <div class="flip-face flip-back"><b>Sorted Set(ZSet)</b>。带分数 <code>ZADD</code>,用 <code>ZREVRANGE 0 9</code> 取 Top-10。做限流器:分数 = 时间戳,用 <code>ZREMRANGEBYSCORE</code> 清旧条目,用 <code>ZCARD</code> 计数。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">MULTI/EXEC 出错时会回滚吗?</div><div class="hint">陷阱题 →</div></div>
+        <div class="flip-face flip-back"><b>不回滚。</b> 命令会排队、隔离执行,但其中某条出运行时错误,并不会撤销别的命令。它提供的是隔离性,不是 SQL 那种 ACID 原子性。真正的读取-修改-写入逻辑要用 Lua。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">一口气说清 RDB 和 AOF 的区别?</div><div class="hint">照片 vs 流水账 →</div></div>
+        <div class="flip-face flip-back"><b>RDB</b> = 周期性快照:文件小、重启快、会丢近期写入。<b>AOF</b> = 逐条记写入:最多丢 1 秒、文件更大也更慢。两者都用 → Redis 7 混合格式(开头 RDB + 尾部 AOF)。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">复制是同步还是异步?会带来什么后果?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>异步。</b> 主节点不等副本确认就先回复 → 崩溃后做故障转移,可能丢掉已确认的写入。用 <code>WAIT n</code> 换更强的持久性;从副本读可能读到旧值(延迟)。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Sentinel vs Cluster —— 何时用哪个?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>Sentinel</b> = 单分片的自动故障转移(不做分片)。<b>Cluster</b> = 跨 16384 个槽分片 + 内置故障转移。数据一个节点装得下 + 要高可用 → Sentinel。一个节点装不下 → Cluster。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Cluster 怎么定位一个键在哪个节点?</div><div class="hint">公式 →</div></div>
+        <div class="flip-face flip-back"><code>slot = CRC16(key) mod 16384</code>;哪个主节点管这个槽就归它。连错节点 → 用 <code>MOVED</code>/<code>ASK</code> 重定向。多键操作要落在同一个槽 → 用 <code>{hash tag}</code>。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">用一行写出安全的分布式锁?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><code>SET lock val NX EX 30</code>(原子抢锁 + 自动过期)。释放用 <b>Lua</b>,在 <code>DEL</code> 前先核对 token,这样绝不会误删别人的锁。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">淘汰策略:当缓存用 vs 当数据库用?</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">当缓存 → <code>allkeys-lru</code>(流量很不均匀时用 <code>lfu</code>)。当主存储 → <code>noeviction</code>,这样写入会直接报错,而不是悄悄把数据丢掉。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">穿透 vs 击穿 vs 雪崩?</div><div class="hint">3 种缓存失效 →</div></div>
+        <div class="flip-face flip-back"><b>穿透</b>:不存在的键狂打数据库 → 缓存空值 / 布隆过滤器。<b>击穿</b>:某个热点键过期 → 加互斥锁,只让一个去重建。<b>雪崩</b>:大量键同时过期 → TTL 加抖动 + 做高可用。</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 全部翻转</button>
+      <button class="btn" id="resetdeck">↺ 重置</button>
+      <span>小提示:盖住右栏,拿来考考朋友。</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">17</span>Boss 级问题 <span class="boss">专家</span></h2>
+    <p>这些题,能把 "用过 Redis" 和 "真懂 Redis" 区分开。先自己想,再点开看答案。</p>
+
+    <details class="qa"><summary>为什么偏偏是 <b>16384</b> 个槽 —— 为什么不是一百万? <span class="boss lvl2">中等</span></summary>
+      <div class="ans">每次心跳里,节点都要用<b>位图</b>把自己负责的槽流言出去。16384 位 = 每条消息 2 KB —— 一直发也不费什么。换成一百万个槽,每次心跳就臃肿了。而 16384 仍然远比现实中的节点数多,槽因此能分得很均匀。这正是 "大到足以分均匀、小到足以随便传" 的那个甜点位。</div>
+    </details>
+
+    <details class="qa"><summary>你最热的键在半夜过期,1 万个请求一下子全压到数据库上。怎么救? <span class="boss lvl3">困难</span></summary>
+      <div class="ans">这是典型的<b>缓存击穿</b>。几种办法:(1) <b>互斥锁</b> —— 第一个没命中的请求拿到锁(<code>SET NX</code>)去重建,其他请求稍等片刻或先返回旧值。(2) <b>逻辑过期</b> —— 这个键不设物理过期;另存一个 "逻辑过期时间" 字段,读取时如果发现逻辑上已经过期,就派一个线程异步刷新,其他人继续拿旧值用。(3) 提前预热 + 给 TTL 加随机,让热点键不会同时到期(这一点顺带也能防<b>雪崩</b>)。</div>
+    </details>
+
+    <details class="qa"><summary>跨网络做读取-修改-写入,怎么保证原子 —— 以及为什么 <code>WATCH</code> 常常不是正确的选择? <span class="boss lvl2">中等</span></summary>
+      <div class="ans">通常<b>Lua / <code>EVAL</code></b> 最合适:整个读取→判断→写入在服务端一次性原子完成,只一次往返,没有竞态窗口。<code>WATCH</code>/<code>MULTI</code> 走的是<i>乐观</i> CAS —— 被监视的键一变它就中止,你得重试,在高并发竞争下会演变成重试风暴和额外往返。纯算术用 <code>INCR</code>/<code>HINCRBY</code>;带条件判断的逻辑用 Lua;<code>WATCH</code> 只留给那种偶尔发生、竞争很低的场景。</div>
+    </details>
+
+    <details class="qa"><summary>Redis 的分布式锁真的<i>安全</i>吗? <span class="boss lvl3">困难</span></summary>
+      <div class="ans">如果只是为了<b>效率</b>(避免重复干活)—— 安全,<code>SET NX EX</code> + Lua 释放完全够用。如果关乎<b>正确性</b>(绝不允许同时有两个持有者)—— 那就不保险了:单实例锁并非万无一失,一次 GC 停顿或时钟漂移,就可能让锁在你以为还握着的时候早已过期。后来有人提出 Redlock(多主),但 Kleppmann 的批评指出,在这些条件下它照样不安全。老实的答案是:对正确性关键的锁,要用<b>栅栏令牌</b>(fencing token,一个单调递增、由资源端校验的数),或者干脆用真正的共识存储(etcd/ZooKeeper)。</div>
+    </details>
+
+    <details class="qa"><summary>主节点挂了。一步步讲讲 Sentinel 都做了什么。 <span class="boss lvl2">中等</span></summary>
+      <div class="ans">(1) 各个 Sentinel <code>PING</code> 主节点;其中一个收不到回复 → 把它标记为 <b>SDOWN</b>(主观下线)。(2) 它通过流言去问其他节点;一旦达到配置的<b>法定人数</b>都同意 → <b>ODOWN</b>(客观下线)。(3) Sentinel 们<b>选出一个领头者</b>(类似 Raft)。(4) 领头者挑出最合适的副本(数据最新、优先级数最小),给它发 <code>REPLICAOF NO ONE</code> 把它提升为主节点。(5) 其余副本被改指向新主节点;来问 Sentinel 的客户端会拿到新地址。整个过程会有短暂不可用,还可能丢掉少量异步写入。</div>
+    </details>
+
+    <details class="qa"><summary>你给 100 万个键设了过期,可内存几乎没降。为什么? <span class="boss lvl2">中等</span></summary>
+      <div class="ans">过期走的是<b>惰性 + 主动采样</b>,不是立刻清掉。一直没人访问的过期键会赖着不走,直到被访问到(惰性),或被那个约 10Hz 的采样周期抽中(它每轮只删一批,且是概率性的)。要想立刻批量清掉,就显式删除(大键用 <code>UNLINK</code> 异步释放),或者靠 <code>maxmemory</code> + 淘汰来处理。另外提醒一句:删除 / 过期本身也是单线程上的活儿,所以一大批键同时过期会引起延迟尖峰。</div>
+    </details>
+
+    <details class="qa"><summary>单线程什么时候会真的成为瓶颈,这时该怎么办? <span class="boss lvl3">困难</span></summary>
+      <div class="ans">当单核的命令执行能力被打满,或者一条大的 O(N) 命令把一切都拖住时。应对办法:<b>用 Cluster 分片</b>(主节点越多 = 可用核越多);干掉 O(N) 的热点命令(用 <code>SCAN</code> 代替 <code>KEYS</code>,别跑超大的 <code>HGETALL</code>);用<b>流水线</b>摊薄往返开销;把 CPU 密集的活儿从 Lua 里挪出去;再借助 Redis 6+ 的<b>多线程 I/O</b> 分担套接字层的工作。要记住,键空间的改动按设计依然是串行的 —— 你能做的是横向<i>扩出去</i>,而不是把那个执行线程纵向<i>加速</i>。</div>
+    </details>
+  </section>
+
+  <div class="footer">
+    单个自包含文件 · 图示由 Mermaid.js 生成 · 任意浏览器直接打开,不用起服务器。<br>
+    上面讲的都能用 <code>redis-cli</code> 当场验证:<code>OBJECT ENCODING k</code>、<code>INFO replication</code>、<code>CLUSTER NODES</code>、<code>MEMORY USAGE k</code>。
+  </div>
+</main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

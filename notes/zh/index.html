@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Engineering Notes</title>
+<title>工程笔记</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#f4efe4; --panel:#fffdf8; --border:#e4dccc; --text:#2c2823; --muted:#6f6657;
-    --serif:"Newsreader","Iowan Old Style",Georgia,serif;
-    --display:"Shantell Sans","Bradley Hand",cursive;
-    --hand:"Shantell Sans","Bradley Hand",cursive;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Noto Serif SC",serif;
+    --display:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+    --hand:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);font-size:18px;line-height:1.7;
@@ -23,6 +23,7 @@
   .kicker{font-family:var(--hand);font-size:1.6rem;color:#c43d8a;margin-bottom:2px}
   h1{font-family:var(--display);font-weight:500;font-size:2.8rem;letter-spacing:-.01em;color:#1c1814;margin:0 0 8px;line-height:1.08}
   .sub{color:#5c5346;max-width:600px;margin:0 0 38px;font-size:1.06rem}
+  .lang{font-size:.9rem;margin:0 0 28px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
   @media(max-width:720px){.grid{grid-template-columns:1fr}}
   a.card{display:block;text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--border);
@@ -38,7 +39,7 @@
   .redis h2{color:#a83a25}.db h2{color:#155f57}.dist h2{color:#403a9e}.net h2{color:#274f8c}
   .card p{margin:0 0 14px;color:#5c5346;font-size:.96rem;line-height:1.55}
   .tags{display:flex;flex-wrap:wrap;gap:6px}
-  .t{font-family:"Newsreader",serif;font-size:.74rem;padding:3px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:#f3ecdf}
+  .t{font-family:"Newsreader","Noto Serif SC",serif;font-size:.74rem;padding:3px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:#f3ecdf}
   .go{font-family:var(--hand);font-size:1.3rem;margin-top:14px;display:inline-block}
   .redis .go{color:#c4452e}.db .go{color:#1f7a70}.dist .go{color:#5b54c7}.net .go{color:#3367b5}
   .soon{opacity:.6;pointer-events:none}
@@ -48,50 +49,50 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="kicker">tech knowledge, by hand</div>
-    <h1>Engineering Notes</h1>
-    <p class="sub">Single-page visual notes — diagrams, analogies, flashcards, and boss-level questions — for the systems worth knowing cold. Pick one and scroll.</p>
-    <p style="font-size:.9rem;margin:0 0 28px"><a href="zh/index.html" style="color:#1f7a70">中文版本 →</a></p>
+    <div class="kicker">手写的技术知识</div>
+    <h1>工程笔记</h1>
+    <p class="sub">一页讲透一个系统的可视化笔记：图解、类比、记忆卡片，还有高阶难题，帮你把那些该烂熟于心的系统彻底吃透。挑一篇，往下滚就行。</p>
+    <p class="lang"><a href="../index.html">English version →</a></p>
 
     <div class="grid">
       <a class="card redis" href="redis-guide.html">
         <div class="accent"></div>
         <div class="ico">◆</div>
         <h2>Redis</h2>
-        <p>In-memory data structures, atomicity, persistence (RDB/AOF), replication, Sentinel &amp; Cluster — the whole mental model.</p>
-        <div class="tags"><span class="t">data types</span><span class="t">MVCC-free atomicity</span><span class="t">cluster</span><span class="t">caching</span></div>
-        <span class="go">read →</span>
+        <p>内存数据结构、原子性、持久化（RDB/AOF）、复制、Sentinel 与 Cluster——完整的心智模型。</p>
+        <div class="tags"><span class="t">数据类型</span><span class="t">无需 MVCC 的原子性</span><span class="t">集群</span><span class="t">缓存</span></div>
+        <span class="go">阅读 →</span>
       </a>
 
       <a class="card db" href="reldb-guide.html">
         <div class="accent"></div>
         <div class="ico">⛁</div>
-        <h2>Relational DBs</h2>
-        <p>MySQL &amp; PostgreSQL: SQL, indexes, transactions &amp; isolation, MVCC, the WAL, replication, sharding, plus SQL-vs-NoSQL.</p>
-        <div class="tags"><span class="t">SQL</span><span class="t">indexes</span><span class="t">ACID</span><span class="t">MVCC</span><span class="t">replication</span></div>
-        <span class="go">read →</span>
+        <h2>关系型数据库</h2>
+        <p>MySQL 与 PostgreSQL：SQL、索引、事务与隔离级别、MVCC、WAL、复制、分片，以及 SQL 与 NoSQL 的对比。</p>
+        <div class="tags"><span class="t">SQL</span><span class="t">索引</span><span class="t">ACID</span><span class="t">MVCC</span><span class="t">复制</span></div>
+        <span class="go">阅读 →</span>
       </a>
 
       <a class="card dist" href="distributed-guide.html">
         <div class="accent"></div>
         <div class="ico">🌐</div>
-        <h2>Distributed Systems</h2>
-        <p>CAP &amp; BASE, consensus (Raft/Paxos/ZAB), distributed transactions, locks, IDs, rate limiting, RPC, and ZooKeeper.</p>
-        <div class="tags"><span class="t">CAP</span><span class="t">Raft</span><span class="t">2PC/Saga</span><span class="t">Snowflake</span><span class="t">rate limit</span></div>
-        <span class="go">read →</span>
+        <h2>分布式系统</h2>
+        <p>CAP 与 BASE、共识（Raft/Paxos/ZAB）、分布式事务、分布式锁、分布式 ID、限流、RPC，以及 ZooKeeper。</p>
+        <div class="tags"><span class="t">CAP</span><span class="t">Raft</span><span class="t">2PC/Saga</span><span class="t">雪花算法</span><span class="t">限流</span></div>
+        <span class="go">阅读 →</span>
       </a>
 
       <a class="card net" href="network-guide.html">
         <div class="accent"></div>
         <div class="ico">📡</div>
-        <h2>Networking</h2>
-        <p>TCP handshakes &amp; reliability, HTTP/1·2·3, HTTPS/TLS, Cookie vs JWT, WebSocket vs SSE, DNS, and "type a URL".</p>
+        <h2>计算机网络</h2>
+        <p>TCP 握手与可靠性、HTTP/1·2·3、HTTPS/TLS、Cookie 与 JWT、WebSocket 与 SSE、DNS，以及"输入 URL 后发生了什么"。</p>
         <div class="tags"><span class="t">TCP/IP</span><span class="t">HTTP/2·3</span><span class="t">TLS</span><span class="t">JWT</span><span class="t">WebSocket</span></div>
-        <span class="go">read →</span>
+        <span class="go">阅读 →</span>
       </a>
     </div>
 
-    <div class="footer">More notes will land here. Each is one self-contained HTML file.</div>
+    <div class="footer">更多笔记会陆续上线，每篇都是一个独立的 HTML 文件。</div>
   </div>
 </body>
 </html>

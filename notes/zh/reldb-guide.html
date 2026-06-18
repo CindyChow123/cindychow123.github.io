@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关系型数据库（MySQL 与 PostgreSQL）— 可视化工程与面试指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#1f7a70; --red2:#155f57;
+    --accent:#3a6ea8; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,"Noto Sans SC",monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Noto Serif SC","Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans SC",sans-serif;
+    --hand:"Shantell Sans","Bradley Hand","Noto Serif SC",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#eae6d6;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#155f57}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#d9ebe7;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(31,122,112,.14), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#eef1e9);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 面试视角";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* db badges */
+  .db{display:inline-block;font-family:var(--sans);font-weight:800;font-size:.7rem;padding:2px 8px;border-radius:6px;margin-right:6px;vertical-align:middle}
+  .pg{background:#e7f0f8;color:#27598a;border:1px solid #bcd6ea}
+  .my{background:#fdeede;color:#9a5a16;border:1px solid #ecccA0}
+  .both{background:#eef0e6;color:#5a6a3a;border:1px solid #cdd6b8}
+
+  /* ---- analogy ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 现实类比";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--accent),var(--purple));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(31,122,112,.4)}
+
+  /* ---- flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:168px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.88rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#d9ebe7}
+
+  /* ---- reveal Q&A ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ 点击查看";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ 答案"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#dcefeb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>概览</h2>
+  <a href="#map">全局结构</a>
+  <h2>基础</h2>
+  <a href="#intro">关系模型</a>
+  <a href="#schema">键与约束</a>
+  <h2>SQL</h2>
+  <a href="#sql">SQL 结构与执行顺序</a>
+  <a href="#joins">连接（Join）</a>
+  <a href="#aggregation">聚合与分组</a>
+  <a href="#advanced">子查询 · CTE · 窗口函数</a>
+  <a href="#types">数据类型</a>
+  <h2>设计</h2>
+  <a href="#normalization">范式化</a>
+  <h2>性能</h2>
+  <a href="#indexes">索引</a>
+  <a href="#explain">查询规划器与 EXPLAIN</a>
+  <a href="#pitfalls">查询陷阱</a>
+  <h2>事务</h2>
+  <a href="#acid">ACID</a>
+  <a href="#isolation">隔离级别与异常</a>
+  <a href="#mvcc">锁与 MVCC</a>
+  <a href="#deadlock">死锁</a>
+  <h2>内部原理</h2>
+  <a href="#wal">WAL、恢复与存储</a>
+  <h2>扩展与高可用</h2>
+  <a href="#replication">复制</a>
+  <a href="#ha">故障切换（HA）</a>
+  <a href="#sharding">分区与分片</a>
+  <a href="#pooling">连接池</a>
+  <h2>运维</h2>
+  <a href="#backup">备份与恢复</a>
+  <a href="#security">安全</a>
+  <h2>对比</h2>
+  <a href="#sqlnosql">SQL 与 NoSQL</a>
+  <a href="#vs">MySQL 与 PostgreSQL</a>
+  <h2>实战 🎮</h2>
+  <a href="#quiz">自测闪卡</a>
+  <a href="#boss">Boss 级问题</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">⛁ 关系型数据库</span><br>MySQL 与 PostgreSQL — 可视化指南</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="../reldb-guide.html">English version →</a></p>
+    <p>做工程、过面试需要装进脑子里的全部内容：关系模型、SQL、索引、事务与隔离、MVCC、预写日志、复制、分片和运维，全部配有图解；凡是 MySQL 和 Postgres 行为有出入的地方，都附上"MySQL vs Postgres"的对比说明。</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>怎么玩：</b>边滚边读（顶部有进度条），点开 🎭 类比帮你记牢，到<a href="#quiz">自测</a>里翻 🃏 闪卡，最后挑战 🎯 <a href="#boss">Boss 级问题</a>。<span class="db pg">PG</span><span class="db my">MySQL</span><span class="db both">BOTH</span> 这几个徽章，标的是和具体引擎相关的行为。</p>
+    <div class="pills">
+      <span class="pill">ACID 事务</span>
+      <span class="pill">声明式 SQL</span>
+      <span class="pill">B-tree 索引</span>
+      <span class="pill">MVCC 并发控制</span>
+      <span class="pill">预写日志</span>
+      <span class="pill">复制与高可用</span>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>全局结构 —— 一张图记住全部</h2>
+    <div class="tldr"><b>主线：</b><b>建模</b>数据 → <b>查询</b>数据 → <b>设计</b>表结构 → 让它<b>跑得快</b> → 并发下保持<b>正确</b> → 崩溃后能恢复地<b>存储</b> → <b>扩展</b> → <b>运维</b> → 知道何时<b>不该</b>用它。记住这条主线，后面每一节都挂在它上面。</div>
+    <div class="mermaid">
+flowchart TB
+    REL["关系模型<br/>表 · 键 · 约束"]:::core -->|用什么查询| SQL["SQL<br/>连接 · 聚合 · 子查询/CTE/窗口"]:::feat
+    REL -->|表结构取决于| NORM["范式化<br/>(↔ 为性能反范式)"]:::feat
+    SQL -->|靠什么提速| IDX["索引（B+Tree）"]:::feat
+    IDX -->|由谁来选| PLAN["查询优化器"]:::feat
+    PLAN -->|用什么查看| EXP["EXPLAIN"]:::feat
+    WAL["WAL — 预写日志"]:::core -->|提供| AD["原子性 + 持久性<br/>+ 崩溃恢复"]:::feat
+    LCK["锁 + MVCC"]:::core -->|提供| ISO["隔离性"]:::feat
+    AD -->|ACID 占两项| TXN["事务 = ACID"]:::idea
+    ISO -->|再占一项| TXN
+    ISO -->|按所选级别挡住| ANO["脏读 · 不可重复读 · 幻读"]:::feat
+    WAL -->|日志流驱动| REP["复制"]:::feat
+    REP -->|实现| FO["故障转移（HA）+ 读扩展"]:::feat
+    REP -->|单机不够就上| SHARD["分区 / 分片"]:::feat
+    click REL href "#intro" "关系模型" _self
+    click SQL href "#sql" "SQL 结构与执行顺序" _self
+    click NORM href "#normalization" "范式化" _self
+    click IDX href "#indexes" "索引（B+Tree）" _self
+    click PLAN href "#explain" "查询优化器与 EXPLAIN" _self
+    click EXP href "#explain" "EXPLAIN" _self
+    click WAL href "#wal" "WAL、恢复与存储" _self
+    click AD href "#acid" "ACID" _self
+    click LCK href "#mvcc" "锁与 MVCC" _self
+    click ISO href "#isolation" "隔离级别与异常" _self
+    click TXN href "#acid" "事务 = ACID" _self
+    click ANO href "#isolation" "隔离异常" _self
+    click REP href "#replication" "复制" _self
+    click FO href "#ha" "故障转移（HA）" _self
+    click SHARD href "#sharding" "分区与分片" _self
+    classDef core fill:#e4f1ee,stroke:#1f7a70,color:#155f57;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 点击任意方框，跳转到对应的讲解章节</p>
+    <div class="tip"><b>两个反复出现的套路：</b>（1）<b>扩展升级路线</b>：单机 → 复制 → 故障转移 → 分片（和 Redis 一个套路）；（2）<b>隔离级别阶梯</b>，从弱到强：READ UNCOMMITTED → READ COMMITTED → REPEATABLE READ → SERIALIZABLE。</div>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>关系模型</h2>
+    <p>关系型数据库以<b>表</b>（关系）的形式存储数据：行（元组/记录）配上列（属性），每一列都有固定的<b>类型</b>，表与表之间通过<b>键</b>关联。你用声明式 <b>SQL</b> 描述<i>想要什么</i>，至于<i>怎样</i>高效地把数据取出来，交给数据库的<b>查询规划器</b>去想。正是这种分工，加上强一致性保证（ACID），让关系型数据库成了凡是讲究正确性的系统的默认之选。</p>
+
+    <div class="mermaid">
+erDiagram
+    CUSTOMER ||--o{ "ORDER" : "下单"
+    "ORDER" ||--|{ LINE_ITEM : "包含"
+    PRODUCT ||--o{ LINE_ITEM : "出现于"
+    CUSTOMER {
+      bigint id PK
+      string email UK
+      string name
+    }
+    "ORDER" {
+      bigint id PK
+      bigint customer_id FK
+      timestamp created_at
+      numeric total
+    }
+    LINE_ITEM {
+      bigint order_id FK
+      bigint product_id FK
+      int qty
+    }
+    PRODUCT {
+      bigint id PK
+      string sku UK
+      numeric price
+    }
+    </div>
+
+    <div class="grid3">
+      <div class="card"><div class="big">ACID</div><div class="kv">原子性、一致性、隔离性、持久性 —— 正确性的契约</div></div>
+      <div class="card"><div class="big">声明式</div><div class="kv">你只说要什么结果，算法和索引由规划器去挑</div></div>
+      <div class="card"><div class="big">写时模式</div><div class="kv">结构和类型在写入时校验，而不是读取时</div></div>
+    </div>
+    <div class="analogy">表就是<b>带规则的电子表格</b>：每一列都有类型，每一行都由它的键唯一标识，该放数字的地方塞不进文本。外键则像一个<i>必须</i>指向另一张表中某条真实行的单元格——数据库不允许这种关联指向空处。</div>
+    <div class="iq">"<i>用 SQL 还是 NoSQL？</i>"——如果要在带关联关系的结构化数据（订单、支付、库存）上做<b>多行事务、连接和强一致性</b>，就用关系型；如果要的是海量水平扩展、灵活或稀疏的模式，或者只有某种固定的访问模式（KV、文档、宽列）且能放宽一致性，那就用 NoSQL。</div>
+  </section>
+
+  <!-- ============ SCHEMA / KEYS ============ -->
+  <section id="schema">
+    <h2><span class="num">02</span>键与约束</h2>
+    <p>约束是数据库替你把数据完整性<i>兜底</i>的手段，省得你去指望应用代码永远不出错。</p>
+    <table>
+      <tr><th>约束</th><th>保证</th></tr>
+      <tr><td><b>PRIMARY KEY</b></td><td>唯一 + NOT NULL 的行标识符。每张表一个。通常就是聚簇键。</td></tr>
+      <tr><td><b>FOREIGN KEY</b></td><td>某列的值必须在被引用的表里真实存在，也就是引用完整性。支持 <code>ON DELETE CASCADE/RESTRICT/SET NULL</code>。</td></tr>
+      <tr><td><b>UNIQUE</b></td><td>无重复值（视引擎可允许一个或多个 NULL）。由唯一索引支撑。</td></tr>
+      <tr><td><b>NOT NULL</b></td><td>值必填。</td></tr>
+      <tr><td><b>CHECK</b></td><td>任意布尔规则，例如 <code>CHECK (price &gt;= 0)</code>。<span class="db my">MySQL</span> 从 8.0.16 起才真正强制执行。</td></tr>
+      <tr><td><b>DEFAULT</b></td><td>未提供值时使用的默认值。</td></tr>
+    </table>
+    <h4>自然键 vs 代理键</h4>
+    <p><b>自然键</b>取自数据本身（邮箱、身份证号），<b>代理键</b>则是人造的 id（自增 <code>BIGINT</code> / <code>SERIAL</code> / <code>IDENTITY</code>，或 UUID）。代理键通常更适合做稳定的主键，因为自然值会变、还可能很长。</p>
+    <div class="warn"><b>用 UUID 做主键要当心：</b>随机的 UUID v4 主键会破坏聚簇索引的写入局部性（插入点四处乱跳，导致页分裂和碎片化）。优先用自增 <code>BIGINT</code>；确实需要全局唯一键时，改用按时间有序的 ID（UUID v7 / ULID / Snowflake）。</div>
+  </section>
+
+  <!-- ============ SQL ANATOMY ============ -->
+  <section id="sql">
+    <h2><span class="num">03</span>SQL 结构与逻辑执行顺序</h2>
+    <p>SQL 分为几个子语言：<b>DDL</b>（定义：<code>CREATE/ALTER/DROP</code>）、<b>DML</b>（操作：<code>SELECT/INSERT/UPDATE/DELETE</code>）、<b>DCL</b>（控制：<code>GRANT/REVOKE</code>）、<b>TCL</b>（事务：<code>BEGIN/COMMIT/ROLLBACK</code>）。</p>
+    <p>最有用、也最该烂熟于心的一点是：一条 <code>SELECT</code> 的<b>书写</b>顺序和它的<b>逻辑执行</b>顺序并不一样。这就解释了为什么 <code>SELECT</code> 里定义的别名不能用在 <code>WHERE</code> 里，却能用在 <code>ORDER BY</code> 里。</p>
+    <div class="mermaid">
+flowchart LR
+    F["① FROM / JOIN<br/>组装行"]:::s --> W["② WHERE<br/>过滤行"]:::s --> G["③ GROUP BY<br/>分组"]:::s --> H["④ HAVING<br/>过滤分组"]:::s --> S["⑤ SELECT<br/>选列 / 别名"]:::s --> D["⑥ DISTINCT"]:::s --> O["⑦ ORDER BY<br/>排序"]:::s --> L["⑧ LIMIT / OFFSET"]:::s
+    classDef s fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    </div>
+    <div class="tip"><b>为什么这很重要：</b><code>WHERE</code> 在 <code>SELECT</code> 之前执行，此时 <code>SELECT</code> 里定义的列别名还不存在，自然没法拿来过滤；<code>ORDER BY</code> 在 <code>SELECT</code> 之后执行，所以别名在那里<i>就</i>可用了。<code>HAVING</code> 在分组<i>之后</i>过滤（针对聚合结果），<code>WHERE</code> 在分组<i>之前</i>过滤（更省，能早过滤就早过滤）。</p>
+    <pre><code>SELECT customer_id, COUNT(*) AS orders, SUM(total) AS revenue
+FROM   "order"
+WHERE  created_at &gt;= '2026-01-01'      -- 先过滤行（可用索引）
+GROUP  BY customer_id                  -- 然后分组
+HAVING SUM(total) &gt; 1000               -- 然后过滤分组
+ORDER  BY revenue DESC                  -- 这里可以用别名
+LIMIT  10;</code></pre>
+  </section>
+
+  <!-- ============ JOINS ============ -->
+  <section id="joins">
+    <h2><span class="num">04</span>连接（Join）</h2>
+    <p>连接按匹配条件把多张表的行拼到一起。把下面四种形态吃透，几乎任何查询你都能读懂。</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph T["连接类型 —— A 按某个键连接到 B"]
+      direction LR
+      I["INNER<br/>仅两边都匹配<br/>的行"]:::g
+      L["LEFT<br/>A 的全部 +<br/>B 中的匹配项<br/>（无匹配则为 NULL）"]:::b
+      R["RIGHT<br/>B 的全部 +<br/>A 中的匹配项"]:::b
+      Fj["FULL OUTER<br/>A 和 B 的全部<br/>（无匹配处为 NULL）"]:::a
+    end
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef b fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef a fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    </div>
+    <table>
+      <tr><th>类型</th><th>返回</th><th>常见用途</th></tr>
+      <tr><td><code>INNER JOIN</code></td><td>两张表中都有匹配的行</td><td>有客户的订单</td></tr>
+      <tr><td><code>LEFT JOIN</code></td><td>左表全部行；无匹配则右表列为 NULL</td><td>所有客户 + 他们的订单（含没有订单的客户）</td></tr>
+      <tr><td><code>RIGHT JOIN</code></td><td>右表全部行；无匹配则左表列为 NULL</td><td>少见，一般会改写成 LEFT</td></tr>
+      <tr><td><code>FULL OUTER</code></td><td>两侧全部行</td><td>核对两份数据集。<span class="db my">MySQL</span> 不支持，可用 <code>UNION</code> 模拟</td></tr>
+      <tr><td><code>CROSS JOIN</code></td><td>笛卡尔积（所有组合）</td><td>生成网格/序列；一不小心写出来很危险</td></tr>
+      <tr><td><code>SELF JOIN</code></td><td>表与自身连接</td><td>员工 → 经理的层级关系</td></tr>
+    </table>
+    <h4>引擎实际是怎么连接的（算法）</h4>
+    <table>
+      <tr><th>算法</th><th>怎么做</th><th>何时合适</th></tr>
+      <tr><td><b>嵌套循环（Nested loop）</b></td><td>遍历外表每一行，逐一查找匹配项（最好走索引）</td><td>外表结果集小 + 内表有索引</td></tr>
+      <tr><td><b>哈希连接（Hash join）</b></td><td>在较小一侧建哈希表，再用另一侧去探查</td><td>大表、未排序的等值连接。<span class="db my">MySQL</span> 8.0 起支持</td></tr>
+      <tr><td><b>归并连接（Merge join）</b></td><td>两侧都按键排好序，齐头并进逐行匹配</td><td>两侧本就按该键排序或建了索引</td></tr>
+    </table>
+    <div class="iq">一个经典陷阱：在 <code>WHERE</code> 里过滤 <code>LEFT JOIN</code> 的右表（<code>WHERE b.x = 5</code>），会悄悄把它退化成内连接（NULL 过不了这个判断）。要保留没匹配上的左表行，就得把条件挪进 <code>ON</code> 子句。</div>
+  </section>
+
+  <!-- ============ AGGREGATION ============ -->
+  <section id="aggregation">
+    <h2><span class="num">05</span>聚合与分组</h2>
+    <p>聚合函数把多行压成一个值，<code>GROUP BY</code> 则为每个分组输出一行。</p>
+    <table>
+      <tr><th>函数</th><th>说明</th></tr>
+      <tr><td><code>COUNT(*)</code> vs <code>COUNT(col)</code></td><td><code>*</code> 统计行数；<code>col</code> 跳过 NULL。<code>COUNT(DISTINCT col)</code> 统计去重值。</td></tr>
+      <tr><td><code>SUM / AVG / MIN / MAX</code></td><td>忽略 NULL。<code>AVG</code> = 非 NULL 值的 SUM/COUNT。</td></tr>
+      <tr><td><code>STRING_AGG</code> <span class="db pg">PG</span> / <code>GROUP_CONCAT</code> <span class="db my">MySQL</span></td><td>把分组内的多个值拼成一个字符串。</td></tr>
+      <tr><td><code>FILTER (WHERE ...)</code> <span class="db pg">PG</span></td><td>条件聚合，例如 <code>COUNT(*) FILTER (WHERE status='paid')</code>。</td></tr>
+    </table>
+    <div class="warn"><b>NULL 不是零，也不等于任何值。</b><code>NULL = NULL</code> 的结果是<i>未知</i>，而不是真，所以判空要用 <code>IS NULL</code>，替换则用 <code>COALESCE(x, 0)</code>。<code>COUNT(*)</code> 会把含 NULL 的行也算进去；对一列全是 NULL 的值求 <code>SUM</code>，返回的是 NULL 而不是 0。</div>
+    <div class="note"><b>GROUP BY 的严格程度：</b>在标准 SQL 和 <span class="db pg">PG</span> 里，<code>SELECT</code> 中每个非聚合列都必须出现在 <code>GROUP BY</code> 里。<span class="db my">MySQL</span> 早年允许宽松分组（随便取一个值），除非开了 <code>ONLY_FULL_GROUP_BY</code>（5.7+ 默认开启）。</div>
+  </section>
+
+  <!-- ============ ADVANCED ============ -->
+  <section id="advanced">
+    <h2><span class="num">06</span>子查询、CTE 与窗口函数</h2>
+    <h3>子查询</h3>
+    <p>就是套在另一个查询里的查询。分为<b>标量子查询</b>（返回单个值）、<b>IN / EXISTS</b>（判断是否存在），以及<b>关联子查询</b>（引用了外层的行——外层每来一行就执行一次，可能很慢）。</p>
+    <div class="tip">做大数据量或关联性的存在判断时，<code>EXISTS</code> 往往比 <code>IN</code> 快，因为它一找到匹配就短路返回。还要当心 <code>NOT IN</code> 碰上 NULL——只要集合里有一个 NULL，整个表达式就会一行都返回不了。</div>
+    <h3>CTE（<code>WITH</code>）</h3>
+    <p>公用表表达式（Common Table Expression）给子查询起个名字放在前面，既提升可读性，又能支持<b>递归</b>（处理层级、图结构）。</p>
+    <pre><code>WITH RECURSIVE subordinates AS (
+  SELECT id, manager_id, name FROM employee WHERE id = 1   -- 锚定部分
+  UNION ALL
+  SELECT e.id, e.manager_id, e.name                          -- 递归部分
+  FROM employee e JOIN subordinates s ON e.manager_id = s.id
+)
+SELECT * FROM subordinates;</code></pre>
+    <div class="note"><span class="db pg">PG</span> 早年会把 CTE <i>物化</i>（相当于一道优化围栏）；从 PG12 起，除非你显式写 <code>WITH ... AS MATERIALIZED</code>，否则 CTE 可以被内联。当某个 CTE 莫名其妙地让索引用不上时，知道这一点就很有用。</div>
+    <h3>窗口函数</h3>
+    <p>它在<b>与当前行相关的一组行</b>上做计算，但不像 <code>GROUP BY</code> 那样把这些行压成一行。做分析、排名、累计、去重时，它就是一项利器。</p>
+    <pre><code>SELECT name, dept, salary,
+  RANK()       OVER (PARTITION BY dept ORDER BY salary DESC) AS rnk,
+  AVG(salary)  OVER (PARTITION BY dept)                       AS dept_avg,
+  SUM(salary)  OVER (ORDER BY hired_at)                       AS running_total
+FROM employee;</code></pre>
+    <table>
+      <tr><th>窗口函数</th><th>用途</th></tr>
+      <tr><td><code>ROW_NUMBER()</code></td><td>连续不重复的编号——很适合做"每组只保留最新一条"的去重</td></tr>
+      <tr><td><code>RANK / DENSE_RANK</code></td><td>排名，遇到并列时分别留间隙 / 不留间隙</td></tr>
+      <tr><td><code>LAG / LEAD</code></td><td>取上一行 / 下一行的值（算差值、看趋势）</td></tr>
+      <tr><td><code>NTILE(n)</code></td><td>把行均分成 n 个桶（分位数）</td></tr>
+    </table>
+    <div class="iq"><b>"每组取前 N 条（Top-N per group）"</b>是一道高频 SQL 面试题。套路是：先在子查询或 CTE 里写 <code>ROW_NUMBER() OVER (PARTITION BY group ORDER BY metric DESC)</code>，再用 <code>WHERE rn &lt;= N</code> 过滤。</div>
+  </section>
+
+  <!-- ============ TYPES ============ -->
+  <section id="types">
+    <h2><span class="num">07</span>数据类型（MySQL vs PostgreSQL）</h2>
+    <table>
+      <tr><th>类别</th><th>用法</th><th>说明 / 引擎差异</th></tr>
+      <tr><td>整数</td><td><code>INT</code>、<code>BIGINT</code>、<code>SMALLINT</code></td><td>按取值范围挑宽度；会不断增长的 id 用 <code>BIGINT</code></td></tr>
+      <tr><td>精确小数</td><td><code>DECIMAL/NUMERIC(p,s)</code></td><td>金额<b>一律</b>用它，千万别用 <code>FLOAT</code>（有舍入误差）</td></tr>
+      <tr><td>文本</td><td><code>VARCHAR(n)</code>、<code>TEXT</code></td><td><span class="db pg">PG</span> 里 <code>TEXT</code> 和 <code>VARCHAR</code> 性能一样；<span class="db my">MySQL</span> 的 <code>VARCHAR</code> 存在行内，<code>TEXT</code> 存在行外</td></tr>
+      <tr><td>日期/时间</td><td><code>DATE</code>、<code>TIMESTAMP</code>、<code>TIMESTAMPTZ</code></td><td>优先用 <span class="db pg">PG</span> 的 <code>TIMESTAMPTZ</code> / <span class="db my">MySQL</span> 的 <code>TIMESTAMP</code>（按 UTC）。存 UTC，展示时再做格式化</td></tr>
+      <tr><td>布尔</td><td><code>BOOLEAN</code></td><td><span class="db my">MySQL</span> = <code>TINYINT(1)</code> 的别名</td></tr>
+      <tr><td>JSON</td><td><code>JSONB</code> <span class="db pg">PG</span> / <code>JSON</code> <span class="db my">MySQL</span></td><td><span class="db pg">PG</span> 的 <code>JSONB</code> 是二进制存储，还能建索引（GIN），很适合放半结构化字段</td></tr>
+      <tr><td>UUID</td><td><code>UUID</code> <span class="db pg">PG 原生</span></td><td><span class="db my">MySQL</span>：存成 <code>BINARY(16)</code>，省空间、索引也更高效</td></tr>
+      <tr><td>枚举 / 数组</td><td><code>ENUM</code>；<code>ARRAY</code> <span class="db pg">仅 PG</span></td><td><span class="db pg">PG</span> 有数组和丰富的类型；<span class="db my">MySQL</span> 没有数组</td></tr>
+    </table>
+    <div class="warn"><b>字符集的坑</b> <span class="db my">MySQL</span>：要用 <code>utf8mb4</code>，别用 <code>utf8</code>——老的 <code>utf8</code> 每字符只占 3 字节，存不下 emoji 和某些 CJK 字符；<code>utf8mb4</code> 才是真正的 4 字节 UTF-8。</div>
+  </section>
+
+  <!-- ============ NORMALIZATION ============ -->
+  <section id="normalization">
+    <h2><span class="num">08</span>范式化（以及何时反范式）</h2>
+    <p>范式化靠合理地组织列来消除冗余和更新异常。每一种"范式"都建立在前一种之上，规则一级比一级严。</p>
+    <table>
+      <tr><th>范式</th><th>规则（通俗版）</th><th>解决的问题</th></tr>
+      <tr><td><b>1NF</b></td><td>每个值都是原子的；列里不放重复组或数组</td><td>把 "tags: a,b,c" 塞进一个单元格</td></tr>
+      <tr><td><b>2NF</b></td><td>1NF + 不存在对复合键的部分依赖</td><td>某列只依赖主键的一半</td></tr>
+      <tr><td><b>3NF</b></td><td>2NF + 不存在传递依赖（非键 → 非键）</td><td>订单表里由 <code>zip</code> 决定 <code>city</code></td></tr>
+      <tr><td><b>BCNF</b></td><td>更严格的 3NF：每个决定因素都得是候选键</td><td>候选键彼此重叠的少见边界情况</td></tr>
+    </table>
+    <div class="analogy">范式化说白了就是"<b>同一个事实别写两遍</b>"。客户地址只在 <code>customer</code> 里存一份，每个订单都<i>指向</i>它——改地址只需改一处，不用在成千上万行里一处处改（漏改就成了"更新异常"）。</div>
+    <div class="tip"><b>反范式化</b>则是有意反着来：故意复制数据（比如在 <code>customer</code> 上缓存一个 <code>order_count</code>，或者存一个大的 <code>JSONB</code> 字段），好在读多的热路径上省掉昂贵的连接。这是拿写入的复杂度和一致性风险，去换读取速度。原则是：先范式化，只有当数据指标真有需要时才反范式。</div>
+    <div class="iq">OLTP（事务型）系统默认奔着 <b>3NF</b> 去——写入干净、完整性好。分析型 / OLAP 系统则常反范式成<b>星型模式</b>（事实表 + 维度表），把聚合做快。关键是搞清楚自己在为哪种负载做设计。</div>
+  </section>
+
+  <!-- ============ INDEXES ============ -->
+  <section id="indexes">
+    <h2><span class="num">09</span>索引 —— 头号性能杠杆</h2>
+    <p>索引是一份独立、有序的数据结构，让数据库不必扫全表就能定位到行。它几乎都是 <b>B+tree</b>：平衡、O(log n) 查找，而且叶子节点按顺序串成链表，特别适合范围扫描。</p>
+    <div class="mermaid">
+flowchart TB
+    R["根: [50]"]:::n --> A["[20 | 35]"]:::n
+    R --> B["[70 | 85]"]:::n
+    A --> L1["叶 10,15,18 →"]:::l
+    A --> L2["叶 22,30 →"]:::l
+    A --> L3["叶 36,40,45 →"]:::l
+    B --> L4["叶 55,60 →"]:::l
+    B --> L5["叶 72,80 →"]:::l
+    B --> L6["叶 90,95 →"]:::l
+    L1 -.链表.-> L2 -.-> L3 -.-> L4 -.-> L5 -.-> L6
+    classDef n fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef l fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="analogy">索引就像<b>书末尾的索引页</b>。没有它，要找"MVCC"就得一页页翻（全表扫描）；有了它，你直接看排好序的词条，翻到对应页码。而且和书一样，给<i>所有内容</i>都建索引既费纸张，又拖慢编辑（每加一页都得回头更新索引）。</div>
+
+    <h3>聚簇索引 vs 二级索引 <span class="db my">InnoDB</span> <span class="db pg">PG heap</span></h3>
+    <div class="grid2">
+      <div class="card"><h4>聚簇索引 <span class="db my">MySQL/InnoDB</span></h4><p>表里的行<i>本身</i>就存在主键 B+tree <b>里</b>（叶子节点直接保存整行），每张表一个，所以主键查找极快。<b>二级索引存的是主键值</b>而不是行指针——因此一次二级查找要跳两跳：二级索引 → 主键 → 行。</p></div>
+      <div class="card"><h4>堆 + 二级索引 <span class="db pg">PostgreSQL</span></h4><p>行散放在无序的<b>堆</b>里，每个索引（主键也算）都指向行的物理位置（<code>ctid</code>），默认没有"聚簇"表的概念。当查询要的列全在索引里（且可见性映射允许）时，<b>覆盖扫描 / 仅索引扫描</b>就能跳过堆。</p></div>
+    </div>
+
+    <h3>索引类型与变种</h3>
+    <table>
+      <tr><th>索引</th><th>是什么 / 何时用</th></tr>
+      <tr><td><b>复合索引</b> <code>(a,b,c)</code></td><td>多列联合。<b>最左前缀规则</b>：能用于 <code>a</code>、<code>a,b</code>、<code>a,b,c</code>，但<i>不能</i>单独用于 <code>b</code>。列的顺序很关键！</td></tr>
+      <tr><td><b>覆盖索引</b></td><td>索引里包含了查询要的全部列，光靠索引就能出结果，不用回表。对应 <span class="db pg">PG</span> 的 <code>INCLUDE</code> 列。</td></tr>
+      <tr><td><b>唯一索引</b></td><td>既保证唯一性，又加速查找。</td></tr>
+      <tr><td><b>部分 / 过滤索引</b> <span class="db pg">PG</span></td><td>只给满足某条件的行建索引，例如 <code>WHERE active</code>，索引更小、更快。</td></tr>
+      <tr><td><b>哈希索引</b></td><td>只支持 O(1) 等值查找（不支持范围）。用得少。</td></tr>
+      <tr><td><b>GIN / GiST</b> <span class="db pg">PG</span></td><td>用于全文、<code>JSONB</code>、数组、几何/范围数据。<span class="db my">MySQL</span> 对应的是 <code>FULLTEXT</code>、<code>SPATIAL</code>。</td></tr>
+    </table>
+
+    <h3>为什么索引没被用上</h3>
+    <ul>
+      <li><b>列上套了函数：</b><code>WHERE YEAR(created_at)=2026</code> 用不上 <code>created_at</code> 的索引——改写成范围条件，或者加一个表达式索引。</li>
+      <li><b>前导通配符：</b><code>LIKE '%foo'</code> 没法走索引定位；<code>'foo%'</code> 则可以。</li>
+      <li><b>隐式类型转换：</b>拿字符串列去和数字比较，会被迫全表扫描。</li>
+      <li><b>选择性太低：</b>如果某个值能匹配到大多数行，规划器会很合理地选择全表扫描。</li>
+    </ul>
+    <div class="warn"><b>索引不是白来的。</b>每个索引都得在每次 <code>INSERT/UPDATE/DELETE</code> 时同步更新，还占空间。索引建太多会拖慢写入。按真实的查询模式来建，没用上的就删掉。</div>
+  </section>
+
+  <!-- ============ EXPLAIN ============ -->
+  <section id="explain">
+    <h2><span class="num">10</span>查询规划器与 EXPLAIN</h2>
+    <p>SQL 是声明式的，所以执行计划由<b>基于代价的优化器</b>来决定：用哪些索引、连接的顺序、连接的算法。它根据<b>表的统计信息</b>（行数、值分布 / 直方图）来估算代价。<code>EXPLAIN</code> 展示计划，<code>EXPLAIN ANALYZE</code> 则真正跑一遍，给出实际耗时和行数。</p>
+    <div class="mermaid">
+flowchart LR
+    Q["SQL 文本"]:::a --> P["解析器"]:::n --> RW["重写器"]:::n --> OPT{"优化器<br/>基于代价"}:::h
+    STAT[("统计信息<br/>直方图,<br/>行数")]:::d -.提供.-> OPT
+    OPT --> PL["选定的计划<br/>（扫描 + 连接算法）"]:::g --> EX["执行器"]:::n --> RES["结果行"]:::a
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef d fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>读懂执行计划——该盯着看什么</h4>
+    <table>
+      <tr><th>看到这个</th><th>含义</th></tr>
+      <tr><td><b>Seq Scan</b> <span class="db pg">PG</span> / <b>ALL</b> <span class="db my">MySQL</span></td><td>全表扫描——小表无所谓，但出现在带选择性过滤的大表上就是危险信号</td></tr>
+      <tr><td><b>Index Scan / ref / range</b></td><td>用上了索引——不错</td></tr>
+      <tr><td><b>Index Only Scan</b> / <b>Using index</b></td><td>覆盖索引，完全没碰表——最理想</td></tr>
+      <tr><td><b>rows</b>（估算值）</td><td>和实际差得离谱？说明统计信息过时了，跑一下 <code>ANALYZE</code> <span class="db pg">PG</span> / <code>ANALYZE TABLE</code> <span class="db my">MySQL</span></td></tr>
+      <tr><td><b>行数很大的 Nested Loop</b></td><td>多半是内表那一侧缺索引</td></tr>
+    </table>
+    <div class="tip">排查流程：先揪出慢查询（慢查询日志 / <code>pg_stat_statements</code>）→ 跑 <code>EXPLAIN ANALYZE</code> → 找全表扫描或离谱的行估算 → 加索引、修索引或改写查询 → 再复查一遍。要是估算偏得太离谱，先把统计信息更新一下。</div>
+  </section>
+
+  <!-- ============ PITFALLS ============ -->
+  <section id="pitfalls">
+    <h2><span class="num">11</span>查询陷阱与模式</h2>
+    <table>
+      <tr><th>陷阱</th><th>问题</th><th>修复</th></tr>
+      <tr><td><b>N+1 查询</b></td><td>查 1 次列表，再对每项各查 1 次（多半是 ORM 懒加载导致）→ 上百次往返</td><td>用 <code>JOIN</code> 预加载，或用 <code>WHERE id IN (...)</code> 一次批量取</td></tr>
+      <tr><td><b><code>SELECT *</code></b></td><td>取了用不上的列，让覆盖索引失效，表结构一变还容易出错</td><td>只选真正需要的列</td></tr>
+      <tr><td><b><code>OFFSET</code> 分页</b></td><td><code>LIMIT 20 OFFSET 100000</code> 要先扫描再丢掉 10 万行——越翻到后面越慢</td><td>改用<b>键集 / 游标分页（Keyset/seek）</b>：<code>WHERE id &gt; :last ORDER BY id LIMIT 20</code></td></tr>
+      <tr><td><b>WHERE 里套函数</b></td><td>让索引失效（不可 sargable）</td><td>改写成范围条件，或建表达式索引</td></tr>
+      <tr><td><b>隐式转换</b></td><td>字符串与数字类型不一致，被迫全表扫描</td><td>对齐类型；参数正确绑定</td></tr>
+      <tr><td><b>事务范围过大</b></td><td>长事务长时间占着锁 / 旧快照 → 膨胀和争用</td><td>事务保持短小；大批量更新拆成小批处理</td></tr>
+    </table>
+    <div class="iq"><b>键集分页（Keyset pagination）</b>是"把它扩展一下"这类题的常客。<code>OFFSET</code> 的复杂度是 O(offset)；键集分页（记住上次看到的排序键，从它往后翻）是 O(每页行数)，而且对索引友好——代价是没法直接跳到任意页码，特别适合无限滚动。</div>
+  </section>
+
+  <!-- ============ ACID ============ -->
+  <section id="acid">
+    <h2><span class="num">12</span>ACID —— 事务的契约</h2>
+    <p><b>事务</b>把一组语句打包成一个要么全做、要么全不做的整体（<code>BEGIN ... COMMIT/ROLLBACK</code>）。ACID 说的就是它给你的几条保证：</p>
+    <div class="grid2">
+      <div class="card"><h4>A —— 原子性（Atomicity）</h4><p>所有语句要么全部提交，要么一条都不提交。中途出错就把改动全部回滚。（靠 undo 日志 / 回滚段实现。）</p></div>
+      <div class="card"><h4>C —— 一致性（Consistency）</h4><p>事务让数据库从一个合法状态进入另一个合法状态——约束、外键、触发器一个都不破。（你定的不变量 + 数据库自身的规则。）</p></div>
+      <div class="card"><h4>I —— 隔离性（Isolation）</h4><p>并发事务互不干扰，结果看起来就像它们曾按某个串行顺序一个个跑过。<i>隔离到什么程度</i>由隔离级别决定（见下一节）。</p></div>
+      <div class="card"><h4>D —— 持久性（Durability）</h4><p>一旦提交，崩溃或断电也丢不了。（靠在提交返回前对预写日志做 fsync 实现。）</p></div>
+    </div>
+    <div class="analogy">事务就好比一次<b>银行转账</b>：一个账户扣钱，另一个账户入账。原子性保证你绝不会只扣钱不入账（钱不会凭空蒸发）；持久性保证回执一旦打出来，断电也撤不回；隔离性保证两笔同时进行的转账，谁都看不到对方做了一半的中间状态。</div>
+  </section>
+
+  <!-- ============ ISOLATION ============ -->
+  <section id="isolation">
+    <h2><span class="num">13</span>隔离级别与异常</h2>
+    <p>隔离越强，能出的异常越少，但加锁和争用也越多。SQL 标准按"各级别允许哪些异常"定义了四个隔离级别。</p>
+    <table>
+      <tr><th>级别</th><th>脏读</th><th>不可重复读</th><th>幻读</th></tr>
+      <tr><td>Read Uncommitted</td><td class="">😱 会</td><td>😱 会</td><td>😱 会</td></tr>
+      <tr><td>Read Committed <span class="db pg">PG 默认</span></td><td>✅ 不会</td><td>😱 会</td><td>😱 会</td></tr>
+      <tr><td>Repeatable Read <span class="db my">MySQL 默认</span></td><td>✅ 不会</td><td>✅ 不会</td><td>⚠️ 标准：会</td></tr>
+      <tr><td>Serializable</td><td>✅ 不会</td><td>✅ 不会</td><td>✅ 不会</td></tr>
+    </table>
+    <h4>这几种异常，说白了就是</h4>
+    <ul>
+      <li><b>脏读（Dirty read）</b>——你读到了另一个事务<i>还没提交</i>、之后还可能回滚掉的改动。</li>
+      <li><b>不可重复读（Non-repeatable read）</b>——同一行你读两次，值却不一样（期间有人提交了更新）。</li>
+      <li><b>幻读（Phantom read）</b>——同一个范围查询重跑一遍，<i>凭空多</i>出了几行（有人插入了符合条件的新行）。</li>
+      <li><b>写偏斜（Write skew）</b>——两个事务各读了一份共享状态，再分别据此写入，最终得到一个在任何串行顺序下都不可能出现的结果（只有 Serializable 能挡住）。</li>
+    </ul>
+    <div class="note"><b>面试时值得点出来的引擎细节：</b>
+      <span class="db my">MySQL/InnoDB</span> 默认是 <b>Repeatable Read</b>，并靠 <b>next-key 锁</b>（间隙锁 + 行锁）在很大程度上堵住了幻读。<span class="db pg">PostgreSQL</span> 默认是 <b>Read Committed</b>；它的 <b>Repeatable Read</b> 走的是快照隔离（挡住不可重复读和幻读，但放过写偏斜 / 序列化异常）；它的 <b>Serializable</b> 用的是 SSI（可串行化快照隔离），可能因序列化冲突而中止事务，需要你自己重试。</div>
+    <div class="iq">最好能随手举一个写偏斜的例子：两名值班医生各自确认"还有 ≥1 名其他医生在岗"，于是同时下班 → 结果没人值班了。两次读取单看都成立，可它们凑在一起就出了问题。只有 <code>SERIALIZABLE</code>（或显式加锁）才挡得住。</div>
+  </section>
+
+  <!-- ============ MVCC ============ -->
+  <section id="mvcc">
+    <h2><span class="num">14</span>并发控制：锁与 MVCC</h2>
+    <p>大量事务怎样才能同时跑、又不把数据弄乱？靠两种机制配合。</p>
+    <h3>锁</h3>
+    <table>
+      <tr><th>锁</th><th>含义</th></tr>
+      <tr><td><b>共享锁（S）</b></td><td>读锁——多个读者可以同时持有</td></tr>
+      <tr><td><b>排他锁（X）</b></td><td>写锁——只能有一个持有者，挡住其余所有人</td></tr>
+      <tr><td><b>行锁 vs 表锁</b></td><td>行锁 = 并发高（InnoDB/PG 默认）；表锁 = 粒度粗</td></tr>
+      <tr><td><code>SELECT ... FOR UPDATE</code></td><td>显式的悲观行锁——"这一行我马上要改"</td></tr>
+      <tr><td><b>Next-key / 间隙锁</b> <span class="db my">InnoDB</span></td><td>锁住一段范围，在 Repeatable Read 下挡住会造成幻读的插入</td></tr>
+    </table>
+    <h3>MVCC —— 多版本并发控制</h3>
+    <p>核心思想是：<b>读不挡写，写也不挡读。</b>数据库不在原地覆盖，而是为一行保留<b>多个版本</b>。每个事务看到的，都是它开始那一刻（或语句那一刻）的一致<b>快照</b>。写者去创建新版本时，读者照样读得到旧版本。</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant T1 as 事务 1（读者）
+    participant Row as 行 "balance"
+    participant T2 as 事务 2（写者）
+    Note over Row: 版本 A = 500（可见）
+    T1->>Row: 读 → 看到 500（自己的快照）
+    T2->>Row: UPDATE → 创建版本 B = 400
+    Note over Row: A 仍为 T1 保留着
+    T1->>Row: 再读一次 → 还是 500（不被阻塞，可重复）
+    T2->>T2: COMMIT
+    Note over Row: 新事务看到 400；A 之后可回收
+    </div>
+    <div class="grid2">
+      <div class="card"><h4><span class="db pg">PostgreSQL</span> 的 MVCC</h4><p>新版本的行直接写<b>进堆</b>，旧版本一直留着，直到 <b>VACUUM</b> 把它们回收。可见性靠事务 id（xmin/xmax）判断。代价是<b>表膨胀</b>，以及离不开（自动）vacuum。</p></div>
+      <div class="card"><h4><span class="db my">MySQL/InnoDB</span> 的 MVCC</h4><p>当前版本的行存在表里，<b>旧版本则从 undo 日志（回滚段）临时重建</b>，由 <b>purge</b> 线程清理。事务一长，undo 历史就会越积越多。</p></div>
+    </div>
+    <div class="warn"><b>长事务是 MVCC 的天敌。</b>一个迟迟不结束的事务一直握着旧快照，数据库就没法回收比它更新的那些行版本——结果要么膨胀（<span class="db pg">PG</span>），要么 undo 撑得很大（<span class="db my">MySQL</span>），性能随之下滑。事务要短；别 <code>BEGIN</code> 之后还杵在那儿等一个慢吞吞的外部调用。</div>
+  </section>
+
+  <!-- ============ DEADLOCK ============ -->
+  <section id="deadlock">
+    <h2><span class="num">15</span>死锁</h2>
+    <p>两个事务各自握着对方想要的锁 → 谁都动弹不得。数据库会<b>检测到这个环</b>，挑一个事务杀掉（"牺牲者"），抛出死锁错误，你重试一下就行。</p>
+    <div class="mermaid">
+flowchart LR
+    T1(("事务 1")):::t -->|持有| A[(行 A)]:::r
+    T1 -->|想要| B[(行 B)]:::r
+    T2(("事务 2")):::t -->|持有| B
+    T2 -->|想要| A
+    classDef t fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <div class="tip"><b>怎么避免：</b>（1）各处都按<b>一致的顺序</b>申请锁（比如永远先锁 id 较小的那行）；（2）事务保持短小，少碰几行；（3）建合适的索引，让加锁更精准（缺索引会连带锁住多余的行和间隙）；（4）给写操作一律裹上<b>重试逻辑</b>——高负载下死锁是常态，而不是非要根除的 bug。</div>
+    <div class="iq">要分清三件事：<b>死锁</b>（成环，靠杀牺牲者自动解开）、<b>锁等待超时</b>（一个事务等某个并未成环的锁等太久）和<b>活锁（livelock）</b>（事务反复重试又反复撞车）。面试官会借此试探你知不知道死锁是数据库自动解决的。</div>
+  </section>
+
+  <!-- ============ WAL ============ -->
+  <section id="wal">
+    <h2><span class="num">16</span>预写日志、恢复与存储</h2>
+    <p>持久性怎么做到又快又稳？总不能每次提交都去 fsync 一堆随机分布的表页面。诀窍在于<b>预写日志（WAL）</b>：把<i>变更</i>追加写进一个顺序日志，提交返回前只 fsync <i>这个日志</i>，数据页稍后在后台再慢慢刷盘。</p>
+    <div class="mermaid">
+flowchart LR
+    C["COMMIT"]:::a --> WAL["① 把变更追加到 WAL<br/>（顺序写，快）"]:::g
+    WAL --> FS["② fsync WAL → 持久化"]:::g
+    FS --> OK["③ 返回成功 ✅"]:::a
+    OK -.异步.-> CKPT["④ 检查点：<br/>把脏页刷写<br/>到数据文件"]:::n
+    BP[("缓冲池 /<br/>shared buffers（RAM）")]:::d -.脏页.-> CKPT
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef d fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p><b>崩溃恢复</b>时，数据库从上一个检查点开始重放 WAL，把已提交但还没落到数据文件的变更重做一遍，再把未提交的变更回滚掉。WAL 同时也是<b>复制</b>和<b>时间点恢复</b>的基础。</p>
+    <table>
+      <tr><th>概念</th><th><span class="db pg">PostgreSQL</span></th><th><span class="db my">MySQL/InnoDB</span></th></tr>
+      <tr><td>日志</td><td>WAL</td><td>Redo 日志（+ 用于 MVCC/回滚的 undo 日志）</td></tr>
+      <tr><td>RAM 中的缓存</td><td>shared_buffers</td><td>buffer pool</td></tr>
+      <tr><td>刷盘点</td><td>检查点（Checkpoint）</td><td>检查点 / 刷盘</td></tr>
+      <tr><td>表存储</td><td>堆（无序）+ 大值用 <b>TOAST</b></td><td>主键上的聚簇 B+tree</td></tr>
+      <tr><td>清理</td><td>VACUUM（回收死元组）</td><td>Purge 线程（undo）</td></tr>
+    </table>
+    <div class="analogy">WAL 就像<b>服务员的点单本</b>。与其每上一道菜就往厨房跑一趟（随机磁盘写），不如在本子上唰唰记下一行（顺序追加）。哪怕服务员当场晕倒，厨房翻翻本子也能把每一单还原出来。真正下锅（刷页）稍后再分批进行。</div>
+
+    <h3><span class="db my">InnoDB</span> 的四种日志：undo · Read View · redo · binlog —— 一张图理清</h3>
+    <p>面试常把这四个混在一起问。记住一句话就不会乱：<b>undo + Read View 管「隔离 / MVCC + 回滚」，redo 管「崩溃后不丢」，binlog 管「复制 + 时间点恢复」</b>。undo / redo 是 <span class="db my">InnoDB</span> 引擎层的，binlog 是 MySQL <b>Server 层</b>的（所有引擎共用），Read View 则是内存里的一个快照、并不落盘。</p>
+    <table>
+      <tr><th>日志</th><th>层级</th><th>类型</th><th>作用</th><th>写入时机</th><th>何时清理</th></tr>
+      <tr><td><b>undo log</b></td><td>引擎层</td><td>逻辑（记录反向操作 / 旧版本）</td><td>① 原子性：回滚未提交事务 ② MVCC：沿版本链重建旧快照</td><td>改数据页<b>之前</b>先写（自身也受 redo 保护）</td><td>事务提交后、且无 Read View 再需要它时，由 <b>purge</b> 线程回收</td></tr>
+      <tr><td><b>Read View</b></td><td>引擎层（内存，不落盘）</td><td>快照（活跃事务列表）</td><td>一致性读的<b>可见性判定</b>：决定版本链上哪个版本对本事务可见</td><td>发起<b>快照读</b>时生成</td><td>事务结束即丢弃（<b>RR</b>：整个事务复用一个；<b>RC</b>：每条语句新建一个）</td></tr>
+      <tr><td><b>redo log</b></td><td>引擎层</td><td>物理（页级改动）</td><td>持久性 + 崩溃恢复：重做「已提交但还没刷盘」的脏页</td><td>改页时写 redo buffer，提交时按 <code>innodb_flush_log_at_trx_commit</code> 刷盘</td><td><b>循环写</b>、固定大小；对应脏页在检查点刷盘后即可覆盖</td></tr>
+      <tr><td><b>binlog</b></td><td>Server 层</td><td>逻辑（statement / row / mixed）</td><td>主从<b>复制</b> + <b>PITR</b>（时间点恢复）</td><td>事务提交时写</td><td><b>追加写</b>，按 <code>binlog_expire_logs_seconds</code> 过期或手动 <code>PURGE</code></td></tr>
+    </table>
+
+    <h4>一条 UPDATE 怎样穿过这四种日志</h4>
+    <p>关键看 ③ 和 ⑤：redo 先写「prepare」、再写 binlog、最后 redo 写「commit」——这就是 redo 与 binlog 的<b>两阶段提交（内部 XA）</b>，保证崩溃恢复后两份日志始终一致（不会出现「主库回滚了、从库却执行了」的分裂）。</p>
+    <div class="mermaid">
+flowchart TB
+    U["UPDATE 把 bal 改成 400<br/>（原值 500）"]:::a --> UNDO["① 写 undo log<br/>记下旧值 500<br/>（供回滚 &amp; MVCC）"]:::undo
+    UNDO --> PAGE[("② 改 buffer pool 里的页<br/>500 → 400（变脏页）")]:::dirty
+    PAGE --> REDO1["③ redo log 写「prepare」<br/>记录页的物理改动"]:::redo
+    REDO1 --> BIN["④ 写 binlog<br/>逻辑变更（row / statement）"]:::bin
+    BIN --> REDO2["⑤ redo log 写「commit」"]:::redo
+    REDO2 --> OK["⑥ COMMIT 返回成功 ✅"]:::a
+    PAGE -. 检查点异步刷盘 .-> DISK[("数据文件<br/>（.ibd）")]:::n
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    classDef redo fill:#d9ebe7,stroke:#1f7a70,color:#13524b;
+    classDef bin fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef dirty fill:#fdeede,stroke:#d98a2b,color:#7a4710;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <div class="note"><b>为什么要两阶段提交？</b>假如先写完 binlog 就崩了、redo 还没提交，恢复时这条 redo 处于 prepare 状态——MySQL 会去看 binlog 里这个事务<b>是否完整写入</b>：完整就提交、否则回滚，从而让「本机数据」和「发给从库的 binlog」对得上。</div>
+
+    <h4>undo + Read View 怎样支撑一致性读（MVCC）</h4>
+    <p>每行都藏着 <code>DB_TRX_ID</code>（最后改它的事务）和 <code>DB_ROLL_PTR</code>（指向 undo 里的上一版本）。快照读时，事务拿自己的 Read View 去判断当前版本可不可见；不可见就顺着 <code>DB_ROLL_PTR</code> 往 undo 版本链回溯，直到找到第一个可见的版本。</p>
+    <div class="mermaid">
+flowchart LR
+    READ["SELECT 读到当前行<br/>DB_TRX_ID = 30"]:::a --> Q1{"Read View 判定：<br/>30 可见吗？"}:::rv
+    Q1 -->|不可见<br/>（沿 DB_ROLL_PTR）| U2["undo 上一版本<br/>trx=20，bal=500"]:::undo
+    U2 --> Q2{"20 可见吗？"}:::rv
+    Q2 -->|不可见| U1["undo 更早版本<br/>trx=10，bal=300"]:::undo
+    Q2 -->|可见| SEE["✅ 本事务读到 500"]:::g
+    U1 --> SEE2["✅ 读到 300"]:::g
+    Q1 -->|可见| SEE3["✅ 直接读当前值 400"]:::g
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef rv fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="iq">能把这条链讲顺，基本就答到点子上了：<b>「undo 既用来回滚、又用来给 MVCC 重建旧版本；Read View 决定版本链上哪个版本可见——RR 在事务第一次快照读时定下 Read View 并整事务复用，所以可重复读；RC 每条语句都新建 Read View，所以能读到别人新提交的数据。」</b> 再补一句 redo 保证不丢、binlog 负责复制、两者靠两阶段提交对齐，就很完整了。</div>
+
+    <h3>这些日志到底存在哪？数据结构长什么样</h3>
+    <p>「写在哪里」分两层：内存里先有一份缓冲，提交时再按各自规则落到磁盘上的文件。下表是物理位置（<span class="db my">MySQL 8.0</span> 的默认值；老版本位置不同，已在备注里标出）。</p>
+    <table>
+      <tr><th>日志</th><th>内存中</th><th>磁盘上（8.0 默认）</th><th>组织方式</th></tr>
+      <tr><td><b>redo log</b></td><td>redo log buffer（<code>innodb_log_buffer_size</code>）</td><td>数据目录下 <code>#innodb_redo/</code> 里的 <code>#ib_redoN</code> 文件（约 32 个，总量 = <code>innodb_redo_log_capacity</code>）<br><span class="kv">8.0.30 前是 <code>ib_logfile0/1</code></span></td><td><b>固定容量、循环写</b>的环；512 字节一个 block；用 <b>LSN</b> 编号</td></tr>
+      <tr><td><b>undo log</b></td><td>buffer pool 里的 undo 页</td><td>独立 undo 表空间 <code>undo_001</code>、<code>undo_002</code>（≥2 个）<br><span class="kv">8.0 前在系统表空间 <code>ibdata1</code> 里</span></td><td>undo 表空间 → <b>回滚段</b>（默认 128）→ undo 段 → undo 页 → undo 记录；按行串成<b>版本链</b></td></tr>
+      <tr><td><b>binlog</b></td><td>每个会话的 binlog cache（<code>binlog_cache_size</code>）</td><td>Server 层目录下 <code>binlog.000001…</code> + 索引文件 <code>binlog.index</code></td><td><b>追加写</b>、按文件轮转；内容是一串 <b>event（事件）</b></td></tr>
+      <tr><td><b>Read View</b></td><td>事务自己的内存结构里</td><td><b>不落盘</b></td><td>就是一份「活跃事务 id 的快照」</td></tr>
+    </table>
+
+    <h4>redo log —— 固定大小的「环」，循环写</h4>
+    <p>redo 不是越写越长，而是一组固定大小的文件首尾相接成一个<b>环</b>，写满了就回头覆盖。两个指针决定能不能覆盖：</p>
+    <div class="mermaid">
+flowchart LR
+    subgraph RING["redo 环：#ib_redo0 … #ib_redoN（写满就回头覆盖）"]
+      direction LR
+      F1["空闲<br/>（可写）"]:::free --> CK["checkpoint ▲<br/>刷盘点"]:::ck --> USED["已提交·未刷盘<br/>← 崩溃后要重做的就是这段"]:::redo --> WP["write pos ▲<br/>当前写到这"]:::wp --> F2["空闲<br/>（可写）"]:::free
+    end
+    classDef redo fill:#d9ebe7,stroke:#1f7a70,color:#13524b;
+    classDef ck fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef wp fill:#fdeede,stroke:#d98a2b,color:#7a4710;
+    classDef free fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <ul>
+      <li><b>write pos</b>：往前写新 redo 的位置。<b>checkpoint</b>：这之前的脏页都已落到数据文件，对应 redo 可被覆盖。</li>
+      <li>两指针中间那段 = <b>已记录但脏页还没刷盘</b>的改动，<i>崩溃恢复要重做的正是这一段</i>。</li>
+      <li>一旦 <b>write pos 追上 checkpoint</b>（环写满），就得强制刷脏页、推进 checkpoint 才能继续——这时写入会卡顿。</li>
+      <li><b>LSN</b>（Log Sequence Number）是贯穿 redo、数据页、checkpoint 的单调递增编号，恢复时靠它判断「这一页要不要重做」。</li>
+    </ul>
+
+    <h4>undo log —— 行 + roll_ptr 串起来的版本链</h4>
+    <p>每行末尾藏着两个隐藏列：<code>DB_TRX_ID</code>（最后改它的事务）和 <code>DB_ROLL_PTR</code>（指向 undo 里的上一版本）。一条 roll_ptr 接一条，就成了上面 MVCC 用到的版本链：</p>
+    <div class="mermaid">
+flowchart LR
+    ROW["表中的行（最新）<br/>bal=400 ┃ DB_TRX_ID=30 ┃ DB_ROLL_PTR ─┐"]:::row
+    ROW -->|roll_ptr| U1["undo 记录<br/>bal=500 ┃ trx_id=20 ┃ roll_ptr ─┐"]:::undo
+    U1 -->|roll_ptr| U2["undo 记录<br/>bal=300 ┃ trx_id=10 ┃ roll_ptr = NULL"]:::undo
+    classDef row fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    </div>
+    <p><b>存储层级</b>：undo 表空间 → 回滚段（rollback segment，默认 128 个）→ undo 段 → undo 页 → undo 记录。undo 自己也是受 <b>redo 保护</b>的，所以崩了之后仍能拿它来回滚。</p>
+
+    <h4>binlog —— 一串带「下一条位置」的 event</h4>
+    <p>binlog 文件开头是魔数和格式描述，之后是一连串 event；行格式下一个事务大致长这样：</p>
+    <div class="mermaid">
+flowchart LR
+    H["文件头<br/>magic 0xfe 'bin'<br/>+ Format_desc_event"]:::hdr --> G["GTID_event"]:::bin --> B["Query_event<br/>BEGIN"]:::bin --> T["Table_map_event<br/>（哪张表）"]:::bin --> R["Write/Update/Delete<br/>_rows_event（行数据）"]:::bin --> X["Xid_event<br/>COMMIT"]:::bin
+    classDef hdr fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef bin fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p>每个 event 都带一个<b>头</b>：<code>timestamp ┃ event_type ┃ server_id ┃ event_size ┃ log_pos（下一个 event 的位置）┃ flags</code>，再跟事件体。<code>log_pos</code> 把所有 event 串成一条链，从库就靠记住这个位点知道自己同步到哪了。最外层还有个 <code>binlog.index</code> 文件，按顺序登记所有 binlog 文件名。</p>
+
+    <h4>Read View —— 一张活跃事务的快照</h4>
+    <p>它不落盘，就是事务在内存里记的四个值，配合版本链做可见性判断：</p>
+    <table>
+      <tr><th>字段</th><th>含义</th></tr>
+      <tr><td><code>m_ids</code></td><td>生成快照那一刻，所有<b>活跃（未提交）</b>事务的 id 列表</td></tr>
+      <tr><td><code>min_trx_id</code></td><td><code>m_ids</code> 里的最小值</td></tr>
+      <tr><td><code>max_trx_id</code></td><td>下一个将要分配的事务 id（比当前所有都大）</td></tr>
+      <tr><td><code>creator_trx_id</code></td><td>本事务自己的 id</td></tr>
+    </table>
+    <div class="tip"><b>可见性判定（拿某版本的 <code>DB_TRX_ID</code> 比一比）：</b>① <code>&lt; min_trx_id</code> → 早就提交了，<b>可见</b>；② <code>≥ max_trx_id</code> → 是快照之后才开的事务，<b>不可见</b>（沿 roll_ptr 回溯更老版本）；③ 落在两者之间 → 在 <code>m_ids</code> 里说明当时还没提交、<b>不可见</b>，不在则<b>可见</b>。自己改的（== <code>creator_trx_id</code>）当然可见。</div>
+  </section>
+
+  <!-- ============ REPLICATION ============ -->
+  <section id="replication">
+    <h2><span class="num">17</span>复制与读扩展</h2>
+    <p>复制靠传输日志，把数据从<b>主库</b>（负责写）同步到一个或多个<b>从库</b>（负责读 / 待命）。好处有三：扩展读能力、为高可用提供热备、把分析类负载分流出去。</p>
+    <div class="mermaid">
+flowchart TB
+    APPw["应用写入"]:::a --> P[(主库 PRIMARY)]:::m
+    P -->|传输 WAL / binlog| R1[(从库 1<br/>只读)]:::r
+    P -->|传输 WAL / binlog| R2[(从库 2<br/>只读)]:::r
+    APPr["应用读取"]:::a -.负载均衡.-> R1
+    APPr -.-> R2
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef r fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>同步 vs 异步（在持久性和延迟之间调节的旋钮）</h4>
+    <table>
+      <tr><th>模式</th><th>行为</th><th>权衡</th></tr>
+      <tr><td><b>异步</b>（默认）</td><td>主库不等从库，直接提交</td><td>快，但故障切换时可能丢掉最近几条已提交事务；从库存在延迟</td></tr>
+      <tr><td><b>同步</b></td><td>要等至少一个从库确认收到日志，才算提交</td><td>故障切换不丢数据，但写延迟更高</td></tr>
+      <tr><td><b>半同步</b> <span class="db my">MySQL</span></td><td>等 ≥1 个从库<i>收到</i>（而非应用完）</td><td>折中方案</td></tr>
+    </table>
+    <table>
+      <tr><th></th><th><span class="db pg">PostgreSQL</span></th><th><span class="db my">MySQL</span></th></tr>
+      <tr><td>物理复制</td><td>流复制（传输 WAL，逐字节一致的备库）</td><td>基于 binlog（statement / row / mixed）</td></tr>
+      <tr><td>逻辑复制</td><td>逻辑复制（发布/订阅，可选表，跨版本）</td><td>基于行的 binlog ≈ 逻辑复制；用 GTID 追踪</td></tr>
+    </table>
+    <div class="warn"><b>复制延迟 = 会读到旧数据。</b>从有延迟的从库去读"自己刚写的内容"，很可能读不到。应对办法：把写后紧接的读路由到主库、等从库追上某个已知日志位点、或者干脆接受最终一致性。面试时一定要把这个权衡说出来。</div>
+  </section>
+
+  <!-- ============ HA ============ -->
+  <section id="ha">
+    <h2><span class="num">18</span>高可用与故障切换</h2>
+    <p>光有复制，也只是多了个备库；还得有东西能<b>察觉</b>主库挂了，把某个从库<b>提升</b>为新主，再把流量切过去。这一整套调度编排，就是高可用（HA）。</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant M as 管理器（Patroni/Orchestrator）
+    participant P as 主库
+    participant R as 从库
+    participant App as 应用
+    M->>P: 健康检查
+    P--xM: 无响应（已宕机）
+    Note over M: 通过共识 / 法定人数确认
+    M->>R: 提升为新主库
+    M->>App: 更新路由（VIP / DNS / 代理）
+    App->>R: 写入现在改发到这里 ✅
+    </div>
+    <div class="note"><b>工具：</b><span class="db pg">PG</span> 常用 <b>Patroni</b>（配 etcd/Consul/ZooKeeper 做选主）或 <b>repmgr</b>。<span class="db my">MySQL</span> 则用 <b>Orchestrator</b>、<b>InnoDB Cluster</b>（组复制 + MySQL Router），或干脆上托管服务（RDS/Aurora）。前面再放一个<b>代理</b>（ProxySQL、HAProxy、PgBouncer + VIP），把拓扑变化对应用屏蔽掉。</div>
+    <div class="warn"><b>脑裂（Split-brain）</b>是大麻烦：网络分区一来，两个节点都以为自己是主库，各自接收互相冲突的写入。靠<b>法定人数 / 共识</b>（奇数个投票者）加<b>隔离（fencing）</b>（强行把旧主库踢出去）来预防。这也正是为什么你需要一个外部仲裁者，而不能只靠两个数据库节点。</div>
+    <div class="iq">要先想清楚两个目标：<b>RPO</b>（恢复点目标——最多能容忍丢多少数据）和 <b>RTO</b>（恢复时间目标——多久能恢复服务）。异步复制 → RPO &gt; 0；同步复制 → RPO ≈ 0，但要拿延迟来换。这两个指标基本框定了每一场 HA 设计的讨论。</div>
+  </section>
+
+  <!-- ============ SHARDING ============ -->
+  <section id="sharding">
+    <h2><span class="num">19</span>分区与分片</h2>
+    <p>有两个"拆分数据"的概念常被人混为一谈：</p>
+    <div class="grid2">
+      <div class="card"><h4>分区（单台服务器）</h4><p>按某个键把一张大表切成几块，但这些块仍<b>在同一个数据库里</b>。只命中某个分区的查询会跳过其余分区（<b>分区裁剪</b>），旧分区也能瞬间删掉。可以按<b>范围</b>（日期）、<b>列表</b>（地区）或<b>哈希</b>来分。</p></div>
+      <div class="card"><h4>分片（多台服务器）</h4><p>把数据<b>分散到多个相互独立的数据库服务器</b>上，让写入和存储突破单台机器的上限。每个分片本身就是一个完整的数据库，按<b>分片键</b>持有其中一部分行。</p></div>
+    </div>
+    <div class="mermaid">
+flowchart TB
+    K["行：user_id = 8124"]:::a --> H{"分片键 →<br/>hash(user_id) % N"}:::h
+    H -->|0| S0[(分片 0)]:::m
+    H -->|1| S1[(分片 1 ✓)]:::mh
+    H -->|2| S2[(分片 2)]:::m
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef m fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef mh fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <div class="warn"><b>分片是最后一招——代价很高。</b>分片之后，跨分片的连接、跨分片的事务和 <code>AUTO_INCREMENT</code> 唯一性都没法轻松用了，再平衡也很麻烦。所以先把成本更低的手段用尽：索引、读从库、缓存、分区、换更大的机器。挑分片键时要<b>避开热点分片</b>，并尽量让常一起查的行落在一起。</div>
+    <div class="iq"><b>垂直 vs 水平：</b>垂直拆分 = 把不同的<i>表 / 列</i>挪到不同服务器（按功能拆）；水平拆分 = 把同一张表的<i>行</i>分散到多台服务器（按键拆）。现成方案：<b>Vitess</b>（MySQL）、<b>Citus</b>（PG）、<b>CockroachDB</b>/<b>Spanner</b>（分片对使用者透明的分布式 SQL）。</div>
+  </section>
+
+  <!-- ============ POOLING ============ -->
+  <section id="pooling">
+    <h2><span class="num">20</span>连接池</h2>
+    <p>每个数据库连接都要占内存，而且在 <span class="db pg">PG</span> 里还对应一个后端<b>进程</b>。每来一个请求就新开一个连接，既慢，又会很快把服务器的 <code>max_connections</code> 耗光。<b>连接池</b>的做法是维持一批热连接，按需分发出去。</p>
+    <div class="mermaid">
+flowchart LR
+    A1["应用 worker"]:::a --> POOL
+    A2["应用 worker"]:::a --> POOL
+    A3["应用 worker"]:::a --> POOL
+    subgraph POOL["连接池（如 PgBouncer / ProxySQL / HikariCP）"]
+      C1["连接 1"]:::g
+      C2["连接 2"]:::g
+      C3["连接 3"]:::g
+    end
+    POOL --> DB[(数据库<br/>有限的 max_connections)]:::m
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef m fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <div class="note"><span class="db pg">PostgreSQL</span> 对此尤其敏感（每个连接一个进程）——上了规模，<b>PgBouncer</b> 几乎是标配。<span class="db my">MySQL</span> 用的是线程（更轻），但用上应用侧连接池（HikariCP）或 <b>ProxySQL</b> 同样有好处。连接池有两种模式：<i>会话级</i>（连接绑定给客户端会话）和<i>事务级</i>（每个事务结束就归还——并发能高出一大截，但会破坏预处理语句、<code>SET</code> 这类依赖会话状态的特性）。</div>
+    <div class="tip"><b>经验法则：</b>合理的连接池往往比大家以为的要<i>小</i>。活跃连接一旦超过大约（核数 × 2–4）个，你换来的就是上下文切换的争用，而不是更高的吞吐量。让请求在池子这一端排队，别把连接一股脑堆到数据库上。</div>
+  </section>
+
+  <!-- ============ BACKUP ============ -->
+  <section id="backup">
+    <h2><span class="num">21</span>备份与恢复</h2>
+    <table>
+      <tr><th>类型</th><th>是什么</th><th>优点 / 缺点</th></tr>
+      <tr><td><b>逻辑备份</b></td><td><code>pg_dump</code> / <code>mysqldump</code>——导出用来重建数据的 SQL 语句</td><td>可移植、可挑选对象、能跨版本；但恢复慢，做不了时间点恢复</td></tr>
+      <tr><td><b>物理备份</b></td><td>直接拷贝数据文件（<code>pg_basebackup</code>、Percona XtraBackup、快照）</td><td>整个集群恢复快；但和版本、平台绑定</td></tr>
+      <tr><td><b>PITR</b>（时间点恢复）</td><td>基础备份 + 归档的 WAL/binlog，重放到某个精确时刻</td><td>能恢复到"误删那条 <code>DELETE</code> 之前"；黄金标准</td></tr>
+    </table>
+    <div class="warn"><b>没恢复演练过的备份，只能算个传说。</b>要定期演练恢复，测一测恢复要花多久（那才是你真实的 RTO），并把副本放到<b>本机之外</b>、最好异地保存。复制<i>不是</i>备份——你那条 <code>DROP TABLE</code> 它会一字不差地照搬过去。</div>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section id="security">
+    <h2><span class="num">22</span>安全要点</h2>
+    <h4>SQL 注入 —— 头号风险</h4>
+    <p>把用户输入直接拼进 SQL，等于让攻击者有机会改写你的查询（<code>'; DROP TABLE users;--</code>）。修复办法没得商量：<b>参数化查询 / 预处理语句</b>——驱动会把 SQL 和数据分开传，输入永远不会被当成代码来解析。绝不要拿用户输入去拼 SQL 字符串；ORM 能帮上忙，但你仍然得避开裸的字符串拼接。</p>
+    <pre><code>-- ❌ 可被注入
+"SELECT * FROM users WHERE email = '" + input + "'"
+-- ✅ 参数化
+"SELECT * FROM users WHERE email = $1"   // 单独绑定输入</code></pre>
+    <h4>访问控制</h4>
+    <ul>
+      <li><b>最小权限：</b>应用角色只授予它真正需要的权限（别给 <code>SUPERUSER</code>/<code>GRANT ALL</code>），并单独拆出只读角色。</li>
+      <li><b>行级安全（RLS）</b> <span class="db pg">PG</span>：用策略限制某个角色能看到哪些行——很适合在数据库这一层做多租户隔离。</li>
+      <li><b>加密：</b>传输走 TLS；静态数据做加密（TDE / 磁盘）；密码用 bcrypt/argon2 做哈希，绝不明文存密钥。</li>
+    </ul>
+    <div class="iq">被问到"你怎么防 SQL 注入"，标准答案就一个词：<b>参数化</b>（预处理语句 / 绑定变量），<i>而不是</i>"转义"或"校验"——那些只是纵深防御，真正能根治的是参数绑定。</div>
+  </section>
+
+  <!-- ============ SQL vs NOSQL ============ -->
+  <section id="sqlnosql">
+    <h2><span class="num">23</span>SQL vs NoSQL</h2>
+    <p>"NoSQL"不是某一种东西，而是一大类数据库的统称——它们放弃了关系型的某些保证（固定模式、连接，有时还有强一致性），换来别的好处（水平扩展、灵活的数据形态，或某种专门的访问模式）。说句实在话：<b>关键在于权衡和负载是否匹配，而不是"新旧之争"。</b></p>
+    <div class="mermaid">
+flowchart TB
+    ROOT["数据存储"]:::a --> SQL["关系型 / SQL<br/>表 · 连接 · ACID"]:::m
+    ROOT --> NO["NoSQL 家族"]:::h
+    NO --> KV["键值<br/>Redis, DynamoDB"]:::n
+    NO --> DOC["文档<br/>MongoDB, Couchbase"]:::n
+    NO --> WC["宽列<br/>Cassandra, HBase"]:::n
+    NO --> GR["图<br/>Neo4j"]:::n
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef m fill:#dcefeb,stroke:#1f7a70,color:#154f48;
+    classDef h fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <table>
+      <tr><th>维度</th><th>关系型（SQL）</th><th>NoSQL（因类型而异）</th></tr>
+      <tr><td>模式</td><td>固定，写时强制</td><td>灵活 / 读时模式</td></tr>
+      <tr><td>关联关系</td><td>连接 + 外键</td><td>大多靠反范式 / 内嵌；连接很弱甚至没有</td></tr>
+      <tr><td>事务</td><td>强大的多行 ACID</td><td>多为单文档 / 单键原子性；多文档 ACID 较新、也较受限</td></tr>
+      <tr><td>扩展</td><td>纵向扩展；分片要额外的工程投入</td><td>天生就是为横向扩展设计的</td></tr>
+      <tr><td>一致性</td><td>默认强一致</td><td>多为可调 / 最终一致（偏 AP）</td></tr>
+      <tr><td>查询</td><td>丰富的声明式 SQL，支持临时查询</td><td>针对固定访问模式优化；临时查询可能很贵</td></tr>
+      <tr><td>最擅长</td><td>带关联关系、讲究完整性的结构化数据</td><td>超大规模、灵活/稀疏数据、单一已知的访问模式</td></tr>
+    </table>
+    <h4>四种 NoSQL 形态</h4>
+    <table>
+      <tr><th>类型</th><th>模型</th><th>最佳场景</th></tr>
+      <tr><td><b>键值</b></td><td>就是个哈希表：键 → 一块数据</td><td>缓存、会话、限流（Redis, DynamoDB）</td></tr>
+      <tr><td><b>文档</b></td><td>类 JSON 文档，可层层嵌套</td><td>目录、用户画像、内容（MongoDB）</td></tr>
+      <tr><td><b>宽列</b></td><td>带动态列族的行</td><td>海量写入的时序 / 事件数据（Cassandra）</td></tr>
+      <tr><td><b>图</b></td><td>节点 + 边</td><td>社交图谱、推荐、反欺诈（Neo4j）</td></tr>
+    </table>
+    <div class="iq"><b>CAP 定理</b>常在这里被提起：网络<b>分区（P）</b>发生时，你必须在<b>一致性（C）</b>和<b>可用性（A）</b>之间二选一。传统 SQL 偏 CP（宁可拒绝陈旧 / 冲突的写入）；不少 NoSQL 偏 AP（先保住可用，事后再调和数据）。更务实的现代观点是 PACELC：哪怕<i>没有分区</i>，也得在延迟和一致性之间权衡。别死记硬背它——要拿它来论证一个具体的取舍。</div>
+    <div class="tip"><b>别当成"二选一"——真实系统大多是多语言持久化（polyglot）的。</b>用 Postgres 当事实来源，Redis 做缓存，Elasticsearch 做搜索，图数据库做推荐。而且界限正在变模糊：PG 的 <code>JSONB</code> 提供了文档式的灵活性，分布式 SQL（CockroachDB、Spanner、Vitess）则用 SQL + ACID 带来了堪比 NoSQL 的扩展能力。</div>
+    <div class="analogy">SQL 像一位<b>一丝不苟的会计</b>：每笔账都照规矩记，账目永远对得上，什么都丢不了——但你得跟着会计的节奏和格式走。NoSQL 则像<b>一座大仓库里一堆贴了标签的箱子</b>：往里扔东西、跨多个仓库扩容都快得离谱，可怎么把相关的东西放一块、怎么处理重复，全得<i>你自己</i>操心。</div>
+  </section>
+
+  <!-- ============ VS ============ -->
+  <section id="vs">
+    <h2><span class="num">24</span>MySQL vs PostgreSQL —— 快速对比</h2>
+    <table>
+      <tr><th>维度</th><th><span class="db my">MySQL</span></th><th><span class="db pg">PostgreSQL</span></th></tr>
+      <tr><td>口碑</td><td>快、简单，在 Web 技术栈里随处可见</td><td>功能丰富、贴合标准、可扩展性强</td></tr>
+      <tr><td>默认隔离级别</td><td>Repeatable Read</td><td>Read Committed</td></tr>
+      <tr><td>MVCC 清理</td><td>undo 日志 + purge 线程</td><td>堆内版本 + VACUUM（可能膨胀）</td></tr>
+      <tr><td>主键存储</td><td>聚簇（行就存在主键 B+tree 里）</td><td>堆 + 独立索引</td></tr>
+      <tr><td>索引的额外能力</td><td>FULLTEXT、SPATIAL</td><td>部分索引、表达式索引、GIN/GiST/BRIN、INCLUDE 覆盖列</td></tr>
+      <tr><td>JSON</td><td><code>JSON</code>（函数式）</td><td><code>JSONB</code> 二进制 + 可索引</td></tr>
+      <tr><td>丰富类型</td><td>有限</td><td>数组、范围、自定义类型、扩展（PostGIS）</td></tr>
+      <tr><td>窗口函数 / CTE</td><td>支持（8.0+）</td><td>支持，久经成熟，且支持递归</td></tr>
+      <tr><td>复制</td><td>Binlog（statement/row/mixed）、GTID、组复制</td><td>流复制（物理）+ 逻辑发布/订阅</td></tr>
+    </table>
+    <div class="tip"><b>实话实说：</b>两者都很出色，差距还在不断缩小。要做复杂查询、看重数据完整性、用 JSON / 地理 / 分析以及可扩展性，选 <span class="db pg">PostgreSQL</span>；如果是简单、高吞吐、读为主的 Web 负载，团队对它生态更熟，或者平台本就标准化在它上面，那就选 <span class="db my">MySQL</span>。<i>本指南里讲的概念，两者都适用。</i></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">25</span>自测闪卡 <span class="xp" id="score">🃏 0 / 0 已翻</span></h2>
+    <p>先盖住答案，把答案大声说一遍，再<b>点击翻转</b>对一对。</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">ACID 各代表什么，每个一句话？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>A</b> 原子性（全做或全不做）· <b>C</b> 一致性（不变量 / 约束始终成立）· <b>I</b> 隔离性（并发事务互不干扰）· <b>D</b> 持久性（靠 WAL fsync，崩溃后依然不丢）。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">为什么 SELECT 别名不能用在 WHERE，却能用在 ORDER BY？</div><div class="hint">执行顺序 →</div></div>
+        <div class="flip-face flip-back">逻辑顺序：FROM→WHERE→GROUP→HAVING→<b>SELECT</b>→ORDER BY。<code>WHERE</code> 在 SELECT 之前跑（别名还没产生）；<code>ORDER BY</code> 在它之后跑（别名已经有了）。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">默认隔离级别：MySQL vs PostgreSQL？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><span class="db my">MySQL/InnoDB</span> = <b>Repeatable Read</b>（靠 next-key 锁挡住大多数幻读）。<span class="db pg">PG</span> = <b>Read Committed</b>。PG 的 Serializable 用 SSI，可能中止事务 → 需要重试。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">一句话说清：MVCC 是什么，它带来什么？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">为每行保留多个版本，让每个事务都读到一致的快照：<b>读不挡写，写也不挡读</b>。代价是要清理旧版本 → VACUUM（PG）/ undo purge（MySQL）。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">聚簇索引特殊在哪？二级索引的代价是什么？</div><div class="hint">InnoDB →</div></div>
+        <div class="flip-face flip-back">行就存在主键 B+tree 里（每表一个）→ 主键查找快。二级索引存的是<b>主键值</b>，所以二级查找要多跳一次：二级索引 → 主键 → 行。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">复合索引 (a,b,c)：哪些查询能用上它？</div><div class="hint">最左规则 →</div></div>
+        <div class="flip-face flip-back"><b>最左前缀</b>：过滤 <code>a</code>、<code>a,b</code> 或 <code>a,b,c</code> 都能用上，但单独过滤 <code>b</code> 或 <code>c</code> 就不行。列的顺序是个设计决策。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">为什么预写日志（WAL）既快又持久？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">提交时把变更追加进一个<b>顺序</b>日志，只 fsync 这个日志（很快）就返回；数据页稍后在检查点时再刷盘。崩溃后 → 重放 WAL，把已提交的工作重做一遍。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">什么是 N+1 查询，怎么修？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">查 1 次列表，再对每项各查 1 次（ORM 懒加载）= 上百次往返。修复：用 <code>JOIN</code> 预加载，或用 <code>WHERE id IN (...)</code> 批量取。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">OFFSET 分页翻到深处就很慢——有更好的办法吗？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>键集 / 游标分页</b>：<code>WHERE id &gt; :last ORDER BY id LIMIT n</code>。复杂度是 O(每页行数) 而非 O(offset)，对索引友好。缺点是没法直接跳到任意页码。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">SQL 注入真正唯一的解法是什么？</div><div class="hint">不是转义 →</div></div>
+        <div class="flip-face flip-back"><b>参数化查询 / 预处理语句</b>——SQL 和数据分开传，输入永远不会被当成代码解析。校验、转义只是纵深防御。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">同步 vs 异步复制的权衡？</div><div class="hint">RPO →</div></div>
+        <div class="flip-face flip-back"><b>异步</b>：提交快，但故障切换时可能丢掉最近的事务（RPO &gt; 0），从库也有延迟。<b>同步</b>：提交要等从库 → 不丢数据（RPO≈0），但写延迟更高。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">默认范式化到哪一级？什么时候反范式？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back">OLTP 默认到 <b>3NF</b>（写入干净、完整性好）。在读多的热路径上有选择地反范式，省掉连接——拿写入复杂度和一致性风险换读取速度。OLAP → 星型模式。</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">何时用 SQL，何时用 NoSQL？CAP 又逼你选什么？</div><div class="hint">→</div></div>
+        <div class="flip-face flip-back"><b>SQL</b>：结构化数据、关联关系、多行 ACID、强一致性。<b>NoSQL</b>：超大横向扩展、灵活形态，或单一已知的访问模式。<b>CAP</b>：分区时必须在一致性<i>和</i>可用性之间二选一。真实系统大多是多语言持久化的。</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 全部翻转</button>
+      <button class="btn" id="resetdeck">↺ 重置</button>
+      <span>小提示：盖住右栏，拿来考考朋友。</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">26</span>Boss 级问题 <span class="boss">EXPERT</span></h2>
+    <p>这些问题能分出"写过 SQL"和"真懂数据库"。先自己想一想，再点开看答案。</p>
+
+    <details class="qa"><summary>带我走一遍：我执行 <code>COMMIT</code> 时，磁盘上和内存里到底发生了什么。<span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">这时变更早已落在<b>缓冲池 / shared_buffers</b>（RAM）的页面上，并记进了 <b>WAL/redo 日志</b>缓冲区。<code>COMMIT</code> 一来：截至这次提交的 WAL 记录被<b>刷盘并 fsync</b> 到持久化存储——只有完成这一步，COMMIT 才返回成功。被改过的数据页在内存里还是脏的，要等到<b>之后</b>的<b>检查点</b>时才异步写入真正的数据文件。万一服务器在那之前崩了，恢复时会从上一个检查点<b>重放 WAL</b>，把已提交的变更重做、未提交的回滚。这样一来，不必每次提交都做随机写，也照样拿到了持久性。</div>
+    </details>
+
+    <details class="qa"><summary>有条查询很慢。说说你从头到尾的排查流程。<span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">（1）<b>先找到它</b>：慢查询日志 / <code>pg_stat_statements</code> / APM。（2）<b>跑 EXPLAIN ANALYZE</b>：揪出大表上的全表 / 顺序扫描、离谱的行估算（估算和实际差太多 → 统计信息过时，跑一下 ANALYZE）、昂贵的排序、行数很大的嵌套循环（内表那一侧缺索引）。（3）<b>动手修</b>：加索引或调索引（留意选择性和最左前缀规则）、让谓词可 sargable（列上别套函数）、少选几列以触发覆盖 / 仅索引扫描，或者改写查询（EXISTS vs IN、键集分页）。（4）<b>再测一遍</b>。（5）跳出来看全局：是不是应用侧的 N+1？连接池是不是满了？机器是不是 I/O 撑爆了？别闭着眼睛乱加索引——每个索引都要给写入交"税"。</div>
+    </details>
+
+    <details class="qa"><summary>两个事务都读到余额 100，各自减去 100，结果两个都"成功"了。这怎么发生的？你怎么防？<span class="boss lvl3">HARD</span></summary>
+      <div class="ans">这是弱隔离下的<b>丢失更新（lost update）</b>——两个事务读改写<i>同一行</i>，是写偏斜的一种特例（写偏斜更一般地指两个事务基于同一份读取去写<i>不同</i>的行）。在 Read Committed 下，两个事务都读到 100，都算出 0，都写回 0——其中一次更新其实被覆盖丢掉了，余额成了 0，而不是本应被拒绝的 -100。怎么防：（a）<b>原子写入</b>——用 <code>UPDATE acct SET bal = bal - 100 WHERE id=? AND bal &gt;= 100</code> 并检查受影响行数；（b）<b>悲观锁</b>——用 <code>SELECT ... FOR UPDATE</code> 把它们串行化；（c）<b>乐观并发</b>——加一个 <code>version</code> 列，更新时带上 <code>WHERE version = :read</code>，对不上就重试；（d）<b>SERIALIZABLE</b> 隔离（PG 的 SSI 会中止其中一个事务 → 重试）。把计算直接写进 UPDATE 这招最简单，从根上避开了"先读后写"的竞态。</div>
+    </details>
+
+    <details class="qa"><summary>PostgreSQL 为什么需要 VACUUM，"膨胀（bloat）"又是什么？<span class="boss lvl3">HARD</span></summary>
+      <div class="ans">PG 的 MVCC 在更新 / 删除时会写一个<b>新的行版本</b>，把旧版本留在堆里标记为"死"，好让并发的快照还能看到它。<b>VACUUM</b> 负责回收这些死元组的空间供后续复用，同时更新可见性映射（从而支持仅索引扫描），由 <b>autovacuum</b> 自动来做。一旦死元组堆积的速度超过 vacuum 回收的速度（改动太频繁，或者一个<b>握着旧快照的长事务</b>挡住了清理），表和索引就会<b>膨胀</b>——撑得远比存活数据该有的体积大，拖慢扫描、白占磁盘。还有关键一点：VACUUM 还负责处理<b>事务 id 回卷（wraparound）</b>；它要是落后太多，PG 会强制停写来保护数据。缓解办法：调优 autovacuum、别让会话长时间停在 idle-in-transaction 状态，必要时用 <code>VACUUM FULL</code>/<code>pg_repack</code> 把空间收回来（这会重写整张表）。</div>
+    </details>
+
+    <details class="qa"><summary>你加了读从库，可用户有时看不到自己刚保存的改动。为什么？有哪些办法？<span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">问题在<b>复制延迟</b>：写已经在主库提交，但从库还没应用上，而这次读偏偏被路由到了从库。按力度从强到弱排：（1）<b>把写后紧接的读路由到主库</b>（比如"写完后 N 秒内，该用户的读都黏在主库"）；（2）<b>用日志位点实现读己之所写</b>——记住刚写入的 WAL/GTID 位点，只从已追上该位点的从库读；（3）对这些写入改用<b>同步复制</b>（代价是延迟）；（4）在用户体验能接受的地方，<b>干脆接受最终一致性</b>。通常合理的答案是按操作区别对待：关键读走主库，其余走从库。</div>
+    </details>
+
+    <details class="qa"><summary>你会在什么时候分片？分片之后又有哪些东西会变得不好用？<span class="boss lvl3">HARD</span></summary>
+      <div class="ans"><b>什么时候分</b>：只有在索引、查询调优、缓存、读从库、分区、纵向扩展统统用尽之后——也就是单个主库实在扛不住写吞吐或数据量的时候。<b>什么会变难</b>：跨分片的<b>连接</b>和<b>事务</b>要么挪到应用层做，要么干脆做不了（或得上 2PC，又慢又脆）；全局<b>唯一性</b> / 自增得另想办法（UUID / Snowflake / 中心分配器）；<b>再平衡</b>分片、避开<b>热点分片</b>在运维上都很棘手；<b>聚合查询</b>得 scatter-gather。其中<b>分片键怎么选</b>最为关键——要挑一个分布均匀、又能把常一起查的行放在一起的键（比如按 tenant_id，让同一个租户的数据落在同一个分片）。也可以考虑分布式 SQL（Vitess/Citus/CockroachDB/Spanner），用更少的手工折腾换来分片能力。</div>
+    </details>
+
+    <details class="qa"><summary>我执行 <code>SELECT * FROM t WHERE status = 'active'</code>，它却没用我在 status 上建的索引。为什么这有可能是对的？<span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans"><b>选择性太低。</b>如果大多数行都是 <code>active</code>，走索引就意味着大量随机回表（索引 → 堆 来回跳），反而比一次顺序的全表扫描<i>更慢</i>。基于代价的优化器从统计信息里估出了这一点，于是很正确地选了顺序扫描。索引被跳过还有别的原因：统计信息过时（跑 ANALYZE）、列上套了函数 / 有隐式转换导致不可 sargable、<code>SELECT *</code> 要取索引里没有的列（于是享受不到仅索引扫描的好处），又或者表本来就小、扫一遍便宜到可以忽略。解法不是"强制走索引"——而是给那个稀有值建一个<b>部分索引</b>、少取几列，或者干脆接受"这次扫描本来就是最优的"。</div>
+    </details>
+  </section>
+
+  <div class="footer">
+    单个自包含文件 · 图表用 Mermaid.js 渲染 · 衬线字体来自 Google Fonts · 任意浏览器都能打开。<br>
+    在真实数据库上动手验证：<span class="db pg">PG</span> <code>EXPLAIN ANALYZE</code>、<code>\d table</code>、<code>pg_stat_statements</code> · <span class="db my">MySQL</span> <code>EXPLAIN</code>、<code>SHOW INDEX</code>、<code>SHOW ENGINE INNODB STATUS</code>。
+  </div>
+</main>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

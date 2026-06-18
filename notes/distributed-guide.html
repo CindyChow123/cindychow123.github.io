@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distributed Systems — The Visual Engineering & Interview Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#5b54c7; --red2:#403a9e;
+    --accent:#2f6f9f; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --hand:"Shantell Sans","Bradley Hand",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#f1e9da;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#a83a25}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#f6e4dd;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(91,84,199,.12), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#f3ecdf);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 Interview angle";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* ---- FUN: analogy callout ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 Real-world analogy";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- FUN: progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(220,56,45,.4)}
+
+  /* ---- FUN: flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:158px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.9rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#f6e4dd}
+
+  /* ---- FUN: reveal Q&A (boss level) ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ tap to reveal";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ answer"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#fdeceb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  /* ---- FUN: emoji bullets / sparkle ---- */
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>Overview</h2>
+  <a href="#map">The big picture</a>
+  <h2>Theory</h2>
+  <a href="#intro">What is "distributed"?</a>
+  <a href="#cap">CAP theorem</a>
+  <a href="#base">BASE & consistency</a>
+  <h2>Agreement</h2>
+  <a href="#consensus">Consensus: Raft · Paxos · ZAB</a>
+  <h2>Transactions</h2>
+  <a href="#txn">Distributed transactions</a>
+  <h2>Coordination</h2>
+  <a href="#lock">Distributed locks</a>
+  <a href="#id">Distributed IDs</a>
+  <a href="#ratelimit">Rate limiting</a>
+  <a href="#rpc">RPC</a>
+  <a href="#zk">ZooKeeper</a>
+  <h2>Reference</h2>
+  <a href="#cheatsheet">Cheat sheet</a>
+  <h2>Practice 🎮</h2>
+  <a href="#quiz">Self-test flashcards</a>
+  <a href="#boss">Boss-level questions</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">🌐 Distributed Systems</span> — Visual Engineering &amp; Interview Guide</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="zh/distributed-guide.html">中文版本 →</a></p>
+    <p>The theory and patterns behind systems that span many machines — CAP &amp; BASE, consensus (Raft / Paxos / ZAB), distributed transactions, locks, IDs, rate limiting, RPC, and ZooKeeper. One scannable page to revise before an interview or a design.</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (watch the progress bar fill up top), hit the 🎭 analogies to make it stick, flip the 🃏 flashcards in <a href="#quiz">§12</a>, then unlock the 🎯 <a href="#boss">boss-level questions</a>.</p>
+    <div class="pills">
+      <span class="pill">CAP · pick 2 under a partition</span>
+      <span class="pill">BASE · eventual consistency</span>
+      <span class="pill">Raft / Paxos consensus</span>
+      <span class="pill">2PC · TCC · Saga</span>
+      <span class="pill">Snowflake IDs</span>
+      <span class="pill">token bucket</span>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>The big picture — one map to memorize</h2>
+    <div class="tldr"><b>The spine:</b> the network is unreliable, so partitions happen → that forces the <b>CAP</b> choice → choosing availability gives <b>BASE</b>; needing agreement gives <b>consensus</b>, which powers coordination, locks, and leader election. Everything else (transactions, IDs, rate limiting, RPC) is what you bolt on to actually build the thing.</div>
+    <div class="mermaid">
+flowchart TB
+    NET["network is unreliable —<br/>partitions WILL happen (P)"]:::core -->|forces a choice| CAP["CAP — under a partition<br/>you pick C or A"]:::idea
+    CAP -->|choose A| BASE["BASE<br/>eventual consistency"]:::feat
+    CAP -->|need agreement / C| CON["consensus<br/>Raft · Paxos · ZAB"]:::feat
+    CON -->|elects a leader for| COORD["coordination service<br/>ZooKeeper / etcd"]:::feat
+    COORD --> LOCK["distributed locks"]:::feat
+    XS["work spans many services & DBs"]:::core --> TXN["distributed transactions<br/>2PC · TCC · Saga"]:::feat
+    SH["sharded data needs global IDs"]:::core --> ID["distributed IDs<br/>Snowflake · segment"]:::feat
+    SV["services call each other"]:::core --> RPC["RPC"]:::feat
+    SV --> RL["rate limiting<br/>protect each service"]:::feat
+    click CAP href "#cap" "CAP theorem" _self
+    click BASE href "#base" "BASE & consistency" _self
+    click CON href "#consensus" "Consensus" _self
+    click COORD href "#zk" "ZooKeeper" _self
+    click LOCK href "#lock" "Distributed locks" _self
+    click TXN href "#txn" "Distributed transactions" _self
+    click ID href "#id" "Distributed IDs" _self
+    click RPC href "#rpc" "RPC" _self
+    click RL href "#ratelimit" "Rate limiting" _self
+    classDef core fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 tap any box to jump to the section that explains it</p>
+  </section>
+
+  <!-- ============ INTRO ============ -->
+  <section id="intro">
+    <h2><span class="num">01</span>What "distributed" actually means</h2>
+    <p>A <b>distributed system</b> is a set of independent machines that coordinate over a network to look, to the user, like <b>one</b> system. You go distributed for three reasons: <b>scale</b> (more than one box can handle), <b>availability</b> (survive a machine dying), and <b>locality</b> (be close to users). The price is that everything hard about computing — failure, time, ordering, consistency — gets multiplied.</p>
+    <div class="grid3">
+      <div class="card"><div class="big">partial</div><div class="kv">failure: <b>some</b> nodes fail while others run — there is no single "it's up or down"</div></div>
+      <div class="card"><div class="big">no clock</div><div class="kv">no shared global time; you can't trust "when" two events happened across nodes</div></div>
+      <div class="card"><div class="big">async</div><div class="kv">messages can be delayed, reordered, duplicated, or lost</div></div>
+    </div>
+    <h3>Distributed vs microservices — not the same axis</h3>
+    <p>"Distributed" is about <b>physical deployment</b> (work split across machines). "Microservices" is a <b>software architecture</b> (one app split into small, independently deployable services by business capability). Microservices are <i>one way</i> to build a distributed system, but you can be distributed without microservices (e.g. a sharded database) and "micro" in spirit without true distribution (a modular monolith).</p>
+    <div class="analogy">A distributed system is a <b>restaurant kitchen</b> with many cooks: faster and more resilient than one chef, but now they must coordinate — orders get lost, two cooks grab the same pan, nobody agrees what time it is. Every topic below is a tool for that coordination problem.</div>
+    <div class="iq">Frame the whole field around <b>three impossibilities</b>: you cannot avoid partial failure, you cannot share a perfect clock, and (per CAP) you cannot have consistency <i>and</i> availability during a partition. Distributed systems are the engineering of good-enough answers to those three.</div>
+  </section>
+
+  <!-- ============ CAP ============ -->
+  <section id="cap">
+    <h2><span class="num">02</span>CAP theorem</h2>
+    <p>For a single piece of data replicated across nodes, you can have at most <b>two</b> of: <b>C</b>onsistency (every read sees the latest write), <b>A</b>vailability (every request gets a non-error response), and <b>P</b>artition tolerance (the system keeps working when the network splits).</p>
+    <div class="mermaid">
+flowchart TB
+    P{"network partition<br/>happens?"}:::q
+    P -->|"no (normal)"| OK["serve both C and A freely"]:::ok
+    P -->|yes| CHOOSE{"you must choose"}:::q
+    CHOOSE -->|keep Consistency| CP["CP — refuse/err on the<br/>minority side (no stale reads)"]:::cp
+    CHOOSE -->|keep Availability| AP["AP — answer anyway,<br/>maybe with stale data"]:::ap
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef cp fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef ap fill:#fbeee2,stroke:#c98a3a,color:#7a4a12;
+    </div>
+    <div class="warn"><b>The most-missed point:</b> P is <b>not optional</b> — in any real network, partitions happen. So CAP is really a binary choice <i>during a partition</i>: <b>CP</b> (sacrifice availability — reject requests rather than serve stale) or <b>AP</b> (sacrifice consistency — stay up, reconcile later). "CA" only exists in a single node that never partitions.</p></div>
+    <table>
+      <tr><th>Choice</th><th>Means</th><th>Examples</th></tr>
+      <tr><td><b>CP</b></td><td>Consistency over availability; minority side stops serving</td><td>ZooKeeper, etcd, HBase, (Redis Cluster leans here for the majority)</td></tr>
+      <tr><td><b>AP</b></td><td>Availability over consistency; serve, reconcile later</td><td>Cassandra, DynamoDB, Eureka, DNS</td></tr>
+    </table>
+    <div class="analogy">Two bank tellers lose their phone line (partition). <b>CP</b>: both refuse withdrawals until the line is back — no wrong balances, but customers wait. <b>AP</b>: both keep serving from their last-known balance — nobody waits, but the accounts can disagree until they sync.</div>
+    <div class="iq">Never say "my system is CA." Say: "partitions are a given, so I chose <b>CP</b> here (e.g. config/locks must be correct) or <b>AP</b> there (e.g. a product catalog must stay up). CAP is a per-feature decision, not a whole-system label."</div>
+  </section>
+
+  <!-- ============ BASE ============ -->
+  <section id="base">
+    <h2><span class="num">03</span>BASE &amp; consistency models</h2>
+    <p><b>BASE</b> is the AP-side philosophy, the opposite of database <b>ACID</b>: <b>B</b>asically <b>A</b>vailable, <b>S</b>oft state, <b>E</b>ventual consistency. You give up "always correct right now" for "always answers, and converges to correct."</p>
+    <div class="grid3">
+      <div class="card"><h4>Basically Available</h4><p>The system stays responsive under failure — maybe degraded (slower, partial), but not down.</p></div>
+      <div class="card"><h4>Soft state</h4><p>State may be in-flight / inconsistent between nodes for a while, even with no new writes.</p></div>
+      <div class="card"><h4>Eventual consistency</h4><p>Stop writing and, given time, all replicas converge to the same value.</p></div>
+    </div>
+    <h3>The consistency spectrum</h3>
+    <table>
+      <tr><th>Model</th><th>Guarantee</th><th>Trade-off</th></tr>
+      <tr><td><b>Strong / linearizable</b></td><td>Every read sees the latest write, as if one copy</td><td>Slow, needs consensus, blocks on partition (CP)</td></tr>
+      <tr><td><b>Read-your-writes</b></td><td>You always see your own latest write</td><td>Session stickiness or read-from-master</td></tr>
+      <tr><td><b>Eventual</b></td><td>Converges "later", reads may be stale meanwhile</td><td>Cheap, fast, available (AP)</td></tr>
+    </table>
+    <div class="iq">ACID vs BASE is the same trade-off as CP vs AP, one layer up: pick ACID/CP when wrong data is unacceptable (money, locks), BASE/AP when uptime matters more and a brief staleness is fine (feeds, catalogs, counters).</div>
+  </section>
+
+  <!-- ============ CONSENSUS ============ -->
+  <section id="consensus">
+    <h2><span class="num">04</span>Consensus — getting nodes to agree</h2>
+    <p>How do multiple nodes agree on one value (or one ordered log of operations) even as some crash? That's the <b>consensus</b> problem, and it underlies leader election, replicated state machines, and coordination services. All practical algorithms need a <b>majority (quorum)</b> to make progress — which is why clusters use an <b>odd</b> number of nodes.</p>
+
+    <h3>Raft — the one to know cold</h3>
+    <div class="tldr"><b>In one line:</b> a single leader takes every write and drives replication; heartbeats + majority voting elect that leader.</div>
+    <p>Raft splits consensus into <b>leader election</b> and <b>log replication</b>. Time is divided into <b>terms</b> (a logical clock); each term has at most one leader, and every node is a <b>Follower</b>, <b>Candidate</b>, or <b>Leader</b>.</p>
+    <div class="mermaid">
+flowchart LR
+    F["Follower"]:::s -->|election timeout,<br/>start a new term| C["Candidate"]:::s
+    C -->|wins majority of votes| L["Leader"]:::l
+    C -->|sees a higher term| F
+    L -->|discovers higher term| F
+    L -.->|heartbeats keep<br/>followers as followers| F
+    classDef s fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef l fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    </div>
+    <h4>Leader election</h4>
+    <ol>
+      <li>Followers expect periodic <b>heartbeats</b>. Hearing nothing for its (randomized) <b>election timeout</b>, a follower becomes a <b>Candidate</b>: it <b>increments the term</b>, votes for itself, and sends <code>RequestVote</code> to everyone else.</li>
+      <li>It becomes <b>Leader</b> on a <b>majority</b> of votes. Each node grants <b>at most one vote per term</b>, and only to a candidate whose <b>log is at least as up-to-date</b> as its own — this election restriction is what guarantees the new leader already holds every committed entry.</li>
+      <li>Because timeouts are <b>randomized</b>, a <b>split vote</b> (nobody reaches a majority) is rare and self-heals: nodes time out at different moments, so one wins the next round.</li>
+    </ol>
+    <h4>Log replication</h4>
+    <ol>
+      <li>All client writes go to the leader; it appends the entry to its <b>log</b> (uncommitted) and sends <code>AppendEntries</code> to followers — an empty <code>AppendEntries</code> doubles as the heartbeat.</li>
+      <li>Once a <b>majority</b> have stored it, the leader <b>commits</b> it, applies it to its state machine, acks the client, and advances its <b>commit index</b> — which it passes to followers so they apply it too.</li>
+      <li><b>Log matching:</b> every <code>AppendEntries</code> carries the previous entry's index + term; a follower whose log doesn't line up <b>rejects</b> it, so the leader walks <code>nextIndex</code> back and re-sends until they match, <b>overwriting</b> any conflicting follower entries. Logs converge, and <b>committed entries are never lost</b>.</li>
+    </ol>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cl as Client
+    participant L as Leader
+    participant F1 as Follower 1
+    participant F2 as Follower 2
+    Cl->>L: write x=5
+    Note over L: append to log at (term, index), uncommitted
+    L->>F1: AppendEntries (x=5)
+    L->>F2: AppendEntries (x=5)
+    F1-->>L: ack
+    F2-->>L: ack
+    Note over L: majority stored it → committed here, leader applies to state machine
+    L-->>Cl: ok
+    L->>F1: AppendEntries (commitIndex advanced)
+    L->>F2: AppendEntries (commitIndex advanced)
+    Note over F1,F2: committed here too → followers apply to state machine
+    </div>
+    <p>Two pointers make this work — worth picturing:</p>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem">
+      <div style="line-height:2.2">leader log&nbsp;
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">1</span>
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">2</span>
+        <span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 9px;border-radius:5px">3</span>
+        <span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 9px;border-radius:5px">4</span>
+        <span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 9px;border-radius:5px">5</span>
+      </div>
+      <div class="kv" style="margin-top:10px;line-height:1.65"><b>commitIndex = 3</b> — entries 1–3 are stored on a majority, so they're <b>committed</b> and applied (green). Entries 4–5 are replicated but <i>not yet</i> on a majority → still uncommitted (amber). <br><b>nextIndex[F2] = 4</b> — for <i>each</i> follower the leader tracks the next entry to send it; if that follower rejects (log mismatch), the leader decrements its nextIndex and retries until the logs line up.</div>
+    </div>
+    <h4>Raft jargon that trips people up</h4>
+    <table>
+      <tr><th>Term</th><th>What it actually means</th></tr>
+      <tr><td><b>append → commit → apply</b></td><td>An entry's three stages: <b>append</b> = written to the log, still tentative (could be lost); <b>commit</b> = a <b>majority</b> stored it → now permanent, can never be lost or changed; <b>apply</b> = run it against the state machine (and ack the client). <i>Only committed entries are applied.</i></td></tr>
+      <tr><td><b>commitIndex</b></td><td>The highest committed position — every node applies its log up to here, in order.</td></tr>
+      <tr><td><b>nextIndex[follower]</b></td><td>A per-follower cursor = the next entry the leader will send it. On a log mismatch the leader walks it <i>backward</i> and re-sends, so <b>one AppendEntries both appends new entries and catches up a lagging follower</b> — Raft needs no separate "sync" protocol (an empty AppendEntries is also the heartbeat).</td></tr>
+      <tr><td><b>"sees a higher term"</b></td><td>Every RPC carries the sender's term. Any node — even an old, partitioned leader — that gets a <i>higher</i> term steps down to Follower, so a stale leader discovers it's been replaced and two leaders never both commit.</td></tr>
+    </table>
+    <div class="analogy">Raft is a <b>team electing a captain</b> by majority vote each round (term). The captain calls every play (writes), and a play only counts once most of the team has written it down. If the captain goes quiet, someone times out and calls a new election.</div>
+
+    <h3>Paxos — the original (and notoriously hard)</h3>
+    <p>Roles: <b>Proposers</b> propose values, <b>Acceptors</b> vote, <b>Learners</b> just learn the outcome. Basic Paxos gets a cluster to agree on <b>one</b> value, in two phases that each need a majority — read them as: <b>Phase 1 = stake a claim and find out if anything's already chosen</b>; <b>Phase 2 = actually lock the value in</b>. (Throughout, <code>n</code> is a <b>proposal number</b> — just an increasing sequence number that orders competing proposals, <i>not</i> data — and <code>v</code> is the <b>value</b> being agreed on. What gets chosen and handed to Learners is <code>v</code>, never <code>n</code>.)</p>
+    <ol>
+      <li><b>Prepare / Promise (phase 1 — stake a claim):</b> the proposer picks an ever-increasing number <code>n</code> and sends <code>Prepare(n)</code>. An acceptor that hasn't seen a higher number <b>promises</b> not to accept anything numbered lower, and reports back the highest-numbered value it has <i>already</i> accepted (if any). This reserves <code>n</code> <i>and</i> surfaces any value that might already be in flight.</li>
+      <li><b>Accept / Accepted (phase 2 — lock it in):</b> <code>Accept(n, v)</code> is the proposer telling acceptors "vote to accept value <code>v</code> under number <code>n</code>." The catch: <code>v</code> is <b>not</b> free — if any promise reported an already-accepted value, the proposer <b>must</b> reuse the highest-numbered one (only if none did may it use its own). An acceptor accepts unless it has since promised a higher <code>n</code>. Once a <b>majority</b> have accepted <code>(n, v)</code>, <code>v</code> is <b>chosen</b>.</li>
+    </ol>
+    <div class="mermaid">
+sequenceDiagram
+    participant P as Proposer
+    participant A1 as Acceptor 1
+    participant A2 as Acceptor 2
+    participant A3 as Acceptor 3
+    Note over P,A3: Phase 1 — Prepare / Promise
+    P->>A1: Prepare(n)
+    P->>A2: Prepare(n)
+    A1-->>P: Promise(n), no value yet
+    A2-->>P: Promise(n), no value yet
+    Note over P,A3: Phase 2 — Accept / Accepted
+    P->>A1: Accept(n, v)
+    P->>A2: Accept(n, v)
+    A1-->>P: Accepted(n, v)
+    A2-->>P: Accepted(n, v)
+    Note over P,A3: majority accepted, v is chosen
+    </div>
+    <p><b>What "chosen" means, and what happens next:</b> a value is chosen the moment a majority of acceptors have accepted it — and from then on it can <b>never change</b>. The acceptors propagate that result to the <b>Learners</b>, which apply it and answer clients. Why is it immutable? Because of the phase-2 rule above: any later proposer, even with a bigger number, will <i>discover</i> the chosen value during its Prepare phase and be forced to propose that same <code>v</code> — so the cluster converges on one value forever.</p>
+
+    <h4>Multi-Paxos — from one value to a log</h4>
+    <p>Real systems don't agree on a single value, they agree on an ordered <b>log</b> of commands — so you run <b>one Paxos instance per log slot</b>. Running both phases for <i>every</i> entry is slow and invites duelling, so <b>Multi-Paxos</b> elects a stable <b>leader</b> (a distinguished proposer): it does Phase 1 just once, then each new entry needs only Phase 2. That "one leader + an append-only replicated log" shape is essentially what <b>Raft</b> later repackaged in an understandable way.</p>
+
+    <h4>The livelock trap (duelling proposers)</h4>
+    <p>With two competing proposers, Basic Paxos can stall forever: P1 prepares <code>n=1</code>; P2 prepares <code>n=2</code> (acceptors now promise 2, so P1's <code>Accept(1,…)</code> is rejected); P1 retries with <code>n=3</code> (now P2's <code>Accept(2,…)</code> is rejected); they keep pre-empting each other and nobody finishes Phase 2. The fix is to stop competing — randomized back-off, or just elect a single leader (→ Multi-Paxos). That's the practical reason raw Basic Paxos is almost never used directly.</p>
+
+    <h3>ZAB — ZooKeeper Atomic Broadcast</h3>
+    <p>Leader-based, with two modes:</p>
+    <ul>
+      <li><b>Atomic broadcast</b> (normal running): the leader stamps each write with a monotonically increasing <b>zxid</b> and broadcasts it 2PC-style — <code>PROPOSE</code> → a majority <code>ACK</code> → <code>COMMIT</code> — giving a strict <b>total order</b> of writes.</li>
+      <li><b>Crash recovery</b>: if the leader dies, elect a new one — the node with the <b>highest zxid</b> wins (it holds the most-committed data) — sync followers up to it, then resume broadcasting. The zxid embeds an <b>epoch</b> (like Raft's term), so writes from an old leader can't be mistaken for new ones.</li>
+    </ul>
+    <div class="mermaid">
+sequenceDiagram
+    participant Cl as Client
+    participant L as Leader
+    participant F1 as Follower 1
+    participant F2 as Follower 2
+    Cl->>L: write x=5
+    Note over L: stamp zxid, append to log, uncommitted
+    L->>F1: PROPOSE (zxid, x=5)
+    L->>F2: PROPOSE (zxid, x=5)
+    F1-->>L: ACK
+    F2-->>L: ACK
+    Note over L: majority ACKed → committed here, leader applies to state machine (znode tree)
+    L-->>Cl: ok
+    L->>F1: COMMIT (zxid)
+    L->>F2: COMMIT (zxid)
+    Note over F1,F2: committed here too → followers apply to state machine (znode tree)
+    </div>
+    <h4>Raft vs ZAB — bottom-up (same skeleton, alike but not identical)</h4>
+    <p>Build both from the bottom and they're almost the same machine; the real differences sit at just two layers. Read ① → ④:</p>
+    <table>
+      <tr><th>Layer (bottom-up)</th><th>Raft</th><th>ZAB (ZooKeeper)</th></tr>
+      <tr><td><b>① State machine</b><br/>the actual data</td><td><b>Pluggable</b> — you supply it (etcd's KV store, your app…)</td><td><b>Fixed</b> = ZooKeeper's <b>znode tree</b></td></tr>
+      <tr><td><b>② Log</b><br/>ordered entries</td><td>entries keyed by <b>(term, index)</b></td><td>transactions keyed by <b>zxid = (epoch, counter)</b></td></tr>
+      <tr><td><b>③ Replication</b><br/>normal running</td><td><code>AppendEntries</code> → majority → commit → apply</td><td><code>PROPOSE → majority ACK → COMMIT</code> → apply</td></tr>
+      <tr><td><b>④ Leadership &amp; recovery</b></td><td>one leader per <b>term</b>; new leader = newest log; <b>catch-up folds into ordinary AppendEntries</b>, so it serves right after election</td><td>one leader per <b>epoch</b>; new leader = highest zxid; an <b>explicit recovery phase</b> syncs a quorum first, <b>then</b> switches to broadcast to serve</td></tr>
+    </table>
+    <div class="note"><b>So where do they actually differ?</b> The skeleton — leader + replicated ordered log + majority-commit + apply-to-a-state-machine — is the <i>same</i> (yes, ZooKeeper <i>has</i> a state machine: the <b>znode tree</b>, to which committed zxids are applied in order). Only three things really differ:
+      <ol style="margin:6px 0 0">
+        <li>Raft's state machine is generic; ZAB's is hard-wired to the znode tree.</li>
+        <li>After an election, <b>Raft serves immediately</b> and catches followers up <i>during</i> normal AppendEntries, while <b>ZAB gates serving behind an explicit "recovery" phase</b> that syncs a quorum to the new leader first — same end result (a consistent quorum), but continuous vs. an up-front step.</li>
+        <li>Raft keeps the leadership term and the log index as two numbers; ZAB fuses them into one zxid.</li>
+      </ol>
+    </div>
+    <div class="iq"><b>Raft vs Paxos vs ZAB:</b> same goal — agree on an ordered log via majority quorums. Paxos is the most general but subtle; Raft trades a little generality for understandability (etcd, Consul); ZAB is Raft-like and purpose-built for ZooKeeper's primary-backup replication. Name-drop: <b>etcd/Consul → Raft</b>, <b>ZooKeeper → ZAB</b>.</div>
+  </section>
+
+  <!-- ============ TRANSACTIONS ============ -->
+  <section id="txn">
+    <h2><span class="num">05</span>Distributed transactions</h2>
+    <p>When one logical operation spans multiple services or databases (deduct stock <i>and</i> charge payment <i>and</i> create order), you need them to all-commit or all-abort. A local DB transaction can't span machines, so you reach for one of these patterns.</p>
+
+    <h3>2PC — two-phase commit</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant Co as Coordinator
+    participant A as Service A
+    participant B as Service B
+    Co->>A: phase 1 — prepare?
+    Co->>B: phase 1 — prepare?
+    A-->>Co: yes, ready (locked)
+    B-->>Co: yes, ready (locked)
+    Note over Co: all voted yes
+    Co->>A: phase 2 — commit
+    Co->>B: phase 2 — commit
+    </div>
+    <div class="warn"><b>2PC's flaws:</b> it's <b>synchronous and blocking</b> — participants hold locks while waiting for phase 2, and if the coordinator dies after "prepare" they're stuck (uncertain), not daring to unilaterally commit or abort. It also scales poorly.</div>
+
+    <h3>3PC — three-phase commit</h3>
+    <p>3PC attacks 2PC's blocking by splitting "prepare" into two steps and adding <b>timeouts on both sides</b>:</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant Co as Coordinator
+    participant P as Participants
+    Co->>P: 1. CanCommit? (cheap check, no locks)
+    P-->>Co: yes / no
+    Note over Co: all said yes
+    Co->>P: 2. PreCommit (now lock and prepare)
+    P-->>Co: ack
+    Co->>P: 3. DoCommit
+    P-->>Co: committed
+    </div>
+    <ol>
+      <li><b>CanCommit:</b> the coordinator asks "could you commit?" — a cheap check with no locking yet. Any "no" aborts early.</li>
+      <li><b>PreCommit:</b> if all said yes, everyone now locks resources and writes undo/redo, then acks. At this point every node knows the decision is "commit".</li>
+      <li><b>DoCommit:</b> the coordinator tells everyone to actually commit.</li>
+    </ol>
+    <p>The win is <b>timeouts</b>: a participant that got PreCommit but then loses the coordinator will <b>commit on timeout</b> (PreCommit already meant "everyone agreed"), while one still waiting in CanCommit/PreCommit <b>aborts on timeout</b> — so nobody blocks forever.</p>
+    <div class="warn"><b>But 3PC still isn't safe under a network partition:</b> if the cluster splits after PreCommit, the reachable side commits-on-timeout while an isolated participant that missed PreCommit aborts → <b>inconsistency</b>. So 3PC trades 2PC's blocking for a small chance of disagreement, plus an extra round-trip of latency. In practice neither is used much — the eventual-consistency patterns below win.</div>
+
+    <h3>The practical patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>Idea</th><th>Trade-off</th></tr>
+      <tr><td><b>TCC</b> (Try-Confirm-Cancel)</td><td>App-level 2PC: reserve resources (Try), then Confirm or Cancel</td><td>Strong control, but you write 3 methods per action</td></tr>
+      <tr><td><b>Saga</b></td><td>Chain of local transactions, each with a <b>compensating</b> undo if a later step fails</td><td>No locks, eventual consistency; compensations are tricky</td></tr>
+      <tr><td><b>Local message table / MQ</b></td><td>Write business data + an "event" row in one local txn, then reliably publish to a queue</td><td>Eventual consistency; the dominant real-world choice</td></tr>
+    </table>
+    <h4>TCC — Try / Confirm / Cancel</h4>
+    <p>Business-level 2PC: for each action you implement three methods. <b>Try</b> reserves resources without finalizing (freeze the balance, hold the stock). If every Try succeeds, <b>Confirm</b> commits using only what was reserved; if any fails, <b>Cancel</b> releases the reservations. Confirm/Cancel must be <b>idempotent</b> and handle empty-rollback (a Cancel that arrives before its Try). Strong control, but 3× the code — reserve it for high-value flows like payments.</p>
+
+    <h4>Saga — a chain of local transactions</h4>
+    <p>Split the global transaction into local steps T<sub>1</sub>…T<sub>n</sub>, each with a <b>compensating</b> undo C<sub>i</sub>. Run forward; if a step fails, run the compensations backward to unwind whatever already committed. No locks are held across services (high availability), but you must design correct, idempotent compensations.</p>
+    <div class="mermaid">
+flowchart LR
+    T1["T1 deduct stock"]:::ok --> T2["T2 charge payment"]:::ok --> T3["T3 create order ✗"]:::bad
+    T3 -.fails, compensate back.-> C2["C2 refund payment"]:::comp
+    C2 -.-> C1["C1 restock"]:::comp
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef bad fill:#fdeceb,stroke:#c52a20,color:#7a1810;
+    classDef comp fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p>Two flavours: <b>orchestration</b> (a central coordinator calls each step) or <b>choreography</b> (each service emits an event the next one reacts to).</p>
+
+    <h4>Local message table / transactional outbox — the everyday choice</h4>
+    <p>The trick that makes "update my DB <i>and</i> reliably tell another service" atomic: in <b>one local transaction</b>, write the business change <i>and</i> an event row into an <b>outbox</b> table. A relay then polls the outbox and publishes to the MQ, retrying until acked; consumers process <b>idempotently</b> (dedupe by message id). The event is sent if and only if the business data committed — no lost or phantom messages.</p>
+
+    <div class="iq">Say it plainly: "Strong distributed transactions (2PC) are expensive and block, so in practice we use <b>eventual consistency</b> — Saga or a reliable message (local message table + MQ) with idempotent consumers — and reserve TCC for the few flows that truly need near-strong guarantees, like payments."</div>
+  </section>
+
+  <!-- ============ LOCKS ============ -->
+  <section id="lock">
+    <h2><span class="num">06</span>Distributed locks</h2>
+    <p>A mutex that works <i>across machines</i> — only one node may hold it at a time. Two common backends:</p>
+    <div class="grid2">
+      <div class="card"><h4>Redis</h4><p><code>SET key token NX PX 30000</code> — atomic acquire + auto-expiry so a crashed holder can't deadlock. Release with a Lua <i>check-token-then-DEL</i> so you only free your own lock. <b>Redlock</b> extends it across N independent masters (debated for correctness-critical use).</p></div>
+      <div class="card"><h4>ZooKeeper</h4><p>Create an <b>ephemeral sequential</b> znode; the lowest sequence number holds the lock. Each waiter <b>watches</b> the node just ahead of it. Ephemeral = the lock auto-releases if the holder's session dies — no TTL guesswork.</p></div>
+    </div>
+    <table>
+      <tr><th></th><th>Redis lock</th><th>ZooKeeper lock</th></tr>
+      <tr><td>Style</td><td>AP — fast, may be unsafe under failover</td><td>CP — safe, slightly slower</td></tr>
+      <tr><td>Expiry</td><td>TTL you must tune (+ watchdog)</td><td>Session/ephemeral, automatic</td></tr>
+      <tr><td>Use when</td><td>Efficiency lock (avoid dup work)</td><td>Correctness lock (must be exclusive)</td></tr>
+    </table>
+    <h4>Why "efficiency" vs "correctness"?</h4>
+    <p>A Redis lock can break exclusivity two ways:</p>
+    <ol>
+      <li><b>TTL expiry</b> — if the holder pauses (a GC stop-the-world, a slow disk) for longer than the TTL, the key auto-expires and a <i>second</i> client acquires it; now two run at once, and neither Redis nor the resource notices.</li>
+      <li><b>Async failover</b> — if the master grants the lock then crashes before replicating, the promoted replica has no record of it, so another client locks it too.</li>
+    </ol>
+    <p>That's tolerable for an <b>efficiency</b> lock (worst case = some duplicated work), but fatal for a <b>correctness</b> lock (two writers = corruption).</p>
+    <div class="note"><b>What makes a lock "efficiency" vs "correctness"?</b> First, the lock is a <i>permission</i> ("this task is mine to run right now"), <b>never the work itself</b> — both kinds follow the same flow <code>acquire → do the work → release</code>. The label is about <b>what goes wrong if exclusivity fails and two clients hold it at once</b>. An <b>efficiency</b> lock only prevents <i>redundant</i> work — the action is harmless (or idempotent) if it runs twice, so two holders just waste CPU: regenerating a cache, sending a daily report, processing a job a peer already grabbed. A <b>correctness</b> lock is one where exclusivity <i>is</i> the correctness — two holders produce <b>wrong data</b>: deducting a balance, transferring money, any non-atomic read-modify-write. "Tolerable, worst case you do it twice" only applies to the first kind; for the second, two holders = corruption.</div>
+    <p>ZooKeeper closes those holes — and a third layer guards the residual case:</p>
+    <ol>
+      <li><b>Session lease</b> — the lock lives as long as the client's <b>session</b> (kept alive by heartbeats), not a guessed TTL, so there's no "expired while I was still working" gap to mis-tune. <i>(Closes Redis hole ①.)</i></li>
+      <li><b>Strong consistency</b> — the lock state is agreed by a ZAB majority, so a failover never forgets who holds it. <i>(Closes Redis hole ②.)</i></li>
+      <li><b>Fencing token — the backstop</b> — even ZK can't stop a holder that pauses <i>past</i> its session timeout; so each grant carries a monotonically increasing token, and the <b>resource</b> accepts only the highest token it has seen and rejects older ones, so a "zombie" old holder simply can't write. <b>Detailed below.</b></li>
+    </ol>
+    <h4>How the ZooKeeper lock actually works</h4>
+    <p>First, what a <b>session</b> is: when a client connects, ZooKeeper opens a session with a timeout, kept alive by the client's periodic <b>heartbeats</b>. Miss enough heartbeats (crash, long pause, network gone) and ZK declares the session dead and <b>auto-deletes every ephemeral node that session created</b>. That's the "liveness lease" — no guessed lock-TTL to mis-tune.</p>
+    <p>The lock is a queue built from <b>ephemeral sequential</b> znodes. Each client wanting the lock creates one child under <code>/lock/</code>, and ZK stamps it with an increasing number. <b>The lowest number holds the lock.</b> Crucially, a waiter <b>watches only the node right before it</b> — not the holder, not everyone:</p>
+    <div class="mermaid">
+flowchart LR
+    A["Client A<br/>holds the lock"]:::ca
+    B["Client B<br/>waiting"]:::cb
+    C["Client C<br/>waiting"]:::cb
+    subgraph ZK["ZooKeeper  /lock/"]
+      direction TB
+      N1["req-0001 (lowest)"]:::hold
+      N2["req-0002"]:::wait
+      N3["req-0003"]:::wait
+    end
+    A ==>|"creates ephemeral node<br/>(lives as long as A's session)"| N1
+    B ==>|creates| N2
+    C ==>|creates| N3
+    B -.watches.-> N1
+    C -.watches.-> N2
+    classDef ca fill:#dcefe2,stroke:#3aa856,color:#1d6b32;
+    classDef cb fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef hold fill:#dcefe2,stroke:#3aa856,color:#1d6b32;
+    classDef wait fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p>When the holder finishes (deletes its node) <i>or</i> dies (session ends → node auto-deleted), only its <b>immediate successor's</b> watch fires; that client checks "am I the lowest now?" and, if so, takes the lock. The clients never talk to each other — they coordinate entirely <b>through ZK's shared tree</b>, and each watches just one neighbour, so a release wakes exactly one waiter (no stampede). That's why there's no "two holders" window: the lock belongs to exactly the lowest <i>live</i> node, and "live" is decided by the session, not a timer you guessed.</p>
+
+    <div class="note"><b>Which layer is this?</b> This diagram is a lock <i>recipe built on top of</i> ZooKeeper — creating/deleting these znodes are <b>writes to ZK's state machine (the znode tree)</b>, and watches are its change-notifications. It is <b>not</b> the ZAB consensus protocol of §04 — compare it to a Redis-lock recipe, not to Raft's internals. That's exactly why it looks nothing like the §04 consensus diagrams: a Raft diagram shows the <i>replication</i> layer (the state machine is an off-screen box entries get applied to), while here you're watching ZooKeeper's state machine being used directly. Same four layers underneath — the diagrams just depict different ones.</div>
+    <h4>Fencing token — the truly safe fix</h4>
+    <p>Even ZooKeeper can't stop a process that pauses <i>past</i> its session timeout: ZK frees the lock, the next client takes it, and the paused client later wakes still believing it holds the lock. The fix lives at the <b>resource</b>, not the lock — each grant hands out a <b>fencing token</b>, a number that only ever increases (ZK's znode sequence/version works). Every write carries its token, and the resource <b>remembers the highest token it has seen and rejects anything lower</b>:</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C1 as Client 1
+    participant L as Lock service
+    participant C2 as Client 2
+    participant R as Resource (DB)
+    C1->>L: acquire lock
+    L-->>C1: granted, token 33
+    Note over C1: long GC pause, session expires, lock freed
+    C2->>L: acquire lock
+    L-->>C2: granted, token 34
+    C2->>R: write (token 34)
+    Note over R: highest token seen = 34
+    C1->>R: write (token 33) — woke up late
+    R-->>C1: REJECTED, 33 is less than 34
+    </div>
+    <p>So the "zombie" old holder is harmless — its stale token is refused. That's why the fully safe answer is "a CP lock <b>plus</b> a fencing token the resource enforces", not the lock alone.</p>
+    <div class="iq">The classic line (Kleppmann's Redlock critique): for an <b>efficiency</b> lock, single-Redis <code>SET NX PX</code> is fine; for a <b>correctness</b> lock you need a <b>fencing token</b> (a monotonic number the resource checks) or a CP system like ZooKeeper/etcd — because GC pauses and clock skew can let two clients believe they hold the lock.</div>
+  </section>
+
+  <!-- ============ IDS ============ -->
+  <section id="id">
+    <h2><span class="num">07</span>Distributed IDs</h2>
+    <p>Once data is sharded, a single DB auto-increment no longer works — you need IDs that are <b>globally unique</b>, ideally <b>roughly time-ordered</b> (so they index well and sort by creation). Four standard approaches:</p>
+    <table>
+      <tr><th>Approach</th><th>How</th><th>Catch</th></tr>
+      <tr><td><b>UUID</b></td><td>Random 128-bit, generated anywhere</td><td>Unique but <b>not ordered</b> &amp; bulky → bad for B+Tree index locality</td></tr>
+      <tr><td><b>DB segment</b> (号段)</td><td>A table hands out ranges (e.g. 1–1000) to each app; serve locally</td><td>Few DB hits, ordered-ish; needs the DB available</td></tr>
+      <tr><td><b>Redis INCR</b></td><td>Atomic counter, optionally per-prefix</td><td>Simple &amp; ordered; Redis becomes a dependency / SPOF</td></tr>
+      <tr><td><b>Snowflake</b></td><td>64-bit: time + machine + sequence, generated locally</td><td>Ordered &amp; no central call; needs unique machine IDs &amp; sane clocks</td></tr>
+    </table>
+    <h3>Snowflake — the 64-bit layout</h3>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem;line-height:1.8">
+      <span class="tag t-off">1 bit</span> sign (always 0) &nbsp; · &nbsp;
+      <span class="tag t-on">41 bits</span> timestamp (ms, ~69 yrs) &nbsp; · &nbsp;
+      <span class="tag t-warn">10 bits</span> machine id (1024 nodes) &nbsp; · &nbsp;
+      <span class="tag t-on">12 bits</span> sequence (4096 / ms / node)
+    </div>
+    <div class="warn"><b>Snowflake's weakness is the clock:</b> if a machine's clock jumps <i>backwards</i> (NTP correction), it can mint duplicate IDs. Implementations either refuse to issue until time catches up, or borrow bits — always mention clock-drift handling.</div>
+    <div class="iq">Pick by need: ordered + decentralized → <b>Snowflake</b>; simplest + already have a DB → <b>segment</b>; tiny scale → <b>Redis INCR</b>; only need uniqueness, not order → <b>UUID</b>.</div>
+  </section>
+
+  <!-- ============ RATE LIMITING ============ -->
+  <section id="ratelimit">
+    <h2><span class="num">08</span>Rate limiting</h2>
+    <p>Protect a service from being overwhelmed (or enforce a quota) by capping request rate. Four classic algorithms, increasing in smoothness:</p>
+    <table>
+      <tr><th>Algorithm</th><th>How</th><th>Weakness / strength</th></tr>
+      <tr><td><b>Fixed window</b></td><td>Count per fixed interval (e.g. 100/min), reset each window</td><td>Simple, but a <b>burst at the window edge</b> allows 2× near the boundary</td></tr>
+      <tr><td><b>Sliding window</b></td><td>Track timestamps over a moving window (Redis ZSet)</td><td>Smooths the edge problem; more memory</td></tr>
+      <tr><td><b>Leaky bucket</b></td><td>Requests queue, drain at a <b>fixed</b> rate</td><td>Perfectly smooth output; can't absorb bursts</td></tr>
+      <tr><td><b>Token bucket</b></td><td>Tokens refill at a steady rate; each request spends one</td><td>Allows <b>controlled bursts</b> (saved-up tokens) — the usual default</td></tr>
+    </table>
+    <div class="mermaid">
+flowchart LR
+    R["refill: N tokens / sec"]:::r --> B["bucket<br/>(capacity = burst size)"]:::b
+    REQ["request"]:::q --> CHK{"token available?"}:::q
+    B --> CHK
+    CHK -->|yes — take 1| PASS["allow"]:::ok
+    CHK -->|no| DROP["reject / throttle"]:::no
+    classDef r fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef b fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef q fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef no fill:#fdeceb,stroke:#c52a20,color:#7a1810;
+    </div>
+    <div class="iq"><b>Token vs leaky bucket</b> is a favorite: both cap the average rate, but token bucket <b>allows bursts</b> up to the bucket size (good for bursty real traffic), while leaky bucket forces a perfectly constant output rate. For a distributed limiter, implement the counter in <b>Redis + Lua</b> so the check-and-decrement is atomic across all app servers.</div>
+  </section>
+
+  <!-- ============ RPC ============ -->
+  <section id="rpc">
+    <h2><span class="num">09</span>RPC — calling a remote function</h2>
+    <p><b>RPC</b> (Remote Procedure Call) lets you invoke a method on another service as if it were local. The framework hides the plumbing: a client <b>stub</b> serializes the arguments, sends them over the network, the server deserializes, runs the method, and sends the result back.</p>
+    <div class="mermaid">
+flowchart LR
+    C["client code<br/>calls foo(x)"]:::c --> S1["client stub<br/>serialize + send"]:::s
+    S1 -->|network| S2["server stub<br/>receive + deserialize"]:::s
+    S2 --> SV["server runs foo(x)"]:::sv
+    SV --> S2
+    S2 -->|network| S1
+    S1 --> C
+    classDef c fill:#e7ecfb,stroke:#5b54c7,color:#2a2470;
+    classDef s fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef sv fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <p>The pieces that matter: a <b>serialization</b> format (Protobuf, Thrift, JSON), a <b>transport</b> (HTTP/2 for gRPC, TCP), <b>service discovery</b> (find an instance), and <b>load balancing</b>. Examples: gRPC, Apache Dubbo, Thrift.</p>
+    <div class="iq"><b>RPC vs REST:</b> RPC is action-oriented ("call this method", binary, fast, strongly-typed contracts) — great for internal service-to-service calls. REST is resource-oriented (HTTP verbs on URLs, human-readable) — great for public/cross-team APIs. Also remember the <b>fallacies of distributed computing</b>: the network is <i>not</i> reliable, free, or zero-latency, so every RPC needs timeouts, retries (idempotent!), and circuit breakers.</div>
+  </section>
+
+  <!-- ============ ZOOKEEPER ============ -->
+  <section id="zk">
+    <h2><span class="num">10</span>ZooKeeper &amp; service discovery</h2>
+    <p><b>ZooKeeper</b> is a CP coordination service: a small, strongly-consistent, replicated tree of <b>znodes</b> (like a filesystem) that many clients share. It's the "single source of truth" other distributed systems lean on.</p>
+    <div class="grid2">
+      <div class="card"><h4>znode types</h4><p><b>Persistent</b> (stays until deleted), <b>ephemeral</b> (vanishes when the creator's session ends — perfect for liveness), and <b>sequential</b> (auto-appended counter — perfect for ordered locks/queues).</p></div>
+      <div class="card"><h4>Watches</h4><p>A client can <b>watch</b> a znode and get a one-shot notification when it changes — the basis for config updates, leader election, and lock hand-off.</p></div>
+    </div>
+    <h4>What people build with it</h4>
+    <ul>
+      <li><b>Service discovery</b> — services register as ephemeral znodes; if one dies, its node disappears and clients are notified.</li>
+      <li><b>Config management</b> — store shared config in a znode; watchers get live updates.</li>
+      <li><b>Leader election &amp; distributed locks</b> — via ephemeral sequential nodes (see §06).</li>
+    </ul>
+    <div class="note"><b>ZooKeeper (CP) vs Eureka (AP)</b> for service discovery: ZooKeeper guarantees consistency but a partition can make it reject; Eureka stays available and may serve a slightly stale service list. For discovery, many argue AP is the better fit — a slightly stale list beats no list. <b>etcd</b> (Raft) and <b>Consul</b> are the modern alternatives.</div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section id="cheatsheet">
+    <h2><span class="num">11</span>Rapid-fire cheat sheet</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>CAP / BASE</h4>
+        <p>P is mandatory → under partition pick <b>CP</b> (reject, stay correct) or <b>AP</b> (serve, stay up). BASE = the AP philosophy: Basically Available, Soft state, Eventual consistency. Opposite of ACID.</p>
+        <h4>Consensus</h4>
+        <p>Agree on a replicated log via a <b>majority quorum</b> → odd node counts. <b>Raft</b> (etcd, Consul), <b>Paxos</b> (general, hard), <b>ZAB</b> (ZooKeeper).</p>
+        <h4>Transactions</h4>
+        <p>2PC = blocking, synchronous. Practice = <b>Saga</b> / <b>local message table + MQ</b> (eventual, idempotent), <b>TCC</b> for near-strong flows.</p>
+      </div>
+      <div class="card">
+        <h4>Locks</h4>
+        <p>Redis <code>SET NX PX</code> + Lua release (AP, efficiency). ZooKeeper ephemeral-sequential (CP, correctness). Correctness → fencing token.</p>
+        <h4>IDs</h4>
+        <p>Ordered + decentralized → <b>Snowflake</b> (time+machine+seq, watch clock skew). Else segment / Redis INCR / UUID (unordered).</p>
+        <h4>Rate limit</h4>
+        <p>Fixed → sliding window → leaky bucket → <b>token bucket</b> (allows bursts). Distributed → Redis + Lua.</p>
+        <h4>RPC</h4>
+        <p>Stub + serialize + transport + discovery. Always: timeout, idempotent retry, circuit breaker.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">12</span>Self-test flashcards <span class="xp" id="score">🃏 0 / 0 flipped</span></h2>
+    <p>Cover the answer, say it out loud, then <b>tap to flip</b>. The progress bar fills as you go.</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why can't you have "CA" in a real system?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Because partitions (P) <b>will</b> happen on a real network — you don't get to opt out. So the real choice is, <i>during a partition</i>, CP (sacrifice availability) or AP (sacrifice consistency). CA only describes a single non-partitioning node.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">What does BASE stand for, and what's it the opposite of?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back"><b>B</b>asically <b>A</b>vailable, <b>S</b>oft state, <b>E</b>ventual consistency — the AP-side philosophy, opposite of database <b>ACID</b>. Trade "correct right now" for "always answers + converges."</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Raft's two sub-problems?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back"><b>Leader election</b> (one leader per term, elected by majority) and <b>log replication</b> (leader appends, an entry commits once a majority store it). Needs a quorum → odd node counts.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why is 2PC avoided at scale?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">It's synchronous and <b>blocking</b>: participants hold locks waiting for phase 2, and a coordinator crash after "prepare" leaves them stuck/uncertain. Use Saga or message-driven eventual consistency instead.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Token bucket vs leaky bucket?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Both cap the average rate. <b>Token bucket</b> allows bursts up to bucket size (refill tokens, spend per request). <b>Leaky bucket</b> forces a perfectly constant drain rate — no bursts.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Snowflake ID — the 4 fields?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">64 bits = 1 sign + <b>41 timestamp</b> (ms) + <b>10 machine id</b> + <b>12 sequence</b> per ms. Ordered &amp; decentralized; the risk is <b>clock rollback</b> minting duplicates.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Redis lock vs ZooKeeper lock?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Redis <code>SET NX PX</code> + Lua release: fast, AP, needs a TTL — fine for <b>efficiency</b> locks. ZooKeeper ephemeral-sequential: CP, auto-releases on session loss — better for <b>correctness</b> locks.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">ZooKeeper vs Eureka for discovery?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">ZooKeeper is <b>CP</b> (may reject during a partition); Eureka is <b>AP</b> (stays up, list may be stale). For service discovery, AP is often preferable — a slightly stale list beats no list.</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 Flip all</button>
+      <button class="btn" id="resetdeck">↺ Reset</button>
+      <span>Tip: cover the back and quiz a friend.</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">13</span>Boss-level questions <span class="boss">EXPERT</span></h2>
+    <p>These separate "I've used it" from "I understand it." Think first, then reveal.</p>
+
+    <details class="qa"><summary>Is CAP's "C" the same as ACID's "C"? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans"><b>No — common trap.</b> CAP's C is <b>linearizability</b> (every read sees the latest write across replicas). ACID's C is <b>consistency in the sense of preserving invariants/constraints</b> within a transaction (a write that violates a rule is rejected). Different concepts that share a letter.</div></details>
+
+    <details class="qa"><summary>You need a withdrawal to be globally exclusive across data centers. Redis lock or not? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">That's a <b>correctness</b> lock, so a single-instance Redis <code>SET NX PX</code> is <i>not</i> safe: a GC pause or clock skew can let a second client acquire the lock while the first still thinks it holds it. Options:
+        <ol style="margin:6px 0">
+          <li>A CP coordinator (ZooKeeper/etcd) with ephemeral nodes.</li>
+          <li>A <b>fencing token</b> — the lock hands out a monotonically increasing number and the resource (DB) rejects any write with a stale token, so a "zombie" holder can't do damage.</li>
+        </ol>
+        Redlock alone doesn't solve the GC-pause problem.</div></details>
+
+    <details class="qa"><summary>How do you make a "reliable message" exactly-once across services? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">You can't get true exactly-once delivery — aim for <b>at-least-once + idempotency</b>. Use the <b>local message table / transactional outbox</b>: in one local DB transaction, write the business change <i>and</i> an outbox row; a relay reliably publishes outbox rows to the MQ (retrying). Consumers <b>dedupe</b> by a unique message id (idempotency key). Net effect = effectively-once.</div></details>
+
+    <details class="qa"><summary>Why do consensus clusters always want an odd number of nodes? <span class="boss lvl1">WARM-UP</span></summary>
+      <div class="ans">Progress needs a <b>majority</b> (quorum). With 2N+1 nodes you tolerate N failures; going from 3→4 still only tolerates 1 failure but makes the majority harder to reach and ties more likely. Odd counts maximize fault tolerance per node and avoid split votes.</div></details>
+
+    <details class="qa"><summary>A node is briefly partitioned, then rejoins. How does Raft avoid two leaders corrupting the log? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">Each leader serves a <b>term</b>; a partitioned old leader can't get a majority to commit new entries, so it commits nothing. When it rejoins and sees a <b>higher term</b>, it steps down to follower and its uncommitted entries are overwritten by the current leader's log. Majority-commit + term numbers make stale writes impossible.</div></details>
+  </section>
+</main>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

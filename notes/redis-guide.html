@@ -132,12 +132,17 @@
 <div class="wrap">
 
 <nav class="toc" id="toc">
+  <h2>Overview</h2>
+  <a href="#map">The big picture</a>
+  <a href="#usage">See it in action 🎬</a>
   <h2>Foundations</h2>
   <a href="#intro">Why Redis / model</a>
   <a href="#single-thread">Single-thread & speed</a>
+  <a href="#reactor">Network model (Reactor)</a>
   <h2>Data</h2>
   <a href="#types">Data types & commands</a>
   <a href="#encoding">Internal encodings</a>
+  <a href="#internals">Data-structure internals</a>
   <a href="#expire">Expiration & eviction</a>
   <h2>Correctness</h2>
   <a href="#atomic">Atomicity</a>
@@ -152,6 +157,8 @@
   <a href="#cluster">Cluster</a>
   <h2>Edges</h2>
   <a href="#pitfalls">Pitfalls & cache patterns</a>
+  <a href="#consistency">Cache consistency</a>
+  <a href="#bigkey">Big & hot keys</a>
   <a href="#cheatsheet">Cheat sheet</a>
   <h2>Practice 🎮</h2>
   <a href="#quiz">Self-test flashcards</a>
@@ -161,6 +168,7 @@
 <main>
   <div class="hero">
     <h1><span class="logo">◆ Redis</span> — Visual Engineering &amp; Interview Guide</h1>
+    <p style="margin:0 0 0;font-size:.85rem"><a href="zh/redis-guide.html">中文版本 →</a></p>
     <p>An in-memory data-structure store used as a cache, database, message broker, and coordination layer. This page walks the whole mental model — data types, atomicity, persistence, replication, Sentinel, and Cluster — with diagrams you can scan before an interview or a design.</p>
     <p style="color:#c43d8a;margin-top:14px;font-size:.95rem">🕹️ <b>How to play:</b> scroll to learn (watch the progress bar fill up top), hit the 🎭 analogies to make it stick, flip the 🃏 flashcards in <a href="#quiz">§16 Self-test</a>, then unlock the 🎯 <a href="#boss">boss-level questions</a> before your interview. Let's go.</p>
     <div class="pills">
@@ -172,6 +180,148 @@
       <span class="pill">16384 hash slots</span>
     </div>
   </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <section id="map">
+    <h2><span class="num">00</span>The big picture — one map to memorize</h2>
+    <div class="tldr"><b>The spine:</b> Redis is <b>one in-memory dict run by a single thread</b> → make it <b>correct</b> → make it <b>durable</b> → make it <b>scalable</b> → handle the <b>edges</b>. Memorize that order; every section below hangs off it.</div>
+    <div class="mermaid">
+flowchart TB
+    THR["single thread"]:::core -->|enables| ATO["atomicity<br/>(each cmd runs to completion)"]:::idea
+    ATO -->|is the basis of| TX["transactions · Lua · distributed locks"]:::feat
+    RAM["in-RAM keyspace<br/>key → value"]:::core -->|holds| DT["data types<br/>String·Hash·List·Set·ZSet·Stream"]:::feat
+    DT -->|made compact by| ENC["internal encodings<br/>listpack → hashtable…"]:::feat
+    RAM -->|RAM is finite → bounded by| EV["expiration & eviction<br/>LRU · LFU · TTL"]:::feat
+    RAM -->|RAM is volatile → needs| PER["persistence<br/>RDB snapshot + AOF log"]:::feat
+    PER -->|RDB snapshot bootstraps| REP["replication (async)"]:::feat
+    REP -->|monitored by| SEN["Sentinel (quorum)"]:::feat
+    SEN -->|promotes a replica| FO["automatic failover (HA)"]:::feat
+    REP -->|+ sharding · 16384 slots| CL["Cluster"]:::feat
+    CL -->|has built-in| FO
+    DT --> CACHE["cache patterns<br/>penetration · breakdown · avalanche"]:::edge
+    EV -->|TTL underlies| CACHE
+    click THR href "#single-thread" "Single-threaded event loop" _self
+    click ATO href "#atomic" "Atomicity — four levels" _self
+    click TX href "#tx" "Transactions · Lua · locks" _self
+    click RAM href "#intro" "The mental model" _self
+    click DT href "#types" "Data types & commands" _self
+    click ENC href "#encoding" "Internal encodings" _self
+    click EV href "#expire" "Expiration & eviction" _self
+    click PER href "#persist" "Persistence: RDB / AOF" _self
+    click REP href "#repl" "Replication & R/W split" _self
+    click SEN href "#sentinel" "Sentinel" _self
+    click FO href "#sentinel" "Automatic failover" _self
+    click CL href "#cluster" "Cluster — sharding" _self
+    click CACHE href "#pitfalls" "Cache patterns & failures" _self
+    classDef core fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef idea fill:#f1e9fc,stroke:#9a6fe0,color:#4a2d7a;
+    classDef feat fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef edge fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:.82rem;margin:-4px 0 10px">👆 tap any box to jump to the section that explains it</p>
+    <div class="tip"><b>Two ladders that repeat everywhere:</b> (1) <b>Scaling escalation</b> — single node → replication → auto-failover → sharding; (2) <b>Correctness ladder</b>, weakest→strongest — single command → MULTI/EXEC → Lua → WATCH (CAS).</div>
+  </section>
+
+  <!-- ============ IN ACTION (story) ============ -->
+  <section id="usage">
+    <h2><span class="num">🎬</span>See it in action — how a real system grows into Redis</h2>
+    <p>Before the deep dives, here's the payoff. Watch one app grow from its first users to its first million — and meet <b>every part of this guide exactly when you'd actually reach for it</b>. Each 📍 jumps to the section that explains the mechanism.</p>
+
+    <h3>Where Redis sits</h3>
+    <div class="mermaid">
+flowchart TB
+    U["Users / browsers"]:::cli --> LB["Load balancer"]:::infra
+    LB --> A1["App server 1<br/>(stateless)"]:::app
+    LB --> A2["App server 2<br/>(stateless)"]:::app
+    LB --> A3["App server 3<br/>(stateless)"]:::app
+    A1 & A2 & A3 -->|"cache · session · lock · counter — μs"| R[("Redis<br/>shared in-memory layer")]:::redis
+    A1 & A2 & A3 -->|"source of truth — ms"| DB[("Primary DB<br/>Postgres / MySQL")]:::db
+    R -.->|"on miss → load, then SET"| DB
+    classDef cli fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef infra fill:#f1ebdf,stroke:#c9a83a,color:#6b5212;
+    classDef app fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef redis fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef db fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="analogy">The database is the <b>warehouse</b> — it has everything, but fetching is slow. Redis is the <b>shelf right behind the counter</b> — small, instant, shared by every cashier. App servers keep nothing private behind their own counter; shared state lives on the shelf, so you can add or pull cashiers at will. That's what lets the app scale.</div>
+
+    <h3>The growth story</h3>
+    <p>Each scene is a real problem teams hit — and the Redis move that fixes it.</p>
+
+    <div class="card">
+      <h4>🔥 Scene 1 — the database is melting</h4>
+      <p>Your product page hits the DB on every view. Fine at 10k users; at 100k the DB sits pinned at 100% CPU. You drop Redis in front as a <b>look-aside cache</b>: check Redis, and on a miss read the DB and cache the result with a TTL. Now the DB only ever sees misses.</p>
+      <p class="kv">📍 mechanism: <a href="#types">§03 String type</a> · <a href="#expire">§05 TTL &amp; eviction</a> · <a href="#pitfalls">§14 cache-aside &amp; its 3 failures</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🧍 Scene 2 — logins randomly drop</h4>
+      <p>You add app servers behind the load balancer, and users start getting logged out at random — each session lived in the memory of whichever server first served them. Move sessions into <b>shared Redis</b> and every server sees the same truth; the TTL doubles as auto-logout.</p>
+      <p class="kv">📍 mechanism: <a href="#intro">§01 one shared dict</a> · <a href="#types">§03 Hash for the session object</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🤖 Scene 3 — a bot hammers /login</h4>
+      <p>One IP fires 5,000 requests a second. You cap it with one atomic <code>INCR</code> per IP-per-minute + <code>EXPIRE</code> — or a ZSet sliding window when you need precision. No DB writes, no race conditions.</p>
+      <p class="kv">📍 mechanism: <a href="#atomic">§06 why INCR is atomic</a> · <a href="#types">§03 Sorted Set</a> · <a href="#lua">§08 Lua for multi-step limits</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🏆 Scene 4 — marketing wants a live leaderboard</h4>
+      <p>Top-10 players, real-time, for millions of users. A <b>Sorted Set</b> ranks by score in O(log N): <code>ZINCRBY</code> bumps a score, <code>ZREVRANGE 0 9</code> reads the top-10 instantly. No nightly batch job.</p>
+      <p class="kv">📍 mechanism: <a href="#types">§03 Sorted Set</a> · <a href="#encoding">§04 encodings keep it small</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🐌 Scene 5 — checkout feels slow</h4>
+      <p>Every order sends an email and renders a PDF — 3 seconds the user shouldn't wait for. The request <code>LPUSH</code>es a job and returns instantly; a pool of workers <code>BRPOP</code>s and does the slow part. Need guaranteed delivery? Upgrade to <b>Streams</b> with consumer groups.</p>
+      <p class="kv">📍 mechanism: <a href="#types">§03 List (blocking pop) &amp; Streams</a></p>
+    </div>
+
+    <div class="card">
+      <h4>👯 Scene 6 — two workers shipped the same order</h4>
+      <p>You have a periodic job — say <i>"every minute, scan paid orders and ship them"</i> — deployed on <b>every</b> server. When the timer fires, all instances run it at once and the same order ships twice. A <code>SET NX EX</code> <b>distributed lock</b> lets only one instance win cluster-wide (the rest fail to acquire and skip); release it with a tiny Lua check-then-delete so you only ever delete your own lock.</p>
+      <p class="kv">📍 mechanism: <a href="#patterns">§09 distributed locks</a> · <a href="#lua">§08 Lua scripting</a></p>
+    </div>
+
+    <div class="card">
+      <h4>⏰ Scene 7 — hold a seat for 15 minutes, then auto-release it</h4>
+      <p>A user reserves a ticket; if they don't pay within 15 minutes you must free the seat — but you can't scan the whole DB every second hunting for expirees. Use a <b>delayed queue</b>: a Sorted Set scored by the <b>deadline timestamp</b>. On reserve, <code>ZADD reservations &lt;now+15m&gt; seat:42</code>; a worker polls <code>ZRANGEBYSCORE reservations -inf &lt;now&gt;</code> for whatever is now due, frees those seats and <code>ZREM</code>s them. The score <i>is</i> the timer — the same trick powers "cancel unpaid orders" and scheduled reminders.</p>
+      <p class="kv">📍 mechanism: <a href="#types">§03 Sorted Set (score = time)</a> · <a href="#lua">§08 Lua to pop-and-remove atomically</a></p>
+    </div>
+
+    <div class="card">
+      <h4>🛡️ Scene 8 — Black Friday: Redis can't be the weak link</h4>
+      <p>Now everything leans on Redis, so it has to survive a crash <i>and</i> a node failure. Snapshot to disk (<b>RDB</b>) + log writes (<b>AOF</b>) so a restart isn't a cold start; add <b>replicas</b> for read-scaling and a hot standby; let <b>Sentinel</b> promote a replica automatically, or run <b>Cluster</b> to shard across machines.</p>
+      <p class="kv">📍 mechanism: <a href="#persist">§10 RDB / AOF</a> · <a href="#repl">§11 replication</a> · <a href="#sentinel">§12 Sentinel failover</a> · <a href="#cluster">§13 Cluster</a></p>
+    </div>
+
+    <h4>One request, end to end</h4>
+    <div class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant A as App server
+    participant R as Redis
+    participant D as Database
+    participant W as Worker
+    C->>A: GET /product/42
+    A->>R: GET product:42
+    alt cache hit
+        R-->>A: value (μs) ✅
+    else cache miss
+        R-->>A: (nil)
+        A->>D: SELECT … (ms)
+        D-->>A: row
+        A->>R: SET product:42 … EX 300
+    end
+    A-->>C: response
+    A->>R: LPUSH analytics:queue {view:42}
+    W->>R: BRPOP analytics:queue
+    W->>D: batch-write analytics
+    </div>
+    <div class="iq"><b>Interview framing:</b> when asked "where would you add Redis?", anchor on three roles — <b>(1) cache</b> in front of the DB, <b>(2) shared state</b> for stateless services (sessions, locks, counters), and <b>(3) real-time data structures</b> (leaderboards, queues, rate limiters). Then own the trade-off: data lives in volatile memory and replication is async, so Redis is a <i>performance &amp; coordination</i> layer — the DB stays the source of truth.</div>
+    <div class="tldr"><b>Keep this story in your head.</b> Every box in the map above earns its place here — and every numbered section below is just the deep dive on one of these moves.</div>
+  </section>
 
   <!-- ============ INTRO ============ -->
   <section id="intro">
@@ -231,6 +381,22 @@ sequenceDiagram
     <div class="analogy">It's a <b>single barista</b> making drinks one at a time. Orders never collide (atomic!) and there's no fighting over the espresso machine (no locks). But if one customer orders 500 lattes (<code>KEYS *</code>), <i>everyone</i> behind them waits. Keep orders small.</div>
     <div class="warn"><b>The catch:</b> one slow O(N) command blocks <i>everyone</i>. A <code>KEYS *</code>, a huge <code>HGETALL</code>, or a <code>SMEMBERS</code> on a million-element set will freeze the whole server for the duration. Use <code>SCAN</code>/<code>HSCAN</code>/<code>SSCAN</code> cursors instead, and avoid big O(N) ops on hot paths.</div>
     <div class="note"><b>Nuance for senior interviews:</b> "single-threaded" refers to <i>command execution</i>. Modern Redis (6+) has <b>threaded I/O</b> for reading/writing sockets, and background threads handle slow tasks like <code>UNLINK</code> (async delete), RDB <code>fork</code>, and AOF fsync. The keyspace mutation itself is still serial.</div>
+    <h3 id="reactor">The network model — Reactor + I/O multiplexing</h3>
+    <p>How does one thread serve tens of thousands of connections? With <b>I/O multiplexing</b>: the kernel's <code>epoll</code> (Linux) / <code>kqueue</code> (BSD) watches all client sockets at once and hands the event loop only the ones that are <i>ready</i>. The loop never blocks waiting on a single slow socket.</p>
+    <div class="mermaid">
+flowchart LR
+    S1["socket 1"]:::s --> EP["epoll<br/>(kernel watches N sockets)"]:::k
+    S2["socket 2"]:::s --> EP
+    S3["socket … N"]:::s --> EP
+    EP -->|only ready fds| EL["event loop<br/>1 thread"]:::el
+    EL --> H["parse → execute → reply"]:::h
+    classDef k fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef s fill:#e7f0fb,stroke:#4a8fd6,color:#1a3a5c;
+    classDef el fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef h fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <p>This is the <b>Reactor pattern</b>: one loop <i>reacts</i> to socket events and dispatches each to a handler. Redis 6+ adds <b>threaded I/O</b> — extra threads only read/parse and write socket bytes; the command itself still runs on the single main thread, so atomicity is preserved. Separately, <b>background threads (BIO)</b> handle slow reclaim/fsync work — <code>UNLINK</code> (async delete), AOF fsync, closing big files — so they never stall the loop.</p>
+    <div class="iq">Be precise: "single-threaded" means <b>command execution</b> is serial. Network I/O (6+) and housekeeping (BIO) are multi-threaded. That's exactly why deleting a huge key should use <code>UNLINK</code> — the memory reclaim happens off the main thread.</div>
   </section>
 
   <!-- ============ DATA TYPES ============ -->
@@ -323,6 +489,46 @@ sequenceDiagram
       <tr><td>String</td><td><code>int</code> / <code>embstr</code> (&le;44B)</td><td><code>raw</code></td><td>—</td></tr>
     </table>
     <div class="note">Check it live with <code>OBJECT ENCODING mykey</code>. A ZSet uses a <b>skip list + hash table</b> together once large: the skip list gives O(log N) ordered ops, the hash gives O(1) score lookups.</div>
+    <h3 id="internals">Under the hood — the structures that make it fast</h3>
+    <p>Four internals come up constantly in interviews — they're <i>why</i> the encodings above exist.</p>
+
+    <h4>SDS — why Redis doesn't use C strings</h4>
+    <p>Every Redis string is an <b>SDS</b> (Simple Dynamic String), not a raw C char array. It stores the <b>length</b> and <b>free space</b> next to the bytes:</p>
+    <ul>
+      <li><b>O(1) length</b> — <code>STRLEN</code> reads a field; a C string must scan to the <code>\0</code> (O(N)).</li>
+      <li><b>Binary-safe</b> — length-prefixed, so it holds any bytes (a <code>\0</code> mid-string, images…); C strings stop at the first <code>\0</code>.</li>
+      <li><b>No buffer overflow</b> — appends check capacity and grow safely.</li>
+      <li><b>Fewer reallocs</b> — pre-allocation + free-space tracking means repeated <code>APPEND</code> usually skips <code>realloc</code>.</li>
+    </ul>
+
+    <h4>Skip list — ordered in O(log N)</h4>
+    <p>A large Sorted Set is a <b>skip list</b> (plus a hash for O(1) score lookup). A skip list is a linked list with extra "express-lane" levels stacked on top: higher levels skip many nodes, so a search drops down level by level — an O(log N) walk. Each node's height is set by a coin-flip (~p=1/4), so it stays balanced on average <i>without</i> the rotations a tree needs.</p>
+    <div class="mermaid">
+flowchart LR
+    a2["1"]:::x --> c2["9"]:::x --> e2["25"]:::x
+    a1["1"]:::y --> b1["5"]:::y --> c1["9"]:::y --> d1["17"]:::y --> e1["25"]:::y --> f1["31"]:::y
+    a2 -.-> a1
+    c2 -.-> c1
+    e2 -.-> e1
+    classDef x fill:#fde6e4,stroke:#dc382d,color:#7a1810;
+    classDef y fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+
+    <h4>Skip list vs B+Tree — why Redis chose the skip list</h4>
+    <table>
+      <tr><th>Skip list</th><th>B+Tree</th></tr>
+      <tr><td>Simple to implement &amp; maintain</td><td>Complex rebalancing (splits / merges)</td></tr>
+      <tr><td>Range scans just walk the bottom list</td><td>Optimized for <b>disk</b> pages (fewer I/Os)</td></tr>
+      <tr><td>No page/disk assumptions — ideal in RAM</td><td>Shines when data lives on disk (MySQL)</td></tr>
+    </table>
+    <div class="note">In one line: B+Trees minimize <b>disk</b> reads (wide, shallow, page-aligned). Redis is in-memory, so that edge vanishes — the skip list gives the same O(log N) with far less code. That's the classic "why not a B+Tree?" answer.</div>
+
+    <h4>Dict &amp; progressive rehash</h4>
+    <p>The keyspace (and big Hashes/Sets) is a <b>hash table (dict)</b>. When the load factor rises it must grow — but rehashing millions of entries at once would freeze the single thread. So Redis keeps <b>two tables</b> (<code>ht[0]</code>, <code>ht[1]</code>) and migrates buckets <b>incrementally</b>: each operation moves a few buckets across. During the window, <b>reads check both tables</b> and writes land in the new one, until <code>ht[0]</code> is empty.</p>
+    <div class="iq"><b>Progressive rehash</b> is a favorite question — the point is amortizing one huge O(N) migration into tiny O(1) steps, so latency never spikes.</div>
+
+    <h4>ziplist's cascade update → listpack</h4>
+    <p>The old compact encoding, <b>ziplist</b>, stored in each entry the <i>previous</i> entry's length. If an entry near the front grew past 254 bytes, the next entry's "prevlen" field had to widen — which grew <i>its</i> size, forcing the next to widen too: a <b>cascade update</b> (chain reaction), O(N²) worst case. <b>listpack</b> (Redis 7) fixed it — each entry is self-describing and stores its <i>own</i> length, so there's no prev-length chain and no cascade.</p>
   </section>
 
   <!-- ============ EXPIRE ============ -->
@@ -530,6 +736,15 @@ sequenceDiagram
     <div class="analogy">Sentinels are <b>security guards</b> watching the boss (master). One guard noticing the boss is unresponsive isn't enough (<b>SDOWN</b> — could be the guard's bad eyesight). Only when a <i>majority vote</i> agrees the boss is really down (<b>ODOWN</b>) do they promote the deputy (a replica) and announce the new boss to everyone. Odd number of guards so a vote can't tie.</div>
     <div class="note"><b>Key terms:</b> <b>SDOWN</b> = one Sentinel thinks it's down; <b>ODOWN</b> = quorum agrees → triggers failover. Run an <b>odd number</b> (≥3) of Sentinels on separate hosts so the majority vote survives a split. Clients connect <i>through</i> Sentinel-aware libraries to always find the current master.</div>
     <div class="iq"><b>Sentinel vs Cluster:</b> Sentinel = HA for a <b>single shard</b> (one dataset, master+replicas, auto-failover) — does <b>not</b> shard data. Cluster = HA <b>plus</b> horizontal sharding. If your data fits one node and you just need failover, Sentinel is simpler.</div>
+    <h3 id="sentinel-election">How Sentinels elect a leader (Raft-style)</h3>
+    <p>Sentinels constantly <b>gossip</b> (流言) — over a pub/sub channel they swap what each one sees about the master and about each other. Once the quorum agrees the master is <b>ODOWN</b>, exactly <b>one</b> Sentinel must run the failover — otherwise two could promote two different replicas (a <b>split-brain</b>). So they hold a <b>Raft-style election</b>:</p>
+    <ol>
+      <li>Each failover attempt carries a monotonically increasing <b>epoch</b> (term).</li>
+      <li>A Sentinel that sees ODOWN asks the others to vote it leader for this epoch.</li>
+      <li>Each Sentinel votes <b>once</b> per epoch (first-come); whoever gets a <b>majority</b> wins.</li>
+      <li>The leader picks the best replica (most up-to-date, lowest priority number) and promotes it with <code>REPLICAOF NO ONE</code>, then re-points the rest.</li>
+    </ol>
+    <div class="warn"><b>Split-brain (脑裂):</b> if a network partition leaves the old master alive on the minority side, clients there may keep writing to it — and those writes are lost when it rejoins and is demoted. Mitigate with <code>min-replicas-to-write</code> (the master refuses writes if too few replicas are reachable). An <b>odd number ≥ 3</b> of Sentinels is what guarantees only one side can ever reach a majority.</div>
   </section>
 
   <!-- ============ CLUSTER ============ -->
@@ -564,6 +779,14 @@ flowchart TB
     </table>
     <div class="iq"><b>Why 16384 and not more?</b> The gossip heartbeat carries a bitmap of each node's slots; 16384 bits = 2 KB, small enough to ship cheaply between nodes, while still being far more than any realistic node count so slots distribute evenly. Classic trivia — worth memorizing.</div>
     <div class="note"><b>Decision tree:</b> single node fits + want HA → <b>Sentinel</b>. Data/throughput too big for one node → <b>Cluster</b>. Just a cache, can tolerate loss → maybe neither, just replicas.</div>
+    <h3 id="cluster-cap">Cluster &amp; CAP — what you're trading</h3>
+    <p>By the CAP theorem, a partitioned distributed store can't be both perfectly consistent and available. Redis replication is <b>asynchronous</b>, so Redis Cluster leans <b>AP</b> (stay available) rather than CP:</p>
+    <ul>
+      <li>A master replies to the client <i>before</i> replicating, so a failover can <b>lose</b> the last un-replicated writes — not strongly consistent.</li>
+      <li>Nodes <b>gossip</b> (流言) over the cluster bus to detect failure; a master is failed over only when a <b>majority of masters</b> agree — which is why a minority partition can't wrongly promote.</li>
+      <li><code>cluster-node-timeout</code> plus a write-pause on a stranded minority master bound how long it keeps accepting writes (limiting <b>split-brain</b> divergence).</li>
+    </ul>
+    <div class="iq">Say it crisply: "Redis Cluster is <b>AP</b> with async replication — it favors availability and accepts a small window of possible write loss on failover. For strict consistency you'd reach for a CP system, or use <code>WAIT</code> for stronger acks at a latency cost."</div>
   </section>
 
   <!-- ============ PITFALLS ============ -->
@@ -583,11 +806,37 @@ flowchart LR
     </div>
     <table>
       <tr><th>Problem</th><th>What it is</th><th>Mitigation</th></tr>
-      <tr><td><b>Penetration</b></td><td>Queries for keys that don't exist in DB either → every request hits the DB</td><td>Cache the "null" result with short TTL; <b>Bloom filter</b> in front to reject known-absent keys</td></tr>
-      <tr><td><b>Breakdown</b> (hot-key)</td><td>A single very popular key expires → a thundering herd all rebuild it at once</td><td>Mutex/lock so only one rebuilds (others wait); or logical expiry / never-expire hot keys + async refresh</td></tr>
-      <tr><td><b>Avalanche</b></td><td>Many keys expire at the same instant (or Redis goes down) → DB overwhelmed</td><td>Jitter the TTLs (random spread); multi-layer cache; circuit breaker; HA so Redis doesn't vanish</td></tr>
+      <tr><td><b>Penetration</b></td><td>Queries for keys that don't exist in DB either → every request hits the DB</td><td>Even when the DB has nothing either, cache that <b>empty result</b> with a short TTL so the same dead query stops reaching the DB. And put a <b>Bloom filter</b> in front to reject keys that obviously can't exist, before you ever query.</td></tr>
+      <tr><td><b>Breakdown</b> (hot-key)</td><td>A single very popular key expires → a thundering herd all rebuild it at once</td><td>Use a <b>mutex</b> so only one request rebuilds the key while the rest briefly wait for its result. Or never physically expire hot keys — give them a "logical" expiry and refresh them in the background, so readers always get the old value instead of stampeding the DB.</td></tr>
+      <tr><td><b>Avalanche</b></td><td>Many keys expire at the same instant (or Redis goes down) → DB overwhelmed</td><td>Add random <b>jitter</b> to each key's TTL so expirations spread out instead of all firing at the same instant. Back it with multi-layer caching, a circuit breaker, and Redis HA so the cache can't vanish wholesale.</td></tr>
     </table>
     <div class="warn"><b>Cache–DB consistency:</b> there's no perfect dual-write. The common choice is <b>"update DB, then delete cache"</b> (cache-aside invalidation). Avoid "update DB then update cache" (races produce stale writes). For stronger guarantees, drive invalidation off the DB binlog/CDC (e.g. Debezium) rather than app code.</div>
+    <h3 id="consistency">Cache–DB consistency — what to actually do</h3>
+    <p>There's no perfect dual-write to two systems, so in practice it's a <b>layered progression</b> — each level is more reliable (and more complex) than the last. Stop at whichever level your needs require:</p>
+    <ol>
+      <li><b>Baseline — Cache Aside, "update DB then delete cache".</b> Invalidate by <b>deleting</b>, not updating (updating the cache directly races with other writers and can cache a stale value), and delete <b>after the DB commit</b>. The next reader misses, reads fresh from the DB, and re-caches.</li>
+      <li><b>Hardened — delayed double-delete</b> (延迟双删): the baseline still leaves a small race — your delete can pass a concurrent read that's about to re-cache the old value. So delete once → write the DB → delete <i>again</i> after a short delay, clearing anything that snuck back in.</li>
+      <li><b>Strongest — invalidate from the binlog/CDC:</b> the first two levels rely on app code <i>remembering</i> to delete; if the app crashes between the DB write and the cache delete, that invalidation is lost. Drive it off the DB's change log instead (e.g. Debezium → delete cache), so nothing is ever missed.</li>
+    </ol>
+    <div class="warn">Accept reality: this is <b>eventual</b> consistency with a tiny stale window, not a distributed transaction. If you truly need read-your-own-write, read that key from the DB (or master) right after writing.</div>
+
+    <h3 id="bloom">Bloom filter — rejecting absent keys cheaply</h3>
+    <p>A <b>Bloom filter</b> answers "is this key <i>definitely absent</i>, or <i>maybe present</i>?" in tiny memory. It's a bit array + <b>k</b> hash functions: adding a key sets k bits; a lookup tests those k bits. If <i>any</i> is 0 → <b>definitely not present</b> (reject before touching the DB → kills cache <b>penetration</b>). If all are 1 → <i>probably</i> present (rare false positives, but <b>never</b> false negatives).</p>
+    <div class="note">Trade-off: a plain Bloom filter can't delete entries (use a counting / cuckoo variant if you must). Size the array and k for your target false-positive rate.</div>
+
+    <h3 id="bigkey">Big keys — the silent killers</h3>
+    <p>A <b>big key</b> is one key holding a huge value — a String of many MB, or a Hash/Set/ZSet with millions of members.</p>
+    <div class="grid2">
+      <div class="card"><h4>Why they hurt</h4><p>One O(N) op (or a plain <code>DEL</code>) blocks the single thread; memory spreads unevenly across Cluster shards; a single <code>GET</code> can saturate the NIC; expiry/deletion causes latency spikes.</p></div>
+      <div class="card"><h4>Find &amp; fix</h4><p>Find with <code>redis-cli --bigkeys</code> or <code>MEMORY USAGE</code>. Fix by <b>splitting</b> (shard one hash across many keys), reading partials (<code>HSCAN</code>, not <code>HGETALL</code>), and deleting with <code>UNLINK</code> (async), never <code>DEL</code>.</p></div>
+    </div>
+
+    <h3 id="hotkey">Hot keys — the thundering crowd</h3>
+    <p>A <b>hot key</b> is one key taking a hugely disproportionate share of traffic (a celebrity, a flash-sale item) — it overloads the single shard that owns it.</p>
+    <div class="grid2">
+      <div class="card"><h4>Why they hurt</h4><p>Every request for that key routes to one master (by hash slot), so that node maxes out while others idle — and if it expires, all clients stampede the DB at once.</p></div>
+      <div class="card"><h4>Find &amp; fix</h4><p>Find with <code>redis-cli --hotkeys</code> / monitoring. Fix with a <b>local in-process cache</b> in front, <b>replicas + read split</b> to spread reads, or <b>key-splitting</b> (store the value under several suffixed keys and pick one at random).</p></div>
+    </div>
   </section>
 
   <!-- ============ CHEAT SHEET ============ -->
