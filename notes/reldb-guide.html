@@ -635,6 +635,117 @@ flowchart LR
       <tr><td>Cleanup</td><td>VACUUM (reclaim dead tuples)</td><td>Purge thread (undo)</td></tr>
     </table>
     <div class="analogy">WAL is a <b>waiter's notepad</b>. Instead of running to the kitchen for every item (random disk writes), they jot the order on the pad in one quick line (sequential append). Even if they faint, the kitchen can read the pad and reconstruct every order. The actual cooking (flushing pages) happens in batches later.</div>
+
+    <h3>The four <span class="db my">InnoDB</span> logs: undo · Read View · redo · binlog — one picture</h3>
+    <p>Interviews love to blur these four together. One sentence keeps them straight: <b>undo + Read View handle "isolation / MVCC + rollback", redo handles "survive a crash", binlog handles "replication + point-in-time recovery".</b> undo / redo live in the <span class="db my">InnoDB</span> engine layer; binlog lives in the MySQL <b>server layer</b> (shared by all engines); Read View is an in-memory snapshot that never hits disk.</p>
+    <table>
+      <tr><th>Log</th><th>Layer</th><th>Type</th><th>Purpose</th><th>When written</th><th>When cleaned</th></tr>
+      <tr><td><b>undo log</b></td><td>Engine</td><td>Logical (inverse op / old version)</td><td>① Atomicity: roll back uncommitted txns ② MVCC: rebuild old snapshots along the version chain</td><td><b>Before</b> the data page is modified (and is itself protected by redo)</td><td>After commit, once no Read View still needs it — by the <b>purge</b> thread</td></tr>
+      <tr><td><b>Read View</b></td><td>Engine (in-memory, not persisted)</td><td>Snapshot (list of active txns)</td><td><b>Visibility check</b> for consistent reads: which version on the chain this txn may see</td><td>On a <b>snapshot read</b></td><td>Discarded at txn end (<b>RR</b>: one reused for the whole txn; <b>RC</b>: a fresh one per statement)</td></tr>
+      <tr><td><b>redo log</b></td><td>Engine</td><td>Physical (page-level changes)</td><td>Durability + crash recovery: redo committed changes not yet flushed</td><td>Page change → redo buffer; flushed on commit per <code>innodb_flush_log_at_trx_commit</code></td><td><b>Circular</b>, fixed size; reusable once the matching dirty pages are checkpointed</td></tr>
+      <tr><td><b>binlog</b></td><td>Server</td><td>Logical (statement / row / mixed)</td><td>Primary↔replica <b>replication</b> + <b>PITR</b></td><td>On commit</td><td><b>Append-only</b>; expires via <code>binlog_expire_logs_seconds</code> or manual <code>PURGE</code></td></tr>
+    </table>
+
+    <h4>How one UPDATE flows through all four</h4>
+    <p>Watch steps ③ and ⑤: redo writes a "prepare" first, then the binlog is written, then redo writes "commit" — that's the <b>two-phase commit (internal XA)</b> between redo and binlog, keeping the two logs consistent after a crash (so you never get "rolled back on the primary but executed on the replica").</p>
+    <div class="mermaid">
+flowchart TB
+    U["UPDATE bal to 400<br/>(was 500)"]:::a --> UNDO["① write undo log<br/>record old value 500<br/>(for rollback &amp; MVCC)"]:::undo
+    UNDO --> PAGE[("② modify the page in the buffer pool<br/>500 → 400 (now dirty)")]:::dirty
+    PAGE --> REDO1["③ redo log writes 'prepare'<br/>records the physical page change"]:::redo
+    REDO1 --> BIN["④ write binlog<br/>logical change (row / statement)"]:::bin
+    BIN --> REDO2["⑤ redo log writes 'commit'"]:::redo
+    REDO2 --> OK["⑥ COMMIT returns success ✅"]:::a
+    PAGE -. async checkpoint flush .-> DISK[("data file<br/>(.ibd)")]:::n
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    classDef redo fill:#d9ebe7,stroke:#1f7a70,color:#13524b;
+    classDef bin fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    classDef dirty fill:#fdeede,stroke:#d98a2b,color:#7a4710;
+    classDef n fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <div class="note"><b>Why two-phase commit?</b> Say the binlog was written but the server crashed before redo's commit — recovery finds that redo in the <i>prepare</i> state and checks whether the txn is <b>fully written in the binlog</b>: if yes, commit it; if not, roll back. That's what keeps "the local data" and "the binlog shipped to replicas" in agreement.</div>
+
+    <h4>How undo + Read View power consistent reads (MVCC)</h4>
+    <p>Every row carries hidden columns <code>DB_TRX_ID</code> (the txn that last changed it) and <code>DB_ROLL_PTR</code> (a pointer to the previous version in undo). On a snapshot read, the txn uses its Read View to decide whether the current version is visible; if not, it walks back the undo version chain via <code>DB_ROLL_PTR</code> until it finds the first visible version.</p>
+    <div class="mermaid">
+flowchart LR
+    READ["SELECT reads current row<br/>DB_TRX_ID = 30"]:::a --> Q1{"Read View:<br/>is 30 visible?"}:::rv
+    Q1 -->|not visible<br/>(follow DB_ROLL_PTR)| U2["undo: prior version<br/>trx=20, bal=500"]:::undo
+    U2 --> Q2{"is 20 visible?"}:::rv
+    Q2 -->|not visible| U1["undo: older version<br/>trx=10, bal=300"]:::undo
+    Q2 -->|visible| SEE["✅ this txn reads 500"]:::g
+    U1 --> SEE2["✅ reads 300"]:::g
+    Q1 -->|visible| SEE3["✅ reads current value 400"]:::g
+    classDef a fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef rv fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    classDef g fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    </div>
+    <div class="iq">Tell this chain cleanly and you've nailed it: <b>"undo is used both to roll back and to rebuild old versions for MVCC; the Read View decides which version on the chain is visible — RR fixes its Read View on the first snapshot read and reuses it for the whole txn (hence repeatable reads), while RC builds a fresh Read View per statement (hence it sees others' newly committed data)."</b> Add that redo guarantees durability, binlog drives replication, and the two are aligned by two-phase commit, and it's complete.</div>
+
+    <h3>Where do these logs actually live? And what do they look like?</h3>
+    <p>"Where it's written" has two layers: a buffer in memory first, then flushed to a file on disk by each log's own rules. Physical locations below (<span class="db my">MySQL 8.0</span> defaults; older versions differ, noted inline).</p>
+    <table>
+      <tr><th>Log</th><th>In memory</th><th>On disk (8.0 default)</th><th>How it's organized</th></tr>
+      <tr><td><b>redo log</b></td><td>redo log buffer (<code>innodb_log_buffer_size</code>)</td><td><code>#ib_redoN</code> files under <code>#innodb_redo/</code> in the data dir (~32 files, total = <code>innodb_redo_log_capacity</code>)<br><span class="kv">before 8.0.30: <code>ib_logfile0/1</code></span></td><td><b>Fixed-size, circular</b> ring; 512-byte blocks; numbered by <b>LSN</b></td></tr>
+      <tr><td><b>undo log</b></td><td>undo pages in the buffer pool</td><td>Dedicated undo tablespaces <code>undo_001</code>, <code>undo_002</code> (≥2)<br><span class="kv">before 8.0: inside the system tablespace <code>ibdata1</code></span></td><td>undo tablespace → <b>rollback segments</b> (128 by default) → undo segments → undo pages → undo records; chained per row into a <b>version chain</b></td></tr>
+      <tr><td><b>binlog</b></td><td>per-session binlog cache (<code>binlog_cache_size</code>)</td><td><code>binlog.000001…</code> + an index file <code>binlog.index</code>, in the server's log dir</td><td><b>Append-only</b>, rotated by file size; contents are a stream of <b>events</b></td></tr>
+      <tr><td><b>Read View</b></td><td>inside the txn's own memory</td><td><b>Not persisted</b></td><td>Just a snapshot of active transaction ids</td></tr>
+    </table>
+
+    <h4>redo log — a fixed-size "ring", written circularly</h4>
+    <p>Redo doesn't grow without bound; a set of fixed-size files is joined head-to-tail into a <b>ring</b>, and once full it wraps around and overwrites. Two pointers decide whether a spot can be overwritten:</p>
+    <div class="mermaid">
+flowchart LR
+    subgraph RING["redo ring: #ib_redo0 … #ib_redoN (wraps when full)"]
+      direction LR
+      F1["free<br/>(writable)"]:::free --> CK["checkpoint ▲<br/>flush point"]:::ck --> USED["committed · not yet flushed<br/>← this is what crash recovery redoes"]:::redo --> WP["write pos ▲<br/>currently writing here"]:::wp --> F2["free<br/>(writable)"]:::free
+    end
+    classDef redo fill:#d9ebe7,stroke:#1f7a70,color:#13524b;
+    classDef ck fill:#e4f5e9,stroke:#3aa856,color:#1d6b32;
+    classDef wp fill:#fdeede,stroke:#d98a2b,color:#7a4710;
+    classDef free fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    </div>
+    <ul>
+      <li><b>write pos</b>: where new redo is written. <b>checkpoint</b>: everything before it has dirty pages already flushed to the data files, so that redo can be overwritten.</li>
+      <li>The span between the two = <b>recorded but the dirty pages aren't flushed yet</b>; <i>this is exactly what crash recovery redoes</i>.</li>
+      <li>Once <b>write pos catches up to checkpoint</b> (ring is full), the engine must force-flush dirty pages and advance the checkpoint before continuing — writes stall during this.</li>
+      <li><b>LSN</b> (Log Sequence Number) is a monotonically increasing number threaded through redo, data pages, and the checkpoint; recovery uses it to decide whether a given page needs redoing.</li>
+    </ul>
+
+    <h4>undo log — a version chain stitched by row + roll_ptr</h4>
+    <p>Each row hides two columns: <code>DB_TRX_ID</code> (the txn that last changed it) and <code>DB_ROLL_PTR</code> (a pointer to the prior version in undo). One roll_ptr after another forms the version chain MVCC walks above:</p>
+    <div class="mermaid">
+flowchart LR
+    ROW["row in the table (latest)<br/>bal=400 ┃ DB_TRX_ID=30 ┃ DB_ROLL_PTR ─┐"]:::row
+    ROW -->|roll_ptr| U1["undo record<br/>bal=500 ┃ trx_id=20 ┃ roll_ptr ─┐"]:::undo
+    U1 -->|roll_ptr| U2["undo record<br/>bal=300 ┃ trx_id=10 ┃ roll_ptr = NULL"]:::undo
+    classDef row fill:#eef4ff,stroke:#4a8fd6,color:#1a3a5c;
+    classDef undo fill:#f4effe,stroke:#7a5aa8,color:#3d2a5c;
+    </div>
+    <p><b>Storage hierarchy</b>: undo tablespace → rollback segment (128 by default) → undo segment → undo page → undo record. undo is itself <b>protected by redo</b>, so after a crash it's still there to roll back with.</p>
+
+    <h4>binlog — a stream of events, each pointing to the next</h4>
+    <p>A binlog file opens with a magic number and a format-description event, then a run of events; one transaction in row format looks roughly like:</p>
+    <div class="mermaid">
+flowchart LR
+    H["file header<br/>magic 0xfe 'bin'<br/>+ Format_desc_event"]:::hdr --> G["GTID_event"]:::bin --> B["Query_event<br/>BEGIN"]:::bin --> T["Table_map_event<br/>(which table)"]:::bin --> R["Write/Update/Delete<br/>_rows_event (row data)"]:::bin --> X["Xid_event<br/>COMMIT"]:::bin
+    classDef hdr fill:#eef1f5,stroke:#bcc6d2,color:#2a3340;
+    classDef bin fill:#fbf3da,stroke:#c9a83a,color:#6b5212;
+    </div>
+    <p>Every event has a <b>header</b>: <code>timestamp ┃ event_type ┃ server_id ┃ event_size ┃ log_pos (position of the next event) ┃ flags</code>, followed by the body. <code>log_pos</code> chains all events together — a replica tracks how far it has synced by remembering this position. One level up, a <code>binlog.index</code> file lists every binlog filename in order.</p>
+
+    <h4>Read View — a snapshot of active transactions</h4>
+    <p>It isn't persisted; it's just four values the txn keeps in memory, used with the version chain for visibility:</p>
+    <table>
+      <tr><th>Field</th><th>Meaning</th></tr>
+      <tr><td><code>m_ids</code></td><td>List of all <b>active (uncommitted)</b> transaction ids at the moment the snapshot was taken</td></tr>
+      <tr><td><code>min_trx_id</code></td><td>The smallest value in <code>m_ids</code></td></tr>
+      <tr><td><code>max_trx_id</code></td><td>The next txn id to be assigned (greater than all current ones)</td></tr>
+      <tr><td><code>creator_trx_id</code></td><td>This transaction's own id</td></tr>
+    </table>
+    <div class="tip"><b>Visibility check (compare a version's <code>DB_TRX_ID</code>):</b> ① <code>&lt; min_trx_id</code> → committed long ago, <b>visible</b>; ② <code>≥ max_trx_id</code> → a txn that started after the snapshot, <b>not visible</b> (follow roll_ptr to an older version); ③ in between → if it's in <code>m_ids</code> it was still uncommitted then, <b>not visible</b>, otherwise <b>visible</b>. Your own changes (== <code>creator_trx_id</code>) are visible, of course.</div>
   </section>
 
   <!-- ============ REPLICATION ============ -->
