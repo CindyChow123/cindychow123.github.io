@@ -151,15 +151,6 @@ export const publications = [
 
 export const projects = [
     {
-        tag: 'Learning Tool',
-        title: 'Programming Language Playground',
-        description:
-            'Flip-card refreshers for Python and C# core concepts — the things I keep needing to re-look-up between interview loops. Built to be opened in 30 seconds, not browsed for an hour.',
-        links: [
-            { label: 'Launch playground', href: '#playground' },
-        ],
-    },
-    {
         tag: 'Accessibility',
         title: 'Color Vision Simulator',
         description:
